@@ -1,1 +1,1 @@
-# pixelpart for Godot 4
+# Pixelpart for Godot 4

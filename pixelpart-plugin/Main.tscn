@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://bt7ogxf0ux7r6"]
+
+[ext_resource type="Script" path="res://EffectScript2D.gd" id="1_udfml"]
+[ext_resource type="PixelpartEffectResource" uid="uid://c325ufunoewvq" path="res://effects/SampleEffect2D.ppfx" id="2_web62"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_udfml")
+
+[node name="SampleEffect" type="PixelpartEffect2D" parent="."]
+effect = ExtResource("2_web62")
+position = Vector2(200, 200)

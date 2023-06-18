@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://ck7m2fuu4mk3q"]
+
+[ext_resource type="Script" path="res://EffectScript3D.gd" id="1_dsdr7"]
+[ext_resource type="PixelpartEffectResource" uid="uid://d3tfi7d6a4807" path="res://effects/SampleEffect3D.ppfx" id="1_ygar2"]
+
+[node name="Main3D" type="Node3D"]
+script = ExtResource("1_dsdr7")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.189167, 0.187358, -0.963905, -0.0789336, 0.981353, 0.175259, 0.978767, 0.0429314, 0.200428, -8.80192, 3.3041, 1.69039)
+
+[node name="SampleEffect" type="PixelpartEffect" parent="."]
+effect = ExtResource("1_ygar2")

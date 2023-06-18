@@ -1,0 +1,11 @@
+[configuration]
+
+entry_symbol = "pixelpart_init"
+
+[libraries]
+
+linux.64 = "res://addons/pixelpart/bin/libpixelpart.linux-64.so"
+linux.32 = "res://addons/pixelpart/bin/libpixelpart.linux-32.so"
+windows.64 = "res://addons/pixelpart/bin/libpixelpart.win-64.dll"
+windows.32 = "res://addons/pixelpart/bin/libpixelpart.win-32.dll"
+macos = "res://addons/pixelpart/bin/libpixelpart.osx.dylib"
