@@ -571,8 +571,8 @@ void PixelpartEffect::add_particle_sprites(ParticleMeshInstance& meshInstance, c
 		particleRenderData = &meshInstance.sortedParticleData;
 	}
 
-	pixelpart::vec3d cameraRight = fromGd(camera->get_global_transform().basis[0]);
-	pixelpart::vec3d cameraUp = fromGd(camera->get_global_transform().basis[1]);
+	pixelpart::vec3d cameraRight = fromGd(camera->get_global_transform().basis.get_column(0));
+	pixelpart::vec3d cameraUp = fromGd(camera->get_global_transform().basis.get_column(1));
 
 	Ref<ArrayMesh> mesh = meshInstance.mesh;
 

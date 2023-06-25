@@ -7,7 +7,7 @@
 script = ExtResource("1_dsdr7")
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.189167, 0.187358, -0.963905, -0.0789336, 0.981353, 0.175259, 0.978767, 0.0429314, 0.200428, -8.80192, 3.3041, 1.69039)
+transform = Transform3D(0.964218, 0.200522, -0.173422, -0.103142, 0.886346, 0.451389, 0.244226, -0.41735, 0.875313, -2.93389, 4.44845, 10.4467)
 
 [node name="SampleEffect" type="PixelpartEffect" parent="."]
 effect = ExtResource("1_ygar2")
