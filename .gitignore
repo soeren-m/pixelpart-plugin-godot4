@@ -12,6 +12,7 @@
 *.o
 *.os
 *.obj
+*.bc
 
 # Precompiled headers
 *.gch
