@@ -79,6 +79,10 @@ if (env["TARGET_ARCH"] == "amd64" or
     is64 = True
 
 opts = Variables([], ARGUMENTS)
+opts.Add(EnumVariable("version", "Godot version", "4.1",
+    allowed_values=("4.0", "4.1"),
+    ignorecase=2
+))
 opts.Add(EnumVariable("platform", "Target platform", host_platform,
     allowed_values=("linux", "freebsd", "osx", "windows", "android", "ios", "javascript"),
     ignorecase=2
@@ -100,6 +104,14 @@ opts.Add("ANDROID_NDK_ROOT", "Path to your Android NDK installation. By default,
 
 opts.Update(env)
 Help(opts.GenerateHelpText(env))
+
+godot_cpp_path = "godot-cpp-41"
+if env["version"] == "4.0":
+    godot_cpp_path = "godot-cpp-40"
+    env.Append(CPPDEFINES=["GODOT_4_0"])
+elif env["version"] == "4.1":
+    godot_cpp_path = "godot-cpp-41"
+    env.Append(CPPDEFINES=["GODOT_4_1"])
 
 if host_platform == "windows" and env["platform"] != "android":
     if env["bits"] == "64":
@@ -351,32 +363,33 @@ elif env["platform"] == "javascript":
     target_path = "libpixelpart.wasm-" + "32" + ".wasm"
 
 json_api_file = ""
-
 if "custom_api_file" in env:
     json_api_file = env["custom_api_file"]
 else:
-    json_api_file = os.path.join(os.getcwd(), "godot-cpp", "gdextension", "extension_api.json")
+    json_api_file = os.path.join(os.getcwd(), godot_cpp_path, "gdextension", "extension_api.json")
 
 if env["generate_bindings"]:
     import importlib
-    bgen = importlib.import_module("godot-cpp.binding_generator")
-    bgen.generate_bindings(json_api_file, True, env["bits"], "float", "godot-cpp")
+    bgen = importlib.import_module(godot_cpp_path + ".binding_generator")
+    bgen.generate_bindings(json_api_file, True, env["bits"], "float", godot_cpp_path)
 
 sources = []
-add_sources(sources, "godot-cpp/src", "cpp")
-add_sources(sources, "godot-cpp/src/classes", "cpp")
-add_sources(sources, "godot-cpp/src/core", "cpp")
-add_sources(sources, "godot-cpp/src/variant", "cpp")
-add_sources(sources, "godot-cpp/gen/src/variant", "cpp")
-add_sources(sources, "godot-cpp/gen/src/classes", "cpp")
+
+add_sources(sources, godot_cpp_path + "/src", "cpp")
+add_sources(sources, godot_cpp_path + "/src/classes", "cpp")
+add_sources(sources, godot_cpp_path + "/src/core", "cpp")
+add_sources(sources, godot_cpp_path + "/src/variant", "cpp")
+add_sources(sources, godot_cpp_path + "/gen/src", "cpp")
+add_sources(sources, godot_cpp_path + "/gen/src/variant", "cpp")
+add_sources(sources, godot_cpp_path + "/gen/src/classes", "cpp")
 add_sources(sources, "pixelpart-runtime", ".cpp")
 add_sources(sources, "pixelpart-runtime/zlib", ".c")
 add_sources(sources, "src", ".cpp")
 
 env.Append(CPPPATH=[".",
-    "godot-cpp/gdextension/",
-    "godot-cpp/include/",
-    "godot-cpp/gen/include/",
+    godot_cpp_path + "/gdextension/",
+    godot_cpp_path + "/include/",
+    godot_cpp_path + "/gen/include/",
     "pixelpart-runtime/",
 ])
 
