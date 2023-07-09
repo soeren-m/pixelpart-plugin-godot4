@@ -1,6 +1,3 @@
-[submodule "godot-cpp"]
-	path = godot-cpp
-	url = https://github.com/godotengine/godot-cpp.git
 [submodule "pixelpart-runtime"]
 	path = pixelpart-runtime
 	url = https://github.com/soeren-m/pixelpart-runtime.git
