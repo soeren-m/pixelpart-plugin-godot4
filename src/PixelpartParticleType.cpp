@@ -35,6 +35,7 @@ void PixelpartParticleType::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pivot"), &PixelpartParticleType::get_pivot);
 	ClassDB::bind_method(D_METHOD("get_weight"), &PixelpartParticleType::get_weight);
 	ClassDB::bind_method(D_METHOD("get_bounce"), &PixelpartParticleType::get_bounce);
+	ClassDB::bind_method(D_METHOD("get_friction"), &PixelpartParticleType::get_friction);
 	ClassDB::bind_method(D_METHOD("set_visible", "mode"), &PixelpartParticleType::set_visible);
 	ClassDB::bind_method(D_METHOD("set_layer", "layer"), &PixelpartParticleType::set_layer);
 	ClassDB::bind_method(D_METHOD("is_visible"), &PixelpartParticleType::is_visible);
