@@ -25,5 +25,5 @@ elif "platform=android" in sys.argv:
 elif "platform=ios" in sys.argv:
     subprocess.run("scons platform=ios ios_arch=arm64 target=release generate_bindings=true " + version_arg, shell = True)
 
-elif "platform=javascript" in sys.argv:
-    subprocess.run("scons platform=javascript bits=32 target=release generate_bindings=true " + version_arg, shell = True)
+elif "platform=web" in sys.argv:
+    subprocess.run("scons platform=web bits=32 target=release generate_bindings=true " + version_arg, shell = True)

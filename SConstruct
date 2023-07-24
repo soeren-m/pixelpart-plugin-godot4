@@ -84,7 +84,7 @@ opts.Add(EnumVariable("version", "Godot version", "4.1",
     ignorecase=2
 ))
 opts.Add(EnumVariable("platform", "Target platform", host_platform,
-    allowed_values=("linux", "freebsd", "osx", "windows", "android", "ios", "javascript"),
+    allowed_values=("linux", "freebsd", "osx", "windows", "android", "ios", "web"),
     ignorecase=2
 ))
 opts.Add(EnumVariable("bits", "Target platform bits", "64" if is64 else "32", allowed_values=("32", "64")))
@@ -325,17 +325,24 @@ elif env["platform"] == "android":
 
     target_path = "libpixelpart.android-" + env["android_arch"] + ".so"
 
-elif env["platform"] == "javascript":
+elif env["platform"] == "web":
     if host_platform == "windows":
-        raise ValueError("Javascript build not supported by Windows host platform.")
+        raise ValueError("Web build not supported by Windows host platform.")
 
     env["ENV"] = os.environ
     env["CC"] = "emcc"
     env["CXX"] = "em++"
     env["AR"] = "emar"
     env["RANLIB"] = "emranlib"
-    env.Append(CPPFLAGS=["-s", "SIDE_MODULE=1"])
+
+    env.Append(CCFLAGS=["-s", "SIDE_MODULE=1"])
     env.Append(LINKFLAGS=["-s", "SIDE_MODULE=1"])
+
+    env.Append(CCFLAGS=["-s", "USE_PTHREADS=1"])
+    env.Append(LINKFLAGS=["-s", "USE_PTHREADS=1"])
+    env.Append(LINKFLAGS=["-s", "PTHREAD_POOL_SIZE=8"])
+    env.Append(LINKFLAGS=["-s", "WASM_MEM_MAX=2048MB"])
+
     env["SHOBJSUFFIX"] = ".bc"
     env["SHLIBSUFFIX"] = ".wasm"
     env["ARCOM_POSIX"] = env["ARCOM"].replace("$TARGET", "$TARGET.posix").replace("$SOURCES", "$SOURCES.posix")
