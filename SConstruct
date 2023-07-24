@@ -105,6 +105,13 @@ opts.Add("ANDROID_NDK_ROOT", "Path to your Android NDK installation. By default,
 opts.Update(env)
 Help(opts.GenerateHelpText(env))
 
+if host_platform == "windows" and env["platform"] != "android":
+    if env["bits"] == "64":
+        env = Environment(TARGET_ARCH="amd64")
+    elif env["bits"] == "32":
+        env = Environment(TARGET_ARCH="x86")
+    opts.Update(env)
+
 godot_cpp_path = "godot-cpp-41"
 if env["version"] == "4.0":
     godot_cpp_path = "godot-cpp-40"
@@ -112,13 +119,6 @@ if env["version"] == "4.0":
 elif env["version"] == "4.1":
     godot_cpp_path = "godot-cpp-41"
     env.Append(CPPDEFINES=["GODOT_4_1"])
-
-if host_platform == "windows" and env["platform"] != "android":
-    if env["bits"] == "64":
-        env = Environment(TARGET_ARCH="amd64")
-    elif env["bits"] == "32":
-        env = Environment(TARGET_ARCH="x86")
-    opts.Update(env)
 
 if env["target"] == "debug":
     env.Append(CPPDEFINES=["DEBUG_ENABLED", "DEBUG_METHODS_ENABLED"])
