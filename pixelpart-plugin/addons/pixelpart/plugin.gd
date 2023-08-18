@@ -7,9 +7,6 @@ var resource_import_plugin
 var gizmo_plugin
 
 func _enter_tree():
-	var icon_node2d = load(plugin_path + "/icon16_node2d.png") as Texture
-	var icon_node3d = load(plugin_path + "/icon16_node3d.png") as Texture
-
 	add_project_setting("pixelpart/particle_capacity", 10000, TYPE_INT, PROPERTY_HINT_RANGE, "100,100000")
 
 	resource_import_plugin = load(plugin_path + "/src/PixelpartEffectResourceImportPlugin.gd").new()

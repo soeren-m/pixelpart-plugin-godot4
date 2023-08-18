@@ -3,6 +3,11 @@
 entry_symbol = "pixelpart_init"
 compatibility_minimum = 4.1
 
+[icons]
+
+PixelpartEffect2D = "res://addons/pixelpart/pixelpart_node2d.svg"
+PixelpartEffect = "res://addons/pixelpart/pixelpart_node3d.svg"
+
 [libraries]
 
 linux.64 = "res://addons/pixelpart/bin/libpixelpart.linux-64.so"
