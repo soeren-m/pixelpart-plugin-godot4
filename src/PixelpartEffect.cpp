@@ -1,4 +1,5 @@
 #include "PixelpartEffect.h"
+#include "PixelpartSortUtil.h"
 #include "PixelpartUtil.h"
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/engine.hpp>
@@ -500,57 +501,29 @@ void PixelpartEffect::add_particle_sprites(ParticleMeshInstance& meshInstance, c
 
 	const pixelpart::ParticleData* particleRenderData = &particles;
 
-	if(particleType.spriteRendererSettings.sortCriterion != pixelpart::ParticleSortCriterion::none) {
-		if(meshInstance.sortedParticleData.id.size() != particles.id.size()) {
-			meshInstance.sortedParticleData.resize(particles.id.size());
-			meshInstance.sortKeys.resize(particles.id.size());
-		}
-
+	if(particleType.spriteRendererSettings.sortCriterion != pixelpart::ParticleSortCriterion::none && numParticles > 1) {
+		meshInstance.sortedParticleData.resize(particles.id.size());
+		meshInstance.sortKeys.resize(particles.id.size());
 		std::iota(meshInstance.sortKeys.begin(), meshInstance.sortKeys.begin() + numParticles, 0);
-
-		uint32_t numSortPasses = std::min(particleType.spriteRendererSettings.sortPasses, numParticles - 1);
 
 		switch(particleType.spriteRendererSettings.sortCriterion) {
 			case pixelpart::ParticleSortCriterion::age: {
-				for(uint32_t i = 0; i < numSortPasses; i++) {
-					bool swapped = false;
-					for(uint32_t j = 0; j < numParticles - i - 1; j++) {
-						if(particles.id[meshInstance.sortKeys[j]] >
-						particles.id[meshInstance.sortKeys[j + 1]]) {
-							std::swap(meshInstance.sortKeys[j], meshInstance.sortKeys[j + 1]);
-							swapped = true;
-						}
-					}
-
-					if(!swapped) {
-						break;
-					}
-				}
+				insertionSort(meshInstance.sortKeys.begin(), meshInstance.sortKeys.begin() + numParticles,
+					[&particles](uint32_t i, uint32_t j) {
+						return particles.id[i] < particles.id[j];
+					});
 
 				break;
 			}
 
 			case pixelpart::ParticleSortCriterion::distance: {
 				pixelpart::vec3d cameraPosition = fromGd(camera->get_global_transform().origin);
-				for(uint32_t i = 0; i < numSortPasses; i++) {
-					bool swapped = false;
-					for(uint32_t j = 0; j < numParticles - i - 1; j++) {
-						if(glm::distance2(particles.globalPosition[meshInstance.sortKeys[j]], cameraPosition) <
-						glm::distance2(particles.globalPosition[meshInstance.sortKeys[j + 1]], cameraPosition)) {
-							std::swap(meshInstance.sortKeys[j], meshInstance.sortKeys[j + 1]);
-							swapped = true;
-						}
-					}
 
-					if(!swapped) {
-						break;
-					}
-				}
+				insertionSort(meshInstance.sortKeys.begin(), meshInstance.sortKeys.begin() + numParticles,
+					[&particles, cameraPosition](uint32_t i, uint32_t j) {
+						return glm::distance2(particles.globalPosition[i], cameraPosition) > glm::distance2(particles.globalPosition[j], cameraPosition);
+					});
 
-				break;
-			}
-
-			default: {
 				break;
 			}
 		}
