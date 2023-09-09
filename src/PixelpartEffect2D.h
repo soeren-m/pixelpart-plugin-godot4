@@ -6,6 +6,7 @@
 #include "PixelpartParticleType.h"
 #include "PixelpartForceField.h"
 #include "PixelpartCollider.h"
+#include "PixelpartShaders.h"
 #include "ParticleEngine.h"
 #include <godot_cpp/core/binder_common.hpp>
 #include <godot_cpp/classes/node2d.hpp>
@@ -52,6 +53,9 @@ public:
 	bool get_flip_h() const;
 	bool get_flip_v() const;
 
+	void set_light_mode(CanvasItemMaterial::LightMode mode);
+	CanvasItemMaterial::LightMode get_light_mode() const;
+
 	float get_import_scale() const;
 
 	void set_effect(Ref<PixelpartEffectResource> effectRes);
@@ -93,7 +97,7 @@ private:
 
 		RID canvasItem;
 		RID material;
-		RID shader;
+		Ref<Shader> shader;
 
 		std::vector<std::string> textures;
 
@@ -130,8 +134,11 @@ private:
 	bool flipH = false;
 	bool flipV = true;
 
+	CanvasItemMaterial::LightMode lightMode = CanvasItemMaterial::LIGHT_MODE_NORMAL;
+
 	std::vector<ParticleMeshInstance> particleMeshInstances;
 	std::unordered_map<std::string, Ref<ImageTexture>> textures;
+	bool shaderDirty = false;
 };
 }
 

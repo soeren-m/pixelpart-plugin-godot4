@@ -17,7 +17,7 @@ public:
 
 	PixelpartParticleType();
 
-	void init(Ref<PixelpartEffectResource> resource, pixelpart::ParticleType* particleType, pixelpart::ParticleEngine* engine);
+	void init(Ref<PixelpartEffectResource> resource, pixelpart::ParticleType* particleType, pixelpart::ParticleEngine* engine, const pixelpart::ShaderGraph::BuildResult& shaderGraphResult);
 
 	int get_id() const;
 	int get_parent_id() const;
@@ -89,10 +89,14 @@ public:
 
 	void spawn_particles(int count);
 
+	const pixelpart::ShaderGraph::BuildResult& get_shader_build_result() const;
+
 private:
 	Ref<PixelpartEffectResource> effectResource;
 	pixelpart::ParticleType* nativeParticleType = nullptr;
 	pixelpart::ParticleEngine* nativeParticleEngine = nullptr;
+
+	pixelpart::ShaderGraph::BuildResult shaderBuildResult;
 };
 }
 

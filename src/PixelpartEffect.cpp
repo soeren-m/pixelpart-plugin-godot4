@@ -27,10 +27,16 @@ void PixelpartEffect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_speed"), &PixelpartEffect::get_speed);
 	ClassDB::bind_method(D_METHOD("set_frame_rate", "r"), &PixelpartEffect::set_frame_rate);
 	ClassDB::bind_method(D_METHOD("get_frame_rate"), &PixelpartEffect::get_frame_rate);
-	ClassDB::bind_method(D_METHOD("set_flip_h", "flip"), &PixelpartEffect::set_flip_h);
-	ClassDB::bind_method(D_METHOD("set_flip_v", "flip"), &PixelpartEffect::set_flip_v);
-	ClassDB::bind_method(D_METHOD("get_flip_h"), &PixelpartEffect::get_flip_h);
-	ClassDB::bind_method(D_METHOD("get_flip_v"), &PixelpartEffect::get_flip_v);
+	ClassDB::bind_method(D_METHOD("set_shading_mode", "mode"), &PixelpartEffect::set_shading_mode);
+	ClassDB::bind_method(D_METHOD("set_diffuse_mode", "mode"), &PixelpartEffect::set_diffuse_mode);
+	ClassDB::bind_method(D_METHOD("set_specular_mode", "mode"), &PixelpartEffect::set_specular_mode);
+	ClassDB::bind_method(D_METHOD("set_normal_mode", "mode"), &PixelpartEffect::set_normal_mode);
+	ClassDB::bind_method(D_METHOD("set_static_normal", "normal"), &PixelpartEffect::set_static_normal);
+	ClassDB::bind_method(D_METHOD("get_shading_mode"), &PixelpartEffect::get_shading_mode);
+	ClassDB::bind_method(D_METHOD("get_diffuse_mode"), &PixelpartEffect::get_diffuse_mode);
+	ClassDB::bind_method(D_METHOD("get_specular_mode"), &PixelpartEffect::get_specular_mode);
+	ClassDB::bind_method(D_METHOD("get_normal_mode"), &PixelpartEffect::get_normal_mode);
+	ClassDB::bind_method(D_METHOD("get_static_normal"), &PixelpartEffect::get_static_normal);
 	ClassDB::bind_method(D_METHOD("get_import_scale"), &PixelpartEffect::get_import_scale);
 	ClassDB::bind_method(D_METHOD("set_effect", "effect_res"), &PixelpartEffect::set_effect);
 	ClassDB::bind_method(D_METHOD("get_effect"), &PixelpartEffect::get_effect);
@@ -48,13 +54,23 @@ void PixelpartEffect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collider_at_index"), &PixelpartEffect::get_collider_at_index);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "effect"), "set_effect", "get_effect");
+
+	ADD_GROUP("Playback", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "play", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "get_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_time", PROPERTY_HINT_RANGE, "0.0,1000.0,0.01"), "set_loop_time", "get_loop_time");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed", PROPERTY_HINT_RANGE, "0.0,100.0,0.01"), "set_speed", "get_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frame_rate", PROPERTY_HINT_RANGE, "1.0,100.0,1.0"), "set_frame_rate", "get_frame_rate");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "get_flip_h");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "get_flip_v");
+
+	ADD_GROUP("Shading", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "shading_mode", PROPERTY_HINT_ENUM, "Unshaded,Per-Pixel,Per-Vertex"), "set_shading_mode", "get_shading_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "diffuse_mode", PROPERTY_HINT_ENUM, "Burley,Lambert,Lambert Wrap,Toon"), "set_diffuse_mode", "get_diffuse_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "specular_mode", PROPERTY_HINT_ENUM, "SchlickGGX,Toon,Disabled"), "set_specular_mode", "get_specular_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "normal_mode", PROPERTY_HINT_ENUM, "Mesh,Static"), "set_normal_mode", "get_normal_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "static_normal"), "set_static_normal", "get_static_normal");
+
+	BIND_ENUM_CONSTANT(PARTICLE_NORMAL_MODE_MESH);
+	BIND_ENUM_CONSTANT(PARTICLE_NORMAL_MODE_STATIC);
 }
 
 PixelpartEffect::PixelpartEffect() {
@@ -122,6 +138,18 @@ void PixelpartEffect::draw() {
 		return;
 	}
 
+	if(shaderDirty) {
+		for(uint32_t i = 0; i < nativeEffect.particleTypes.getCount(); i++) {
+			const pixelpart::ParticleType& particleType = nativeEffect.particleTypes.getByIndex(i);
+			const pixelpart::ShaderGraph::BuildResult& shaderBuildResult = particleTypes[particleType.name]->get_shader_build_result();
+
+			particleMeshInstances[i].shader = PixelpartShaders::get_instance()->get_spatial_shader(shaderBuildResult.code,
+				particleType.blendMode, shadingMode, diffuseMode, specularMode, normalMode);
+		}
+
+		shaderDirty = false;
+	}
+
 	for(uint32_t particleTypeIndex = 0; particleTypeIndex < effect->particleTypes.getCount(); particleTypeIndex++) {
 		draw_particles(effect->particleTypes.getByIndex(particleTypeIndex), particleMeshInstances[particleTypeIndex]);
 	}
@@ -134,10 +162,14 @@ void PixelpartEffect::pause() {
 	playing = false;
 }
 void PixelpartEffect::restart() {
-	particleEngine->restart();
+	if(particleEngine) {
+		particleEngine->restart();
+	}
 }
 void PixelpartEffect::reset() {
-	particleEngine->reset();
+	if(particleEngine) {
+		particleEngine->reset();
+	}
 }
 bool PixelpartEffect::is_playing() const {
 	return playing;
@@ -174,17 +206,39 @@ float PixelpartEffect::get_frame_rate() const {
 	return 1.0f / timeStep;
 }
 
-void PixelpartEffect::set_flip_h(bool flip) {
-	flipH = flip;
+void PixelpartEffect::set_shading_mode(BaseMaterial3D::ShadingMode mode) {
+	shaderDirty |= mode != shadingMode;
+	shadingMode = mode;
 }
-void PixelpartEffect::set_flip_v(bool flip) {
-	flipV = flip;
+void PixelpartEffect::set_diffuse_mode(BaseMaterial3D::DiffuseMode mode) {
+	shaderDirty |= mode != diffuseMode;
+	diffuseMode = mode;
 }
-bool PixelpartEffect::get_flip_h() const {
-	return flipH;
+void PixelpartEffect::set_specular_mode(BaseMaterial3D::SpecularMode mode) {
+	shaderDirty |= mode != specularMode;
+	specularMode = mode;
 }
-bool PixelpartEffect::get_flip_v() const {
-	return flipV;
+void PixelpartEffect::set_normal_mode(ParticleNormalMode mode) {
+	shaderDirty |= mode != normalMode;
+	normalMode = mode;
+}
+void PixelpartEffect::set_static_normal(Vector3 normal) {
+	staticNormal = normal;
+}
+BaseMaterial3D::ShadingMode PixelpartEffect::get_shading_mode() const {
+	return shadingMode;
+}
+BaseMaterial3D::DiffuseMode PixelpartEffect::get_diffuse_mode() const {
+	return diffuseMode;
+}
+BaseMaterial3D::SpecularMode PixelpartEffect::get_specular_mode() const {
+	return specularMode;
+}
+ParticleNormalMode PixelpartEffect::get_normal_mode() const {
+	return normalMode;
+}
+Vector3 PixelpartEffect::get_static_normal() const {
+	return staticNormal;
 }
 
 float PixelpartEffect::get_import_scale() const {
@@ -228,9 +282,12 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> effectRes) {
 			}
 
 			for(pixelpart::ParticleType& particleType : nativeEffect.particleTypes) {
+				pixelpart::ShaderGraph::BuildResult buildResult;
+				particleType.shader.build(buildResult);
+
 				Ref<PixelpartParticleType> particleTypeRef;
 				particleTypeRef.instantiate();
-				particleTypeRef->init(effectResource, &particleType, particleEngine.get());
+				particleTypeRef->init(effectResource, &particleType, particleEngine.get(), buildResult);
 
 				particleTypes[particleType.name] = particleTypeRef;
 			}
@@ -254,27 +311,22 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> effectRes) {
 			RenderingServer* rs = RenderingServer::get_singleton();
 
 			for(const pixelpart::ParticleType& particleType : nativeEffect.particleTypes) {
-				pixelpart::ShaderGraph::BuildResult buildResult;
-				particleType.shader.build(buildResult);
-
 				Ref<ArrayMesh> mesh = new ArrayMesh();
 				Ref<ShaderMaterial> material = new ShaderMaterial();
 
 				RID instance = rs->instance_create();
 				rs->instance_set_base(instance, mesh->get_rid());
 
-				Ref<Shader> shader = shaders->get_shader(buildResult.code,
-					"spatial",
-					(particleType.blendMode == pixelpart::BlendMode::additive) ? "cull_disabled,unshaded,blend_add" :
-					(particleType.blendMode == pixelpart::BlendMode::subtractive) ? "cull_disabled,unshaded,blend_sub" :
-					"cull_disabled,unshaded,blend_mix");
+				const pixelpart::ShaderGraph::BuildResult& shaderBuildResult = particleTypes.at(particleType.name)->get_shader_build_result();
+				Ref<Shader> shader = shaders->get_spatial_shader(shaderBuildResult.code,
+					particleType.blendMode, shadingMode, diffuseMode, specularMode, normalMode);
 
 				particleMeshInstances.push_back(ParticleMeshInstance{
 					instance,
 					mesh,
 					material,
 					shader,
-					buildResult.textureIds
+					shaderBuildResult.textureIds
 				});
 			}
 
@@ -447,14 +499,12 @@ void PixelpartEffect::draw_particles(const pixelpart::ParticleType& particleType
 	const uint32_t particleTypeIndex = effect->particleTypes.findById(particleType.id);
 	const uint32_t numParticles = particleEngine->getNumParticles(particleTypeIndex);
 	const pixelpart::ParticleData& particles = particleEngine->getParticles(particleTypeIndex);
-	const pixelpart::vec3d scale = pixelpart::vec3d(
-		flipH ? -1.0 : +1.0,
-		flipV ? -1.0 : +1.0,
-		1.0) * static_cast<pixelpart::floatd>(get_import_scale());
+	const pixelpart::floatd scale = static_cast<pixelpart::floatd>(get_import_scale());
 
 	meshInstance.material->set_shader(meshInstance.shader);
 	meshInstance.material->set_shader_parameter("EFFECT_TIME", static_cast<float>(particleEngine->getTime()));
 	meshInstance.material->set_shader_parameter("OBJECT_TIME", static_cast<float>(particleEngine->getTime() - particleEmitter.lifetimeStart));
+	meshInstance.material->set_shader_parameter("STATIC_NORMAL", staticNormal);
 	for(std::size_t t = 0; t < meshInstance.textures.size(); t++) {
 		String samplerName = String("TEXTURE") + String::num_int64(t);
 		Ref<ImageTexture> texture = textures.at(meshInstance.textures[t]);
@@ -473,7 +523,7 @@ void PixelpartEffect::draw_particles(const pixelpart::ParticleType& particleType
 		scale);
 }
 
-void PixelpartEffect::add_particle_mesh(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, const pixelpart::vec3d& scale) {
+void PixelpartEffect::add_particle_mesh(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, pixelpart::floatd scale) {
 	switch(particleType.renderer) {
 		case pixelpart::ParticleType::Renderer::sprite:
 			add_particle_sprites(meshInstance, particleType, particles, numParticles, scale);
@@ -484,7 +534,7 @@ void PixelpartEffect::add_particle_mesh(ParticleMeshInstance& meshInstance, cons
 	}
 }
 
-void PixelpartEffect::add_particle_sprites(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, const pixelpart::vec3d& scale) {
+void PixelpartEffect::add_particle_sprites(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, pixelpart::floatd scale) {
 	const pixelpart::floatd packFactor = 10000.0;
 
 	if(numParticles == 0) {
@@ -544,6 +594,7 @@ void PixelpartEffect::add_particle_sprites(ParticleMeshInstance& meshInstance, c
 		particleRenderData = &meshInstance.sortedParticleData;
 	}
 
+	pixelpart::vec3d cameraPosition = fromGd(camera->get_global_transform().origin);
 	pixelpart::vec3d cameraRight = fromGd(camera->get_global_transform().basis.get_column(0));
 	pixelpart::vec3d cameraUp = fromGd(camera->get_global_transform().basis.get_column(1));
 
@@ -551,6 +602,7 @@ void PixelpartEffect::add_particle_sprites(ParticleMeshInstance& meshInstance, c
 
 	PackedInt32Array indexArray;
 	PackedVector3Array vertexArray;
+	PackedVector3Array normalArray;
 	PackedVector2Array uvArray;
 	PackedVector2Array uv2Array;
 	PackedColorArray colorArray;
@@ -558,6 +610,7 @@ void PixelpartEffect::add_particle_sprites(ParticleMeshInstance& meshInstance, c
 	PackedFloat32Array custom1Array;
 	indexArray.resize(numParticles * 6);
 	vertexArray.resize(numParticles * 4);
+	normalArray.resize(numParticles * 4);
 	uvArray.resize(numParticles * 4);
 	uv2Array.resize(numParticles * 4);
 	colorArray.resize(numParticles * 4);
@@ -566,6 +619,7 @@ void PixelpartEffect::add_particle_sprites(ParticleMeshInstance& meshInstance, c
 
 	int32_t* indices = indexArray.ptrw();
 	Vector3* positions = vertexArray.ptrw();
+	Vector3* normals = normalArray.ptrw();
 	Color* colors = colorArray.ptrw();
 	float* uvs = reinterpret_cast<float*>(uvArray.ptrw());
 	float* uvs2 = reinterpret_cast<float*>(uv2Array.ptrw());
@@ -584,58 +638,66 @@ void PixelpartEffect::add_particle_sprites(ParticleMeshInstance& meshInstance, c
 	for(uint32_t p = 0; p < numParticles; p++) {
 		pixelpart::mat3d rotationMatrix = rotation3d(particleRenderData->rotation[p]);
 		pixelpart::vec3d pivot = particleType.pivot * particleRenderData->size[p];
-		pixelpart::vec3d worldPosition[4];
-		pixelpart::vec3d localPosition[4] = {
+		pixelpart::vec3d position[4] = {
 			rotationMatrix * (pixelpart::vec3d(-0.5, -0.5, 0.0) * particleRenderData->size[p] - pivot) + pivot,
-			rotationMatrix * (pixelpart::vec3d(+0.5, -0.5, 0.0) * particleRenderData->size[p] - pivot) + pivot,
+			rotationMatrix * (pixelpart::vec3d(-0.5, +0.5, 0.0) * particleRenderData->size[p] - pivot) + pivot,
 			rotationMatrix * (pixelpart::vec3d(+0.5, +0.5, 0.0) * particleRenderData->size[p] - pivot) + pivot,
-			rotationMatrix * (pixelpart::vec3d(-0.5, +0.5, 0.0) * particleRenderData->size[p] - pivot) + pivot };
+			rotationMatrix * (pixelpart::vec3d(+0.5, -0.5, 0.0) * particleRenderData->size[p] - pivot) + pivot };
+		pixelpart::vec3d normal = rotationMatrix * pixelpart::vec3d(0.0, 0.0, 1.0);
 
 		switch(particleType.alignmentMode) {
 			case pixelpart::AlignmentMode::camera: {
-				worldPosition[0] = particleRenderData->globalPosition[p] + cameraRight * localPosition[0].x + cameraUp * localPosition[0].y;
-				worldPosition[1] = particleRenderData->globalPosition[p] + cameraRight * localPosition[1].x + cameraUp * localPosition[1].y;
-				worldPosition[2] = particleRenderData->globalPosition[p] + cameraRight * localPosition[2].x + cameraUp * localPosition[2].y;
-				worldPosition[3] = particleRenderData->globalPosition[p] + cameraRight * localPosition[3].x + cameraUp * localPosition[3].y;
+				position[0] = particleRenderData->globalPosition[p] + cameraRight * position[0].x + cameraUp * position[0].y;
+				position[1] = particleRenderData->globalPosition[p] + cameraRight * position[1].x + cameraUp * position[1].y;
+				position[2] = particleRenderData->globalPosition[p] + cameraRight * position[2].x + cameraUp * position[2].y;
+				position[3] = particleRenderData->globalPosition[p] + cameraRight * position[3].x + cameraUp * position[3].y;
+				normal = cameraPosition - particleRenderData->globalPosition[p];
 				break;
 			}
 			case pixelpart::AlignmentMode::motion: {
 				pixelpart::mat3d lookAtMatrix = lookAt(particleRenderData->velocity[p]);
-				worldPosition[0] = particleRenderData->globalPosition[p] + lookAtMatrix * localPosition[0];
-				worldPosition[1] = particleRenderData->globalPosition[p] + lookAtMatrix * localPosition[1];
-				worldPosition[2] = particleRenderData->globalPosition[p] + lookAtMatrix * localPosition[2];
-				worldPosition[3] = particleRenderData->globalPosition[p] + lookAtMatrix * localPosition[3];
+				position[0] = particleRenderData->globalPosition[p] + lookAtMatrix * position[0];
+				position[1] = particleRenderData->globalPosition[p] + lookAtMatrix * position[1];
+				position[2] = particleRenderData->globalPosition[p] + lookAtMatrix * position[2];
+				position[3] = particleRenderData->globalPosition[p] + lookAtMatrix * position[3];
+				normal = lookAtMatrix * normal;
 				break;
 			}
 			case pixelpart::AlignmentMode::emission: {
 				pixelpart::mat3d lookAtMatrix = lookAt(particleEmitter.position.get(alpha) - particleRenderData->globalPosition[p]);
-				worldPosition[0] = particleRenderData->globalPosition[p] + lookAtMatrix * localPosition[0];
-				worldPosition[1] = particleRenderData->globalPosition[p] + lookAtMatrix * localPosition[1];
-				worldPosition[2] = particleRenderData->globalPosition[p] + lookAtMatrix * localPosition[2];
-				worldPosition[3] = particleRenderData->globalPosition[p] + lookAtMatrix * localPosition[3];
+				position[0] = particleRenderData->globalPosition[p] + lookAtMatrix * position[0];
+				position[1] = particleRenderData->globalPosition[p] + lookAtMatrix * position[1];
+				position[2] = particleRenderData->globalPosition[p] + lookAtMatrix * position[2];
+				position[3] = particleRenderData->globalPosition[p] + lookAtMatrix * position[3];
+				normal = lookAtMatrix * normal;
 				break;
 			}
 			case pixelpart::AlignmentMode::emitter: {
 				pixelpart::mat3d lookAtMatrix = rotation3d(particleEmitter.orientation.get(alpha));
-				worldPosition[0] = particleRenderData->globalPosition[p] + lookAtMatrix * localPosition[0];
-				worldPosition[1] = particleRenderData->globalPosition[p] + lookAtMatrix * localPosition[1];
-				worldPosition[2] = particleRenderData->globalPosition[p] + lookAtMatrix * localPosition[2];
-				worldPosition[3] = particleRenderData->globalPosition[p] + lookAtMatrix * localPosition[3];
+				position[0] = particleRenderData->globalPosition[p] + lookAtMatrix * position[0];
+				position[1] = particleRenderData->globalPosition[p] + lookAtMatrix * position[1];
+				position[2] = particleRenderData->globalPosition[p] + lookAtMatrix * position[2];
+				position[3] = particleRenderData->globalPosition[p] + lookAtMatrix * position[3];
+				normal = lookAtMatrix * normal;
 				break;
 			}
 			default: {
-				worldPosition[0] = particleRenderData->globalPosition[p] + localPosition[0];
-				worldPosition[1] = particleRenderData->globalPosition[p] + localPosition[1];
-				worldPosition[2] = particleRenderData->globalPosition[p] + localPosition[2];
-				worldPosition[3] = particleRenderData->globalPosition[p] + localPosition[3];
+				position[0] = particleRenderData->globalPosition[p] + position[0];
+				position[1] = particleRenderData->globalPosition[p] + position[1];
+				position[2] = particleRenderData->globalPosition[p] + position[2];
+				position[3] = particleRenderData->globalPosition[p] + position[3];
 				break;
 			}
 		}
 
-		positions[p * 4 + 0] = toGd(worldPosition[0] * scale);
-		positions[p * 4 + 1] = toGd(worldPosition[1] * scale);
-		positions[p * 4 + 2] = toGd(worldPosition[2] * scale);
-		positions[p * 4 + 3] = toGd(worldPosition[3] * scale);
+		positions[p * 4 + 0] = toGd(position[0] * scale);
+		positions[p * 4 + 1] = toGd(position[1] * scale);
+		positions[p * 4 + 2] = toGd(position[2] * scale);
+		positions[p * 4 + 3] = toGd(position[3] * scale);
+		normals[p * 4 + 0] = toGd(normal);
+		normals[p * 4 + 1] = toGd(normal);
+		normals[p * 4 + 2] = toGd(normal);
+		normals[p * 4 + 3] = toGd(normal);
 	}
 
 	for(uint32_t p = 0; p < numParticles; p++) {
@@ -708,6 +770,7 @@ void PixelpartEffect::add_particle_sprites(ParticleMeshInstance& meshInstance, c
 	Array meshArray;
 	meshArray.resize(Mesh::ARRAY_MAX);
 	meshArray[Mesh::ARRAY_VERTEX] = vertexArray;
+	meshArray[Mesh::ARRAY_NORMAL] = normalArray;
 	meshArray[Mesh::ARRAY_COLOR] = colorArray;
 	meshArray[Mesh::ARRAY_TEX_UV] = uvArray;
 	meshArray[Mesh::ARRAY_TEX_UV2] = uv2Array;
@@ -716,7 +779,7 @@ void PixelpartEffect::add_particle_sprites(ParticleMeshInstance& meshInstance, c
 	meshArray[Mesh::ARRAY_INDEX] = indexArray;
 
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, meshArray, Array(), Dictionary(),
-		Mesh::ARRAY_FORMAT_VERTEX | Mesh::ARRAY_FORMAT_COLOR |
+		Mesh::ARRAY_FORMAT_VERTEX | Mesh::ARRAY_FORMAT_NORMAL | Mesh::ARRAY_FORMAT_COLOR |
 		Mesh::ARRAY_FORMAT_TEX_UV | Mesh::ARRAY_FORMAT_TEX_UV2 |
 		Mesh::ARRAY_FORMAT_CUSTOM0 | Mesh::ARRAY_FORMAT_CUSTOM1 |
 		Mesh::ARRAY_FORMAT_INDEX |
@@ -725,7 +788,7 @@ void PixelpartEffect::add_particle_sprites(ParticleMeshInstance& meshInstance, c
 	mesh->surface_set_material(0, meshInstance.material);
 }
 
-void PixelpartEffect::add_particle_trails(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, const pixelpart::vec3d& scale) {
+void PixelpartEffect::add_particle_trails(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, pixelpart::floatd scale) {
 	const pixelpart::floatd packFactor = 10000.0;
 
 	if(numParticles < 2) {
@@ -826,6 +889,7 @@ void PixelpartEffect::add_particle_trails(ParticleMeshInstance& meshInstance, co
 				trail->velocity = velocityCurve.getCache();
 				trail->force = forceCurve.getCache();
 				trail->direction.resize(particleType.trailRendererSettings.numTrailSegments);
+				trail->directionToEdge.resize(particleType.trailRendererSettings.numTrailSegments);
 				trail->index.resize(particleType.trailRendererSettings.numTrailSegments);
 				trail->life = lifeCurve.getCache();
 			}
@@ -847,6 +911,7 @@ void PixelpartEffect::add_particle_trails(ParticleMeshInstance& meshInstance, co
 				trail->velocity.resize(trail->numParticles);
 				trail->force.resize(trail->numParticles);
 				trail->direction.resize(trail->numParticles);
+				trail->directionToEdge.resize(trail->numParticles);
 				trail->index.resize(trail->numParticles);
 				trail->life.resize(trail->numParticles);
 			}
@@ -878,6 +943,7 @@ void PixelpartEffect::add_particle_trails(ParticleMeshInstance& meshInstance, co
 
 	PackedInt32Array indexArray;
 	PackedVector3Array vertexArray;
+	PackedVector3Array normalArray;
 	PackedVector2Array uvArray;
 	PackedVector2Array uv2Array;
 	PackedColorArray colorArray;
@@ -885,6 +951,7 @@ void PixelpartEffect::add_particle_trails(ParticleMeshInstance& meshInstance, co
 	PackedFloat32Array custom1Array;
 	indexArray.resize(numTrailParticles * 6);
 	vertexArray.resize(numTrailParticles * 4);
+	normalArray.resize(numTrailParticles * 4);
 	uvArray.resize(numTrailParticles * 4);
 	uv2Array.resize(numTrailParticles * 4);
 	colorArray.resize(numTrailParticles * 4);
@@ -894,6 +961,7 @@ void PixelpartEffect::add_particle_trails(ParticleMeshInstance& meshInstance, co
 	int64_t vertexIndex = 0;
 	int32_t* indices = indexArray.ptrw();
 	Vector3* positions = vertexArray.ptrw();
+	Vector3* normals = normalArray.ptrw();
 	Color* colors = colorArray.ptrw();
 	Vector2* uvs = uvArray.ptrw();
 	Vector2* uvs2 = uv2Array.ptrw();
@@ -921,19 +989,19 @@ void PixelpartEffect::add_particle_trails(ParticleMeshInstance& meshInstance, co
 		trail.direction[last] = trail.direction[last - 1];
 		trail.index[last] = trail.length;
 
-		trail.direction[0] = pixelpart::vec3d(-trail.direction[0].y, trail.direction[0].x, trail.direction[0].z);
+		trail.directionToEdge[0] = pixelpart::vec3d(-trail.direction[0].y, trail.direction[0].x, trail.direction[0].z);
 
 		for(std::size_t i = last; i > 0; i--) {
 			pixelpart::vec3d h = trail.direction[i] - trail.direction[i - 1];
 			pixelpart::floatd l = glm::length(h);
 			if(l < 0.0001) {
-				trail.direction[i] = pixelpart::vec3d(
+				trail.directionToEdge[i] = pixelpart::vec3d(
 					-trail.direction[i].y,
 					trail.direction[i].x,
 					trail.direction[i].z);
 			}
 			else {
-				trail.direction[i] = (glm::dot(glm::cross(trail.direction[i], pixelpart::vec3d(0.0, 0.0, 1.0)), h / l) < 0.0)
+				trail.directionToEdge[i] = (glm::dot(glm::cross(trail.direction[i], pixelpart::vec3d(0.0, 0.0, 1.0)), h / l) < 0.0)
 					? +h / l
 					: -h / l;
 			}
@@ -944,12 +1012,13 @@ void PixelpartEffect::add_particle_trails(ParticleMeshInstance& meshInstance, co
 		}
 
 		for(uint32_t p = 0; p < trail.numParticles - 1; p++) {
-			pixelpart::vec3d n0 = trail.direction[p] * std::max(trail.size[p].x, trail.size[p].y) * 0.5;
-			pixelpart::vec3d n1 = trail.direction[p + 1] * std::max(trail.size[p + 1].x, trail.size[p + 1].y) * 0.5;
+			pixelpart::vec3d n0 = trail.directionToEdge[p] * std::max(trail.size[p].x, trail.size[p].y) * 0.5;
+			pixelpart::vec3d n1 = trail.directionToEdge[p + 1] * std::max(trail.size[p + 1].x, trail.size[p + 1].y) * 0.5;
 			pixelpart::vec3d p0 = (trail.position[p] + n0) * scale;
 			pixelpart::vec3d p1 = (trail.position[p] - n0) * scale;
 			pixelpart::vec3d p2 = (trail.position[p + 1] + n1) * scale;
 			pixelpart::vec3d p3 = (trail.position[p + 1] - n1) * scale;
+			pixelpart::vec3d normal = glm::cross(trail.direction[p], trail.directionToEdge[p]);
 			pixelpart::vec2d uv0, uv1, uv2, uv3;
 
 			switch(particleType.trailRendererSettings.textureRotation) {
@@ -995,6 +1064,11 @@ void PixelpartEffect::add_particle_trails(ParticleMeshInstance& meshInstance, co
 			positions[vertexIndex * 4 + 1] = toGd(p1);
 			positions[vertexIndex * 4 + 2] = toGd(p2);
 			positions[vertexIndex * 4 + 3] = toGd(p3);
+
+			normals[vertexIndex * 4 + 0] = toGd(normal);
+			normals[vertexIndex * 4 + 1] = toGd(normal);
+			normals[vertexIndex * 4 + 2] = toGd(normal);
+			normals[vertexIndex * 4 + 3] = toGd(normal);
 
 			colors[vertexIndex * 4 + 0] = toGd(trail.color[p]);
 			colors[vertexIndex * 4 + 1] = toGd(trail.color[p]);
@@ -1052,6 +1126,7 @@ void PixelpartEffect::add_particle_trails(ParticleMeshInstance& meshInstance, co
 	Array meshArray;
 	meshArray.resize(Mesh::ARRAY_MAX);
 	meshArray[Mesh::ARRAY_VERTEX] = vertexArray;
+	meshArray[Mesh::ARRAY_NORMAL] = normalArray;
 	meshArray[Mesh::ARRAY_COLOR] = colorArray;
 	meshArray[Mesh::ARRAY_TEX_UV] = uvArray;
 	meshArray[Mesh::ARRAY_TEX_UV2] = uv2Array;
@@ -1060,7 +1135,7 @@ void PixelpartEffect::add_particle_trails(ParticleMeshInstance& meshInstance, co
 	meshArray[Mesh::ARRAY_INDEX] = indexArray;
 
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, meshArray, Array(), Dictionary(),
-		Mesh::ARRAY_FORMAT_VERTEX | Mesh::ARRAY_FORMAT_COLOR |
+		Mesh::ARRAY_FORMAT_VERTEX | Mesh::ARRAY_FORMAT_NORMAL | Mesh::ARRAY_FORMAT_COLOR |
 		Mesh::ARRAY_FORMAT_TEX_UV | Mesh::ARRAY_FORMAT_TEX_UV2 |
 		Mesh::ARRAY_FORMAT_CUSTOM0 | Mesh::ARRAY_FORMAT_CUSTOM1 |
 		Mesh::ARRAY_FORMAT_INDEX |

@@ -1,5 +1,4 @@
 #include "PixelpartEffect2D.h"
-#include "PixelpartShaders.h"
 #include "PixelpartUtil.h"
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/engine.hpp>
@@ -28,6 +27,8 @@ void PixelpartEffect2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flip_v", "flip"), &PixelpartEffect2D::set_flip_v);
 	ClassDB::bind_method(D_METHOD("get_flip_h"), &PixelpartEffect2D::get_flip_h);
 	ClassDB::bind_method(D_METHOD("get_flip_v"), &PixelpartEffect2D::get_flip_v);
+	ClassDB::bind_method(D_METHOD("set_light_mode", "mode"), &PixelpartEffect2D::set_light_mode);
+	ClassDB::bind_method(D_METHOD("get_light_mode"), &PixelpartEffect2D::get_light_mode);
 	ClassDB::bind_method(D_METHOD("get_import_scale"), &PixelpartEffect2D::get_import_scale);
 	ClassDB::bind_method(D_METHOD("set_effect", "effect_res"), &PixelpartEffect2D::set_effect);
 	ClassDB::bind_method(D_METHOD("get_effect"), &PixelpartEffect2D::get_effect);
@@ -45,11 +46,16 @@ void PixelpartEffect2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collider_at_index"), &PixelpartEffect2D::get_collider_at_index);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "effect"), "set_effect", "get_effect");
+
+	ADD_GROUP("Playback", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "play", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "get_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_time", PROPERTY_HINT_RANGE, "0.0,1000.0,0.01"), "set_loop_time", "get_loop_time");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed", PROPERTY_HINT_RANGE, "0.0,100.0,0.01"), "set_speed", "get_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frame_rate", PROPERTY_HINT_RANGE, "1.0,100.0,1.0"), "set_frame_rate", "get_frame_rate");
+
+	ADD_GROUP("Shading", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mode", PROPERTY_HINT_ENUM, "Normal,Unshaded,Light-Only"), "set_light_mode", "get_light_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "get_flip_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "get_flip_v");
 }
@@ -114,6 +120,18 @@ void PixelpartEffect2D::draw() {
 	const pixelpart::Effect* effect = particleEngine->getEffect();
 	if(!effect) {
 		return;
+	}
+
+	if(shaderDirty) {
+		for(uint32_t i = 0; i < nativeEffect.particleTypes.getCount(); i++) {
+			const pixelpart::ParticleType& particleType = nativeEffect.particleTypes.getByIndex(i);
+			const pixelpart::ShaderGraph::BuildResult& shaderBuildResult = particleTypes[particleType.name]->get_shader_build_result();
+
+			particleMeshInstances[i].shader = PixelpartShaders::get_instance()->get_canvas_shader(shaderBuildResult.code,
+				particleType.blendMode, lightMode);
+		}
+
+		shaderDirty = false;
 	}
 
 	std::vector<uint32_t> particleTypeIndicesSortedByLayer = effect->particleTypes.getSortedIndices(
@@ -190,6 +208,14 @@ bool PixelpartEffect2D::get_flip_v() const {
 	return flipV;
 }
 
+void PixelpartEffect2D::set_light_mode(CanvasItemMaterial::LightMode mode) {
+	shaderDirty |= mode != lightMode;
+	lightMode = mode;
+}
+CanvasItemMaterial::LightMode PixelpartEffect2D::get_light_mode() const {
+	return lightMode;
+}
+
 float PixelpartEffect2D::get_import_scale() const {
 	if(!effectResource.is_valid()) {
 		return 1.0f;
@@ -232,9 +258,12 @@ void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> effectRes) {
 			}
 
 			for(pixelpart::ParticleType& particleType : nativeEffect.particleTypes) {
+				pixelpart::ShaderGraph::BuildResult buildResult;
+				particleType.shader.build(buildResult);
+
 				Ref<PixelpartParticleType> particleTypeRef;
 				particleTypeRef.instantiate();
-				particleTypeRef->init(effectResource, &particleType, particleEngine.get());
+				particleTypeRef->init(effectResource, &particleType, particleEngine.get(), buildResult);
 
 				particleTypes[particleType.name] = particleTypeRef;
 			}
@@ -256,20 +285,15 @@ void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> effectRes) {
 			}
 
 			for(const pixelpart::ParticleType& particleType : nativeEffect.particleTypes) {
-				pixelpart::ShaderGraph::BuildResult buildResult;
-				particleType.shader.build(buildResult);
-
-				Ref<Shader> shader = shaders->get_shader(buildResult.code,
-					"canvas_item",
-					(particleType.blendMode == pixelpart::BlendMode::additive) ? "blend_add" :
-					(particleType.blendMode == pixelpart::BlendMode::subtractive) ? "blend_sub" :
-					"blend_mix");
+				const pixelpart::ShaderGraph::BuildResult& shaderBuildResult = particleTypes.at(particleType.name)->get_shader_build_result();
+				Ref<Shader> shader = shaders->get_canvas_shader(shaderBuildResult.code,
+					particleType.blendMode, lightMode);
 
 				particleMeshInstances.push_back(ParticleMeshInstance{
 					rs->canvas_item_create(),
 					rs->material_create(),
-					shader->get_rid(),
-					buildResult.textureIds
+					shader,
+					shaderBuildResult.textureIds
 				});
 			}
 
@@ -446,7 +470,7 @@ void PixelpartEffect2D::draw_particles(const pixelpart::ParticleType& particleTy
 	const pixelpart::floatd scaleX = static_cast<pixelpart::floatd>(get_import_scale()) * (flipH ? -1.0 : +1.0);
 	const pixelpart::floatd scaleY = static_cast<pixelpart::floatd>(get_import_scale()) * (flipV ? -1.0 : +1.0);
 
-	rs->material_set_shader(meshInstance.material, meshInstance.shader);
+	rs->material_set_shader(meshInstance.material, meshInstance.shader->get_rid());
 	rs->material_set_param(meshInstance.material, "EFFECT_TIME", static_cast<float>(particleEngine->getTime()));
 	rs->material_set_param(meshInstance.material, "OBJECT_TIME", static_cast<float>(particleEngine->getTime() - particleEmitter.lifetimeStart));
 	for(std::size_t t = 0; t < meshInstance.textures.size(); t++) {

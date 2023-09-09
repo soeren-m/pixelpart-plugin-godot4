@@ -52,10 +52,16 @@ public:
 	void set_frame_rate(float r);
 	float get_frame_rate() const;
 
-	void set_flip_h(bool flip);
-	void set_flip_v(bool flip);
-	bool get_flip_h() const;
-	bool get_flip_v() const;
+	void set_shading_mode(BaseMaterial3D::ShadingMode mode);
+	void set_diffuse_mode(BaseMaterial3D::DiffuseMode mode);
+	void set_specular_mode(BaseMaterial3D::SpecularMode mode);
+	void set_normal_mode(ParticleNormalMode mode);
+	void set_static_normal(Vector3 normal);
+	BaseMaterial3D::ShadingMode get_shading_mode() const;
+	BaseMaterial3D::DiffuseMode get_diffuse_mode() const;
+	BaseMaterial3D::SpecularMode get_specular_mode() const;
+	ParticleNormalMode get_normal_mode() const;
+	Vector3 get_static_normal() const;
 
 	float get_import_scale() const;
 
@@ -87,6 +93,7 @@ private:
 			std::vector<pixelpart::vec3d> velocity;
 			std::vector<pixelpart::vec3d> force;
 			std::vector<pixelpart::vec3d> direction;
+			std::vector<pixelpart::vec3d> directionToEdge;
 			std::vector<pixelpart::floatd> index;
 			std::vector<pixelpart::floatd> life;
 		};
@@ -106,9 +113,9 @@ private:
 
 	void draw_particles(const pixelpart::ParticleType& particleType, ParticleMeshInstance& meshInstance);
 
-	void add_particle_mesh(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, const pixelpart::vec3d& scale);
-	void add_particle_sprites(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, const pixelpart::vec3d& scale);
-	void add_particle_trails(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, const pixelpart::vec3d& scale);
+	void add_particle_mesh(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, pixelpart::floatd scale);
+	void add_particle_sprites(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, pixelpart::floatd scale);
+	void add_particle_trails(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, pixelpart::floatd scale);
 
 	pixelpart::mat3d rotation3d(const pixelpart::vec3d& angle);
 	pixelpart::mat3d lookAt(const pixelpart::vec3d& direction);
@@ -130,12 +137,18 @@ private:
 	float speed = 1.0f;
 	float timeStep = 1.0f / 60.0f;
 
-	bool flipH = false;
-	bool flipV = false;
+	BaseMaterial3D::ShadingMode shadingMode = BaseMaterial3D::SHADING_MODE_UNSHADED;
+	BaseMaterial3D::DiffuseMode diffuseMode = BaseMaterial3D::DIFFUSE_BURLEY;
+	BaseMaterial3D::SpecularMode specularMode = BaseMaterial3D::SPECULAR_SCHLICK_GGX;
+	ParticleNormalMode normalMode = PARTICLE_NORMAL_MODE_MESH;
+	Vector3 staticNormal = Vector3(0.0f, 1.0f, 0.0f);
 
 	std::vector<ParticleMeshInstance> particleMeshInstances;
 	std::unordered_map<std::string, Ref<ImageTexture>> textures;
+	bool shaderDirty = false;
 };
 }
+
+VARIANT_ENUM_CAST(ParticleNormalMode);
 
 #endif
