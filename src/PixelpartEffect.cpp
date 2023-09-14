@@ -1,6 +1,7 @@
 #include "PixelpartEffect.h"
 #include "PixelpartSortUtil.h"
 #include "PixelpartUtil.h"
+#include "ParticleSolverCPU.h"
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
@@ -81,7 +82,7 @@ PixelpartEffect::PixelpartEffect() {
 		particleCapacity = static_cast<uint32_t>(std::max((int)settings->get_setting("pixelpart/particle_capacity"), 1));
 	}
 
-	particleEngine = std::make_unique<pixelpart::ParticleEngine>(nullptr, particleCapacity);
+	particleEngine = pixelpart::ParticleEngine::createUnique<pixelpart::ParticleSolverCPU>(nullptr, particleCapacity);
 }
 PixelpartEffect::~PixelpartEffect() {
 	RenderingServer* rs = RenderingServer::get_singleton();
