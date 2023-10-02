@@ -80,11 +80,10 @@ PixelpartParticleType::PixelpartParticleType() {
 
 }
 
-void PixelpartParticleType::init(Ref<PixelpartEffectResource> resource, pixelpart::ParticleType* particleType, pixelpart::ParticleEngine* engine, const pixelpart::ShaderGraph::BuildResult& shaderGraphResult) {
+void PixelpartParticleType::init(Ref<PixelpartEffectResource> resource, pixelpart::ParticleType* particleType, pixelpart::ParticleEngine* engine) {
 	effectResource = resource;
 	nativeParticleType = particleType;
 	nativeParticleEngine = engine;
-	shaderBuildResult = shaderGraphResult;
 }
 
 int PixelpartParticleType::get_id() const {
@@ -513,9 +512,5 @@ void PixelpartParticleType::spawn_particles(int count) {
 	if(nativeParticleType && nativeParticleEngine && count > 0) {
 		nativeParticleEngine->spawnParticles(nativeParticleType->id, static_cast<uint32_t>(count));
 	}
-}
-
-const pixelpart::ShaderGraph::BuildResult& PixelpartParticleType::get_shader_build_result() const {
-	return shaderBuildResult;
 }
 }

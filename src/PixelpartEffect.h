@@ -6,7 +6,7 @@
 #include "PixelpartParticleType.h"
 #include "PixelpartForceField.h"
 #include "PixelpartCollider.h"
-#include "PixelpartShaders.h"
+#include "PixelpartParticleMaterial3D.h"
 #include "ParticleEngine.h"
 #include <godot_cpp/core/binder_common.hpp>
 #include <godot_cpp/variant/transform3d.hpp>
@@ -52,16 +52,8 @@ public:
 	void set_frame_rate(float r);
 	float get_frame_rate() const;
 
-	void set_shading_mode(BaseMaterial3D::ShadingMode mode);
-	void set_diffuse_mode(BaseMaterial3D::DiffuseMode mode);
-	void set_specular_mode(BaseMaterial3D::SpecularMode mode);
-	void set_normal_mode(ParticleNormalMode mode);
-	void set_static_normal(Vector3 normal);
-	BaseMaterial3D::ShadingMode get_shading_mode() const;
-	BaseMaterial3D::DiffuseMode get_diffuse_mode() const;
-	BaseMaterial3D::SpecularMode get_specular_mode() const;
-	ParticleNormalMode get_normal_mode() const;
-	Vector3 get_static_normal() const;
+	void set_particle_materials(Array materials);
+	Array get_particle_materials() const;
 
 	float get_import_scale() const;
 
@@ -82,7 +74,8 @@ public:
 	Ref<PixelpartCollider> get_collider_at_index(int index) const;
 
 private:
-	struct ParticleMeshInstance {
+	class ParticleMeshInstance {
+	public:
 		struct ParticleTrail {
 			uint32_t numParticles = 0;
 			pixelpart::floatd length = 0.0;
@@ -98,12 +91,34 @@ private:
 			std::vector<pixelpart::floatd> life;
 		};
 
-		RID instance;
-		Ref<ArrayMesh> mesh;
-		Ref<ShaderMaterial> material;
-		Ref<Shader> shader;
+		ParticleMeshInstance(const pixelpart::ParticleType& particleType, Ref<PixelpartParticleMaterial3D> particleMaterial);
+		ParticleMeshInstance(const ParticleMeshInstance&) = delete;
+		~ParticleMeshInstance();
 
-		std::vector<std::string> textures;
+		ParticleMeshInstance& operator=(const ParticleMeshInstance&) = delete;
+
+		void update_shader(const pixelpart::ParticleType& particleType, Ref<PixelpartParticleMaterial3D> particleMaterial);
+
+		Ref<Shader> get_shader() const;
+		Ref<ShaderMaterial> get_shader_material() const;
+		Ref<ArrayMesh> get_mesh() const;
+		RID get_instance_rid() const;
+
+		std::string get_texture_id(std::size_t index) const;
+		std::size_t get_texture_count() const;
+
+		pixelpart::ParticleData& get_sorted_particle_data();
+		std::vector<uint32_t>& get_sort_keys();
+
+		std::unordered_map<uint32_t, ParticleTrail>& get_trails();
+
+	private:
+		RID instanceRID;
+		Ref<ArrayMesh> mesh;
+		Ref<Shader> shader;
+		Ref<ShaderMaterial> shaderMaterial;
+
+		pixelpart::ShaderGraph::BuildResult shaderBuildResult;
 
 		pixelpart::ParticleData sortedParticleData;
 		std::vector<uint32_t> sortKeys;
@@ -111,7 +126,7 @@ private:
 		std::unordered_map<uint32_t, ParticleTrail> trails;
 	};
 
-	void draw_particles(const pixelpart::ParticleType& particleType, ParticleMeshInstance& meshInstance);
+	void draw_particles(uint32_t particleTypeIndex);
 
 	void add_particle_mesh(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, pixelpart::floatd scale);
 	void add_particle_sprites(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, pixelpart::floatd scale);
@@ -137,18 +152,11 @@ private:
 	float speed = 1.0f;
 	float timeStep = 1.0f / 60.0f;
 
-	BaseMaterial3D::ShadingMode shadingMode = BaseMaterial3D::SHADING_MODE_UNSHADED;
-	BaseMaterial3D::DiffuseMode diffuseMode = BaseMaterial3D::DIFFUSE_BURLEY;
-	BaseMaterial3D::SpecularMode specularMode = BaseMaterial3D::SPECULAR_SCHLICK_GGX;
-	ParticleNormalMode normalMode = PARTICLE_NORMAL_MODE_MESH;
-	Vector3 staticNormal = Vector3(0.0f, 1.0f, 0.0f);
+	Array particleMaterials;
 
-	std::vector<ParticleMeshInstance> particleMeshInstances;
+	std::vector<std::unique_ptr<ParticleMeshInstance>> particleMeshInstances;
 	std::unordered_map<std::string, Ref<ImageTexture>> textures;
-	bool shaderDirty = false;
 };
 }
-
-VARIANT_ENUM_CAST(ParticleNormalMode);
 
 #endif

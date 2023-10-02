@@ -1,11 +1,31 @@
-[gd_scene load_steps=3 format=3 uid="uid://bt7ogxf0ux7r6"]
+[gd_scene load_steps=6 format=3 uid="uid://bt7ogxf0ux7r6"]
 
 [ext_resource type="Script" path="res://EffectScript2D.gd" id="1_udfml"]
-[ext_resource type="PixelpartEffectResource" uid="uid://c325ufunoewvq" path="res://effects/SampleEffect2D.ppfx" id="2_web62"]
+[ext_resource type="PixelpartEffectResource" uid="uid://c325ufunoewvq" path="res://effects/SampleEffect2D.ppfx" id="2_pru5j"]
+
+[sub_resource type="PixelpartParticleMaterial2D" id="PixelpartParticleMaterial2D_kveqp"]
+
+[sub_resource type="Gradient" id="Gradient_572vs"]
+colors = PackedColorArray(0, 0, 0, 0, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_drids"]
+gradient = SubResource("Gradient_572vs")
+fill_from = Vector2(0.534188, 0)
+fill_to = Vector2(0.517094, 1)
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_udfml")
 
 [node name="SampleEffect" type="PixelpartEffect2D" parent="."]
-effect = ExtResource("2_web62")
-position = Vector2(200, 200)
+effect = ExtResource("2_pru5j")
+particle_materials = [SubResource("PixelpartParticleMaterial2D_kveqp")]
+position = Vector2(400, 400)
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+position = Vector2(200, 350)
+scale = Vector2(1.42, 1)
+color = Color(1, 0.486275, 0.227451, 1)
+blend_mode = 2
+texture = SubResource("GradientTexture2D_drids")
+texture_scale = 10.0
+height = 50.0

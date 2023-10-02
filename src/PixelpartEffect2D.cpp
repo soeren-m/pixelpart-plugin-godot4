@@ -9,7 +9,6 @@
 
 namespace godot {
 void PixelpartEffect2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("draw"), &PixelpartEffect2D::draw);
 	ClassDB::bind_method(D_METHOD("play", "p"), &PixelpartEffect2D::play);
 	ClassDB::bind_method(D_METHOD("pause"), &PixelpartEffect2D::pause);
 	ClassDB::bind_method(D_METHOD("restart"), &PixelpartEffect2D::restart);
@@ -28,8 +27,8 @@ void PixelpartEffect2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flip_v", "flip"), &PixelpartEffect2D::set_flip_v);
 	ClassDB::bind_method(D_METHOD("get_flip_h"), &PixelpartEffect2D::get_flip_h);
 	ClassDB::bind_method(D_METHOD("get_flip_v"), &PixelpartEffect2D::get_flip_v);
-	ClassDB::bind_method(D_METHOD("set_light_mode", "mode"), &PixelpartEffect2D::set_light_mode);
-	ClassDB::bind_method(D_METHOD("get_light_mode"), &PixelpartEffect2D::get_light_mode);
+	ClassDB::bind_method(D_METHOD("set_particle_materials", "materials"), &PixelpartEffect2D::set_particle_materials);
+	ClassDB::bind_method(D_METHOD("get_particle_materials"), &PixelpartEffect2D::get_particle_materials);
 	ClassDB::bind_method(D_METHOD("get_import_scale"), &PixelpartEffect2D::get_import_scale);
 	ClassDB::bind_method(D_METHOD("set_effect", "effect_res"), &PixelpartEffect2D::set_effect);
 	ClassDB::bind_method(D_METHOD("get_effect"), &PixelpartEffect2D::get_effect);
@@ -46,7 +45,7 @@ void PixelpartEffect2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_force_field_at_index"), &PixelpartEffect2D::get_force_field_at_index);
 	ClassDB::bind_method(D_METHOD("get_collider_at_index"), &PixelpartEffect2D::get_collider_at_index);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "effect"), "set_effect", "get_effect");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "effect", PROPERTY_HINT_RESOURCE_TYPE, "PixelpartEffectResource"), "set_effect", "get_effect");
 
 	ADD_GROUP("Playback", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "play", "is_playing");
@@ -56,9 +55,10 @@ void PixelpartEffect2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frame_rate", PROPERTY_HINT_RANGE, "1.0,100.0,1.0"), "set_frame_rate", "get_frame_rate");
 
 	ADD_GROUP("Shading", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mode", PROPERTY_HINT_ENUM, "Normal,Unshaded,Light-Only"), "set_light_mode", "get_light_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "get_flip_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "get_flip_v");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "particle_materials", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "PixelpartParticleMaterial2D")),
+		"set_particle_materials", "get_particle_materials");
 }
 
 PixelpartEffect2D::PixelpartEffect2D() {
@@ -72,23 +72,7 @@ PixelpartEffect2D::PixelpartEffect2D() {
 	particleEngine = pixelpart::ParticleEngine::createUnique<pixelpart::ParticleSolverCPU>(nullptr, particleCapacity);
 }
 PixelpartEffect2D::~PixelpartEffect2D() {
-	RenderingServer* rs = RenderingServer::get_singleton();
 
-	for(ParticleMeshInstance& inst : particleMeshInstances) {
-		rs->free_rid(inst.canvasItem);
-		rs->free_rid(inst.material);
-	}
-}
-
-void PixelpartEffect2D::_enter_tree() {
-	if(!Engine::get_singleton()->is_editor_hint()) {
-		RenderingServer::get_singleton()->connect("frame_pre_draw", Callable(this, "draw"));
-	}
-}
-void PixelpartEffect2D::_exit_tree() {
-	if(!Engine::get_singleton()->is_editor_hint()) {
-		RenderingServer::get_singleton()->disconnect("frame_pre_draw", Callable(this, "draw"));
-	}
 }
 
 void PixelpartEffect2D::_process(double dt) {
@@ -110,9 +94,15 @@ void PixelpartEffect2D::_process(double dt) {
 			}
 		}
 	}
+
+	queue_redraw();
 }
 
-void PixelpartEffect2D::draw() {
+void PixelpartEffect2D::_draw() {
+	if(Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+
 	Viewport* viewport = get_viewport();
 	if(!particleEngine || !viewport) {
 		return;
@@ -121,18 +111,6 @@ void PixelpartEffect2D::draw() {
 	const pixelpart::Effect* effect = particleEngine->getEffect();
 	if(!effect) {
 		return;
-	}
-
-	if(shaderDirty) {
-		for(uint32_t i = 0; i < nativeEffect.particleTypes.getCount(); i++) {
-			const pixelpart::ParticleType& particleType = nativeEffect.particleTypes.getByIndex(i);
-			const pixelpart::ShaderGraph::BuildResult& shaderBuildResult = particleTypes[particleType.name]->get_shader_build_result();
-
-			particleMeshInstances[i].shader = PixelpartShaders::get_instance()->get_canvas_shader(shaderBuildResult.code,
-				particleType.blendMode, lightMode);
-		}
-
-		shaderDirty = false;
 	}
 
 	std::vector<uint32_t> particleTypeIndicesSortedByLayer = effect->particleTypes.getSortedIndices(
@@ -145,7 +123,19 @@ void PixelpartEffect2D::draw() {
 			continue;
 		}
 
-		draw_particles(effect->particleTypes.getByIndex(particleTypeIndex), particleMeshInstances[particleTypeIndex]);
+		if(static_cast<int64_t>(particleTypeIndex) < particleMaterials.size()) {
+			Ref<PixelpartParticleMaterial2D> particleMaterial = (Ref<PixelpartParticleMaterial2D>)particleMaterials[particleTypeIndex];
+
+			if(particleMaterial.is_valid() && particleMaterial->is_shader_dirty()) {
+				particleMeshInstances[particleTypeIndex]->update_shader(
+					nativeEffect.particleTypes.getByIndex(particleTypeIndex),
+					particleMaterial);
+
+				particleMaterial->set_shader_dirty(false);
+			}
+		}
+
+		draw_particles(particleTypeIndex);
 	}
 }
 
@@ -209,12 +199,11 @@ bool PixelpartEffect2D::get_flip_v() const {
 	return flipV;
 }
 
-void PixelpartEffect2D::set_light_mode(CanvasItemMaterial::LightMode mode) {
-	shaderDirty |= mode != lightMode;
-	lightMode = mode;
+void PixelpartEffect2D::set_particle_materials(Array materials) {
+	particleMaterials = materials;
 }
-CanvasItemMaterial::LightMode PixelpartEffect2D::get_light_mode() const {
-	return lightMode;
+Array PixelpartEffect2D::get_particle_materials() const {
+	return particleMaterials;
 }
 
 float PixelpartEffect2D::get_import_scale() const {
@@ -229,11 +218,6 @@ void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> effectRes) {
 	RenderingServer* rs = RenderingServer::get_singleton();
 	PixelpartShaders* shaders = PixelpartShaders::get_instance();
 
-	for(ParticleMeshInstance& inst : particleMeshInstances) {
-		rs->free_rid(inst.canvasItem);
-		rs->free_rid(inst.material);
-	}
-
 	particleMeshInstances.clear();
 	particleEmitters.clear();
 	particleTypes.clear();
@@ -241,86 +225,94 @@ void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> effectRes) {
 	colliders.clear();
 	textures.clear();
 
+	if(Engine::get_singleton()->is_editor_hint()) {
+		particleMaterials.clear();
+	}
+
 	effectResource = effectRes;
-
-	if(effectResource.is_valid()) {
-		effectResource->load();
-
-		nativeEffect = effectResource->get_project().effect;
-		particleEngine->setEffect(&nativeEffect);
-
-		try {
-			for(pixelpart::ParticleEmitter& particleEmitter : nativeEffect.particleEmitters) {
-				Ref<PixelpartParticleEmitter> emitterRef;
-				emitterRef.instantiate();
-				emitterRef->init(effectResource, &particleEmitter, particleEngine.get());
-
-				particleEmitters[particleEmitter.name] = emitterRef;
-			}
-
-			for(pixelpart::ParticleType& particleType : nativeEffect.particleTypes) {
-				pixelpart::ShaderGraph::BuildResult buildResult;
-				particleType.shader.build(buildResult);
-
-				Ref<PixelpartParticleType> particleTypeRef;
-				particleTypeRef.instantiate();
-				particleTypeRef->init(effectResource, &particleType, particleEngine.get(), buildResult);
-
-				particleTypes[particleType.name] = particleTypeRef;
-			}
-
-			for(pixelpart::ForceField& forceField : nativeEffect.forceFields) {
-				Ref<PixelpartForceField> forceFieldRef;
-				forceFieldRef.instantiate();
-				forceFieldRef->init(effectResource, &forceField, particleEngine.get());
-
-				forceFields[forceField.name] = forceFieldRef;
-			}
-
-			for(pixelpart::Collider& collider : nativeEffect.colliders) {
-				Ref<PixelpartCollider> colliderRef;
-				colliderRef.instantiate();
-				colliderRef->init(effectResource, &collider, particleEngine.get());
-
-				colliders[collider.name] = colliderRef;
-			}
-
-			for(const pixelpart::ParticleType& particleType : nativeEffect.particleTypes) {
-				const pixelpart::ShaderGraph::BuildResult& shaderBuildResult = particleTypes.at(particleType.name)->get_shader_build_result();
-				Ref<Shader> shader = shaders->get_canvas_shader(shaderBuildResult.code,
-					particleType.blendMode, lightMode);
-
-				particleMeshInstances.push_back(ParticleMeshInstance{
-					rs->canvas_item_create(),
-					rs->material_create(),
-					shader,
-					shaderBuildResult.textureIds
-				});
-			}
-
-			for(const auto& resource : effectResource->get_project_resources().images) {
-				PackedByteArray imageData;
-				imageData.resize(static_cast<int64_t>(resource.second.data.size()));
-
-				std::memcpy(imageData.ptrw(), resource.second.data.data(), resource.second.data.size());
-
-				Ref<Image> image = Image::create_from_data(
-					static_cast<int32_t>(resource.second.width),
-					static_cast<int32_t>(resource.second.height),
-					false, Image::FORMAT_RGBA8, imageData);
-
-				textures[resource.first] = ImageTexture::create_from_image(image);
-			}
-		}
-		catch(const std::exception& e) {
-			particleEngine->setEffect(nullptr);
-
-			UtilityFunctions::printerr(String(e.what()));
-		}
-	}
-	else {
+	if(effectResource.is_null()) {
 		particleEngine->setEffect(nullptr);
+		notify_property_list_changed();
+
+		return;
 	}
+
+	effectResource->load();
+
+	nativeEffect = effectResource->get_project().effect;
+	particleEngine->setEffect(&nativeEffect);
+
+	try {
+		for(pixelpart::ParticleEmitter& particleEmitter : nativeEffect.particleEmitters) {
+			Ref<PixelpartParticleEmitter> emitterRef;
+			emitterRef.instantiate();
+			emitterRef->init(effectResource, &particleEmitter, particleEngine.get());
+
+			particleEmitters[particleEmitter.name] = emitterRef;
+		}
+
+		for(pixelpart::ParticleType& particleType : nativeEffect.particleTypes) {
+			Ref<PixelpartParticleType> particleTypeRef;
+			particleTypeRef.instantiate();
+			particleTypeRef->init(effectResource, &particleType, particleEngine.get());
+
+			particleTypes[particleType.name] = particleTypeRef;
+		}
+
+		for(pixelpart::ForceField& forceField : nativeEffect.forceFields) {
+			Ref<PixelpartForceField> forceFieldRef;
+			forceFieldRef.instantiate();
+			forceFieldRef->init(effectResource, &forceField, particleEngine.get());
+
+			forceFields[forceField.name] = forceFieldRef;
+		}
+
+		for(pixelpart::Collider& collider : nativeEffect.colliders) {
+			Ref<PixelpartCollider> colliderRef;
+			colliderRef.instantiate();
+			colliderRef->init(effectResource, &collider, particleEngine.get());
+
+			colliders[collider.name] = colliderRef;
+		}
+
+		for(uint32_t particleTypeIndex = 0u; particleTypeIndex < nativeEffect.particleTypes.getCount(); particleTypeIndex++) {
+			if(Engine::get_singleton()->is_editor_hint()) {
+				Ref<PixelpartParticleMaterial2D> particleMaterial;
+				particleMaterial.instantiate();
+				particleMaterials.append(particleMaterial);
+			}
+
+			Ref<PixelpartParticleMaterial2D> particleMaterial;
+			if(static_cast<int64_t>(particleTypeIndex) < particleMaterials.size()) {
+				particleMaterial = (Ref<PixelpartParticleMaterial2D>)particleMaterials[particleTypeIndex];
+			}
+
+			particleMeshInstances.push_back(std::make_unique<ParticleMeshInstance>(
+				nativeEffect.particleTypes.getByIndex(particleTypeIndex),
+				particleMaterial));
+		}
+
+		for(const auto& resource : effectResource->get_project_resources().images) {
+			PackedByteArray imageData;
+			imageData.resize(static_cast<int64_t>(resource.second.data.size()));
+
+			std::memcpy(imageData.ptrw(), resource.second.data.data(), resource.second.data.size());
+
+			Ref<Image> image = Image::create_from_data(
+				static_cast<int32_t>(resource.second.width),
+				static_cast<int32_t>(resource.second.height),
+				false, Image::FORMAT_RGBA8, imageData);
+
+			textures[resource.first] = ImageTexture::create_from_image(image);
+		}
+	}
+	catch(const std::exception& e) {
+		particleEngine->setEffect(nullptr);
+
+		UtilityFunctions::printerr(String(e.what()));
+	}
+
+	notify_property_list_changed();
 }
 Ref<PixelpartEffectResource> PixelpartEffect2D::get_effect() const {
 	return effectResource;
@@ -455,35 +447,83 @@ Ref<PixelpartCollider> PixelpartEffect2D::get_collider_at_index(int index) const
 	return Ref<PixelpartCollider>();
 }
 
-void PixelpartEffect2D::draw_particles(const pixelpart::ParticleType& particleType, ParticleMeshInstance& meshInstance) {
+PixelpartEffect2D::ParticleMeshInstance::ParticleMeshInstance(const pixelpart::ParticleType& particleType, Ref<PixelpartParticleMaterial2D> particleMaterial) {
 	RenderingServer* rs = RenderingServer::get_singleton();
-	rs->canvas_item_clear(meshInstance.canvasItem);
+
+	canvasItemRID = rs->canvas_item_create();
+	materialRID = rs->material_create();
+
+	particleType.shader.build(shaderBuildResult);
+	update_shader(particleType, particleMaterial);
+}
+PixelpartEffect2D::ParticleMeshInstance::~ParticleMeshInstance() {
+	RenderingServer* rs = RenderingServer::get_singleton();
+
+	rs->free_rid(materialRID);
+	rs->free_rid(canvasItemRID);
+}
+
+void PixelpartEffect2D::ParticleMeshInstance::update_shader(const pixelpart::ParticleType& particleType, Ref<PixelpartParticleMaterial2D> particleMaterial) {
+	shader = PixelpartShaders::get_instance()->get_canvas_shader(shaderBuildResult.code,
+		particleType.blendMode,
+		particleMaterial.is_valid() ? particleMaterial->get_light_mode() : CanvasItemMaterial::LIGHT_MODE_NORMAL);
+}
+
+Ref<Shader> PixelpartEffect2D::ParticleMeshInstance::get_shader() const {
+	return shader;
+}
+RID PixelpartEffect2D::ParticleMeshInstance::get_material_rid() const {
+	return materialRID;
+}
+RID PixelpartEffect2D::ParticleMeshInstance::get_canvas_item_rid() const {
+	return canvasItemRID;
+}
+
+std::string PixelpartEffect2D::ParticleMeshInstance::get_texture_id(std::size_t index) const {
+	return index < shaderBuildResult.textureIds.size()
+		? shaderBuildResult.textureIds.at(index)
+		: "";
+}
+std::size_t PixelpartEffect2D::ParticleMeshInstance::get_texture_count() const {
+	return shaderBuildResult.textureIds.size();
+}
+
+std::unordered_map<uint32_t, PixelpartEffect2D::ParticleMeshInstance::ParticleTrail>& PixelpartEffect2D::ParticleMeshInstance::get_trails() {
+	return trails;
+}
+
+void PixelpartEffect2D::draw_particles(uint32_t particleTypeIndex) {
+	RenderingServer* rs = RenderingServer::get_singleton();
+
+	const pixelpart::Effect* effect = particleEngine->getEffect();
+	const pixelpart::ParticleType& particleType = effect->particleTypes.getByIndex(particleTypeIndex);
+	const pixelpart::ParticleEmitter& particleEmitter = effect->particleEmitters.get(particleType.parentId);
+
+	ParticleMeshInstance& meshInstance = *(particleMeshInstances.at(particleTypeIndex));
+	rs->canvas_item_clear(meshInstance.get_canvas_item_rid());
 
 	if(!is_visible() || !particleType.visible) {
 		return;
 	}
 
-	const pixelpart::Effect* effect = particleEngine->getEffect();
-	const pixelpart::ParticleEmitter& particleEmitter = effect->particleEmitters.get(particleType.parentId);
-	const uint32_t particleTypeIndex = effect->particleTypes.findById(particleType.id);
-	const uint32_t numParticles = particleEngine->getNumParticles(particleTypeIndex);
 	const pixelpart::ParticleData& particles = particleEngine->getParticles(particleTypeIndex);
-	const pixelpart::floatd scaleX = static_cast<pixelpart::floatd>(get_import_scale()) * (flipH ? -1.0 : +1.0);
-	const pixelpart::floatd scaleY = static_cast<pixelpart::floatd>(get_import_scale()) * (flipV ? -1.0 : +1.0);
+	uint32_t numParticles = particleEngine->getNumParticles(particleTypeIndex);
+	pixelpart::floatd scaleX = static_cast<pixelpart::floatd>(get_import_scale()) * (flipH ? -1.0 : +1.0);
+	pixelpart::floatd scaleY = static_cast<pixelpart::floatd>(get_import_scale()) * (flipV ? -1.0 : +1.0);
 
-	rs->material_set_shader(meshInstance.material, meshInstance.shader->get_rid());
-	rs->material_set_param(meshInstance.material, "EFFECT_TIME", static_cast<float>(particleEngine->getTime()));
-	rs->material_set_param(meshInstance.material, "OBJECT_TIME", static_cast<float>(particleEngine->getTime() - particleEmitter.lifetimeStart));
-	for(std::size_t t = 0; t < meshInstance.textures.size(); t++) {
-		String samplerName = String("TEXTURE") + String::num_int64(t);
-		Ref<ImageTexture> texture = textures.at(meshInstance.textures[t]);
+	rs->material_set_shader(meshInstance.get_material_rid(), meshInstance.get_shader()->get_rid());
+	rs->material_set_param(meshInstance.get_material_rid(), "u_EffectTime", static_cast<float>(particleEngine->getTime()));
+	rs->material_set_param(meshInstance.get_material_rid(), "u_ObjectTime", static_cast<float>(particleEngine->getTime() - particleEmitter.lifetimeStart));
+	for(std::size_t textureIndex = 0; textureIndex < meshInstance.get_texture_count(); textureIndex++) {
+		String samplerName = String("TEXTURE") + String::num_int64(textureIndex);
+		Ref<ImageTexture> texture = textures.at(meshInstance.get_texture_id(textureIndex));
 
-		rs->material_set_param(meshInstance.material, samplerName, texture->get_rid());
+		rs->material_set_param(meshInstance.get_material_rid(), samplerName, texture->get_rid());
 	}
 
-	rs->canvas_item_set_parent(meshInstance.canvasItem, get_canvas_item());
-	rs->canvas_item_set_transform(meshInstance.canvasItem, Transform2D());
-	rs->canvas_item_set_material(meshInstance.canvasItem, meshInstance.material);
+	rs->canvas_item_set_parent(meshInstance.get_canvas_item_rid(), get_canvas_item());
+	rs->canvas_item_set_transform(meshInstance.get_canvas_item_rid(), Transform2D());
+	rs->canvas_item_set_material(meshInstance.get_canvas_item_rid(), meshInstance.get_material_rid());
 
 	add_particle_mesh(meshInstance,
 		particleType,
@@ -508,7 +548,7 @@ void PixelpartEffect2D::add_particle_sprites(ParticleMeshInstance& meshInstance,
 	const pixelpart::floatd packFactor = 10000.0;
 	const pixelpart::vec2d scale = pixelpart::vec2d(scaleX, scaleY);
 
-	if(numParticles == 0) {
+	if(numParticles == 0u) {
 		return;
 	}
 
@@ -627,7 +667,7 @@ void PixelpartEffect2D::add_particle_sprites(ParticleMeshInstance& meshInstance,
 	}
 
 	RenderingServer* rs = RenderingServer::get_singleton();
-	rs->canvas_item_add_triangle_array(meshInstance.canvasItem,
+	rs->canvas_item_add_triangle_array(meshInstance.get_canvas_item_rid(),
 		indexArray,
 		positionArray,
 		colorArray,
@@ -637,7 +677,7 @@ void PixelpartEffect2D::add_particle_sprites(ParticleMeshInstance& meshInstance,
 void PixelpartEffect2D::add_particle_trails(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, pixelpart::floatd scaleX, pixelpart::floatd scaleY) {
 	const pixelpart::floatd packFactor = 10000.0;
 
-	if(numParticles < 2) {
+	if(numParticles < 2u) {
 		return;
 	}
 
@@ -649,7 +689,9 @@ void PixelpartEffect2D::add_particle_trails(ParticleMeshInstance& meshInstance, 
 			: particles.id[p0] > particles.id[p1];
 	});
 
-	for(auto& entry : meshInstance.trails) {
+	std::unordered_map<uint32_t, ParticleMeshInstance::ParticleTrail>& trails = meshInstance.get_trails();
+
+	for(auto& entry : trails) {
 		entry.second.numParticles = 0;
 	}
 
@@ -663,19 +705,19 @@ void PixelpartEffect2D::add_particle_trails(ParticleMeshInstance& meshInstance, 
 		if(particleParentId != trailId) {
 			trailId = particleParentId;
 
-			if(meshInstance.trails.count(trailId) == 0) {
-				meshInstance.trails[trailId] = ParticleMeshInstance::ParticleTrail();
+			if(trails.count(trailId) == 0) {
+				trails[trailId] = ParticleMeshInstance::ParticleTrail();
 			}
 
-			trail = &meshInstance.trails.at(trailId);
+			trail = &trails.at(trailId);
 		}
 
 		trail->numParticles++;
 	}
 
-	for(auto it = meshInstance.trails.begin(); it != meshInstance.trails.end(); ) {
+	for(auto it = trails.begin(); it != trails.end(); ) {
 		if(it->second.numParticles == 0) {
-			it = meshInstance.trails.erase(it);
+			it = trails.erase(it);
 		}
 		else {
 			it++;
@@ -693,7 +735,7 @@ void PixelpartEffect2D::add_particle_trails(ParticleMeshInstance& meshInstance, 
 
 			if(particleParentId != trailId) {
 				trailId = particleParentId;
-				trail = &meshInstance.trails.at(trailId);
+				trail = &trails.at(trailId);
 
 				trail->length = 0.0;
 				std::vector<pixelpart::floatd> relativeParticlePosition(trail->numParticles, 0.0);
@@ -749,7 +791,7 @@ void PixelpartEffect2D::add_particle_trails(ParticleMeshInstance& meshInstance, 
 				trailId = particleParentId;
 				q = 0;
 
-				trail = &meshInstance.trails.at(trailId);
+				trail = &trails.at(trailId);
 				trail->position.resize(trail->numParticles);
 				trail->size.resize(trail->numParticles);
 				trail->color.resize(trail->numParticles);
@@ -771,7 +813,7 @@ void PixelpartEffect2D::add_particle_trails(ParticleMeshInstance& meshInstance, 
 
 	RenderingServer* rs = RenderingServer::get_singleton();
 
-	for(auto& entry : meshInstance.trails) {
+	for(auto& entry : trails) {
 		ParticleMeshInstance::ParticleTrail& trail = entry.second;
 		trail.length = 0.0;
 
@@ -951,7 +993,7 @@ void PixelpartEffect2D::add_particle_trails(ParticleMeshInstance& meshInstance, 
 			colors[p * 4 * 4 + 15] = packedForceY + static_cast<float>(trail.color[p].a * 0.1);
 		}
 
-		rs->canvas_item_add_triangle_array(meshInstance.canvasItem,
+		rs->canvas_item_add_triangle_array(meshInstance.get_canvas_item_rid(),
 			trail.indexArray,
 			trail.positionArray,
 			trail.colorArray,

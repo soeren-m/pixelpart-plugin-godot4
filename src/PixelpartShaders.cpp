@@ -130,7 +130,7 @@ Ref<Shader> PixelpartShaders::get_spatial_shader(const std::string& shaderSource
 
 	switch(normalMode) {
 		case ParticleNormalMode::PARTICLE_NORMAL_MODE_STATIC:
-			vertexShaderSource += "\nNORMAL = normalize(STATIC_NORMAL);";
+			vertexShaderSource += "\nNORMAL = normalize(u_StaticNormal);";
 			break;
 		default:
 			vertexShaderSource += "\nNORMAL = normalize(NORMAL);";
@@ -141,7 +141,10 @@ Ref<Shader> PixelpartShaders::get_spatial_shader(const std::string& shaderSource
 			__SHADER_COLOR__.rgb = mix(pow((__SHADER_COLOR__.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), __SHADER_COLOR__.rgb * (1.0 / 12.92), lessThan(__SHADER_COLOR__.rgb, vec3(0.04045)));
 		}
 		ALBEDO = __SHADER_COLOR__.rgb;
-		ALPHA = __SHADER_COLOR__.a;)!";
+		ALPHA = __SHADER_COLOR__.a;
+		METALLIC = u_Metallic;
+		SPECULAR = u_Specular;
+		ROUGHNESS = u_Roughness;)!";
 
 	return get_shader(shaderSource, "spatial", renderMode, vertexShaderSource, additionalFragmentShaderSource);
 }
