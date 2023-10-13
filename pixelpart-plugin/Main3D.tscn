@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://ck7m2fuu4mk3q"]
 
 [ext_resource type="Script" path="res://EffectScript3D.gd" id="1_dsdr7"]
-[ext_resource type="PixelpartEffectResource" uid="uid://d3tfi7d6a4807" path="res://effects/SampleEffect3D.ppfx" id="2_vdhxu"]
+[ext_resource type="PixelpartEffectResource" uid="uid://d3tfi7d6a4807" path="res://effects/SampleEffect3D.ppfx" id="2_tv7ri"]
 
 [sub_resource type="Sky" id="Sky_asj0q"]
 
@@ -11,7 +11,7 @@ ambient_light_source = 2
 ambient_light_color = Color(1, 1, 1, 1)
 ambient_light_energy = 0.1
 
-[sub_resource type="PixelpartParticleMaterial3D" id="PixelpartParticleMaterial3D_jo7no"]
+[sub_resource type="PixelpartParticleMaterial3D" id="PixelpartParticleMaterial3D_b3j05"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_dksc4"]
 
@@ -23,8 +23,8 @@ transform = Transform3D(-4.37114e-08, 0.422618, -0.906308, 0, 0.906308, 0.422618
 environment = SubResource("Environment_r6ga3")
 
 [node name="SampleEffect" type="PixelpartEffect" parent="."]
-effect = ExtResource("2_vdhxu")
-particle_materials = [SubResource("PixelpartParticleMaterial3D_jo7no")]
+effect = ExtResource("2_tv7ri")
+particle_materials = [SubResource("PixelpartParticleMaterial3D_b3j05")]
 transform = Transform3D(0.999657, 0.0261944, 0, -0.0261944, 0.999657, 0, 0, 0, 1, 0, 1, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]

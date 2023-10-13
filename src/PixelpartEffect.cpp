@@ -750,12 +750,12 @@ void PixelpartEffect::add_particle_sprites(ParticleMeshInstance& meshInstance, c
 	for(uint32_t p = 0; p < numParticles; p++) {
 		uvs[p * 4 * 2 + 0] = 0.0f;
 		uvs[p * 4 * 2 + 1] = 0.0f;
-		uvs[p * 4 * 2 + 2] = 1.0f;
-		uvs[p * 4 * 2 + 3] = 0.0f;
+		uvs[p * 4 * 2 + 2] = 0.0f;
+		uvs[p * 4 * 2 + 3] = 1.0f;
 		uvs[p * 4 * 2 + 4] = 1.0f;
 		uvs[p * 4 * 2 + 5] = 1.0f;
-		uvs[p * 4 * 2 + 6] = 0.0f;
-		uvs[p * 4 * 2 + 7] = 1.0f;
+		uvs[p * 4 * 2 + 6] = 1.0f;
+		uvs[p * 4 * 2 + 7] = 0.0f;
 	}
 
 	for(uint32_t p = 0; p < numParticles; p++) {
@@ -830,7 +830,7 @@ void PixelpartEffect::add_particle_sprites(ParticleMeshInstance& meshInstance, c
 void PixelpartEffect::add_particle_trails(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, pixelpart::floatd scale) {
 	const pixelpart::floatd packFactor = 10000.0;
 
-	if(numParticles < 2) {
+	if(numParticles < 2u) {
 		return;
 	}
 
@@ -1013,7 +1013,7 @@ void PixelpartEffect::add_particle_trails(ParticleMeshInstance& meshInstance, co
 		ParticleMeshInstance::ParticleTrail& trail = entry.second;
 		trail.length = 0.0;
 
-		if(trail.numParticles < 2) {
+		if(trail.numParticles < 2u) {
 			continue;
 		}
 
@@ -1095,10 +1095,10 @@ void PixelpartEffect::add_particle_trails(ParticleMeshInstance& meshInstance, co
 			}
 
 			indices[vertexIndex * 6 + 0] = vertexIndex * 4 + 0;
-			indices[vertexIndex * 6 + 1] = vertexIndex * 4 + 2;
-			indices[vertexIndex * 6 + 2] = vertexIndex * 4 + 1;
-			indices[vertexIndex * 6 + 3] = vertexIndex * 4 + 2;
-			indices[vertexIndex * 6 + 4] = vertexIndex * 4 + 3;
+			indices[vertexIndex * 6 + 1] = vertexIndex * 4 + 1;
+			indices[vertexIndex * 6 + 2] = vertexIndex * 4 + 2;
+			indices[vertexIndex * 6 + 3] = vertexIndex * 4 + 3;
+			indices[vertexIndex * 6 + 4] = vertexIndex * 4 + 2;
 			indices[vertexIndex * 6 + 5] = vertexIndex * 4 + 1;
 
 			positions[vertexIndex * 4 + 0] = toGd(p0);
@@ -1199,8 +1199,12 @@ pixelpart::mat3d PixelpartEffect::rotation3d(const pixelpart::vec3d& angle) {
 		pixelpart::vec3d(sy * cp, -sp, cy * cp));
 }
 pixelpart::mat3d PixelpartEffect::lookAt(const pixelpart::vec3d& direction) {
-	pixelpart::vec3d up = pixelpart::vec3d(0.0, 1.0, 0.0);
 	pixelpart::vec3d front = glm::normalize(direction);
+	pixelpart::vec3d up = pixelpart::vec3d(0.0, 1.0, 0.0);
+	if(glm::abs(glm::abs(glm::dot(front, up)) - 1.0) < 0.001) {
+		up = pixelpart::vec3d(1.0, 0.0, 0.0);
+	}
+
 	pixelpart::vec3d right = glm::normalize(glm::cross(front, up));
 	up = glm::normalize(glm::cross(right, front));
 

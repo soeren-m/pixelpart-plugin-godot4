@@ -587,9 +587,9 @@ void PixelpartEffect2D::add_particle_sprites(ParticleMeshInstance& meshInstance,
 						? pixelpart::vec2d(glm::normalize(particles.velocity[p]))
 						: pixelpart::vec2d(0.0, 1.0)));
 				worldPosition[0] = particles.globalPosition[p] + rotate2d(pixelpart::vec3d(-0.5, -0.5, 0.0) * particles.size[p], particleType.pivot * particles.size[p], particles.rotation[p].x + angle);
-				worldPosition[1] = particles.globalPosition[p] + rotate2d(pixelpart::vec3d(+0.5, -0.5, 0.0) * particles.size[p], particleType.pivot * particles.size[p], particles.rotation[p].x + angle);
+				worldPosition[1] = particles.globalPosition[p] + rotate2d(pixelpart::vec3d(-0.5, +0.5, 0.0) * particles.size[p], particleType.pivot * particles.size[p], particles.rotation[p].x + angle);
 				worldPosition[2] = particles.globalPosition[p] + rotate2d(pixelpart::vec3d(+0.5, +0.5, 0.0) * particles.size[p], particleType.pivot * particles.size[p], particles.rotation[p].x + angle);
-				worldPosition[3] = particles.globalPosition[p] + rotate2d(pixelpart::vec3d(-0.5, +0.5, 0.0) * particles.size[p], particleType.pivot * particles.size[p], particles.rotation[p].x + angle);
+				worldPosition[3] = particles.globalPosition[p] + rotate2d(pixelpart::vec3d(+0.5, -0.5, 0.0) * particles.size[p], particleType.pivot * particles.size[p], particles.rotation[p].x + angle);
 				break;
 			}
 			case pixelpart::AlignmentMode::emission: {
@@ -598,26 +598,26 @@ void PixelpartEffect2D::add_particle_sprites(ParticleMeshInstance& meshInstance,
 						? pixelpart::vec2d(glm::normalize(emissionDirection))
 						: pixelpart::vec2d(0.0, 1.0)));
 				worldPosition[0] = particles.globalPosition[p] + rotate2d(pixelpart::vec3d(-0.5, -0.5, 0.0) * particles.size[p], particleType.pivot * particles.size[p], particles.rotation[p].x + angle);
-				worldPosition[1] = particles.globalPosition[p] + rotate2d(pixelpart::vec3d(+0.5, -0.5, 0.0) * particles.size[p], particleType.pivot * particles.size[p], particles.rotation[p].x + angle);
+				worldPosition[1] = particles.globalPosition[p] + rotate2d(pixelpart::vec3d(-0.5, +0.5, 0.0) * particles.size[p], particleType.pivot * particles.size[p], particles.rotation[p].x + angle);
 				worldPosition[2] = particles.globalPosition[p] + rotate2d(pixelpart::vec3d(+0.5, +0.5, 0.0) * particles.size[p], particleType.pivot * particles.size[p], particles.rotation[p].x + angle);
-				worldPosition[3] = particles.globalPosition[p] + rotate2d(pixelpart::vec3d(-0.5, +0.5, 0.0) * particles.size[p], particleType.pivot * particles.size[p], particles.rotation[p].x + angle);
+				worldPosition[3] = particles.globalPosition[p] + rotate2d(pixelpart::vec3d(+0.5, -0.5, 0.0) * particles.size[p], particleType.pivot * particles.size[p], particles.rotation[p].x + angle);
 				break;
 			}
 			case pixelpart::AlignmentMode::emitter: {
 				pixelpart::mat3d rotationMatrix = rotation3d(particles.rotation[p]);
 				pixelpart::mat3d lookAtMatrix = rotation3d(particleEmitter.orientation.get(alpha));
 				worldPosition[0] = particles.globalPosition[p] + lookAtMatrix * (rotationMatrix * (pixelpart::vec3d(-0.5, -0.5, 0.0) * particles.size[p] - particleType.pivot * particles.size[p]) + particleType.pivot * particles.size[p]);
-				worldPosition[1] = particles.globalPosition[p] + lookAtMatrix * (rotationMatrix * (pixelpart::vec3d(+0.5, -0.5, 0.0) * particles.size[p] - particleType.pivot * particles.size[p]) + particleType.pivot * particles.size[p]);
+				worldPosition[1] = particles.globalPosition[p] + lookAtMatrix * (rotationMatrix * (pixelpart::vec3d(-0.5, +0.5, 0.0) * particles.size[p] - particleType.pivot * particles.size[p]) + particleType.pivot * particles.size[p]);
 				worldPosition[2] = particles.globalPosition[p] + lookAtMatrix * (rotationMatrix * (pixelpart::vec3d(+0.5, +0.5, 0.0) * particles.size[p] - particleType.pivot * particles.size[p]) + particleType.pivot * particles.size[p]);
-				worldPosition[3] = particles.globalPosition[p] + lookAtMatrix * (rotationMatrix * (pixelpart::vec3d(-0.5, +0.5, 0.0) * particles.size[p] - particleType.pivot * particles.size[p]) + particleType.pivot * particles.size[p]);
+				worldPosition[3] = particles.globalPosition[p] + lookAtMatrix * (rotationMatrix * (pixelpart::vec3d(+0.5, -0.5, 0.0) * particles.size[p] - particleType.pivot * particles.size[p]) + particleType.pivot * particles.size[p]);
 				break;
 			}
 			default: {
 				pixelpart::mat3d rotationMatrix = rotation3d(particles.rotation[p]);
 				worldPosition[0] = particles.globalPosition[p] + (rotationMatrix * (pixelpart::vec3d(-0.5, -0.5, 0.0) * particles.size[p] - particleType.pivot * particles.size[p]) + particleType.pivot * particles.size[p]);
-				worldPosition[1] = particles.globalPosition[p] + (rotationMatrix * (pixelpart::vec3d(+0.5, -0.5, 0.0) * particles.size[p] - particleType.pivot * particles.size[p]) + particleType.pivot * particles.size[p]);
+				worldPosition[1] = particles.globalPosition[p] + (rotationMatrix * (pixelpart::vec3d(-0.5, +0.5, 0.0) * particles.size[p] - particleType.pivot * particles.size[p]) + particleType.pivot * particles.size[p]);
 				worldPosition[2] = particles.globalPosition[p] + (rotationMatrix * (pixelpart::vec3d(+0.5, +0.5, 0.0) * particles.size[p] - particleType.pivot * particles.size[p]) + particleType.pivot * particles.size[p]);
-				worldPosition[3] = particles.globalPosition[p] + (rotationMatrix * (pixelpart::vec3d(-0.5, +0.5, 0.0) * particles.size[p] - particleType.pivot * particles.size[p]) + particleType.pivot * particles.size[p]);
+				worldPosition[3] = particles.globalPosition[p] + (rotationMatrix * (pixelpart::vec3d(+0.5, -0.5, 0.0) * particles.size[p] - particleType.pivot * particles.size[p]) + particleType.pivot * particles.size[p]);
 				break;
 			}
 		}
@@ -634,12 +634,12 @@ void PixelpartEffect2D::add_particle_sprites(ParticleMeshInstance& meshInstance,
 
 		textureCoords[p * 4 * 2 + 0] = 0.0f + packedLifeData;
 		textureCoords[p * 4 * 2 + 1] = 0.0f + packedIdData;
-		textureCoords[p * 4 * 2 + 2] = 1.0f / 10.0f + packedLifeData;
-		textureCoords[p * 4 * 2 + 3] = 0.0f + packedIdData;
+		textureCoords[p * 4 * 2 + 2] = 0.0f + packedLifeData;
+		textureCoords[p * 4 * 2 + 3] = 1.0f / 10.0f + packedIdData;
 		textureCoords[p * 4 * 2 + 4] = 1.0f / 10.0f + packedLifeData;
 		textureCoords[p * 4 * 2 + 5] = 1.0f / 10.0f + packedIdData;
-		textureCoords[p * 4 * 2 + 6] = 0.0f + packedLifeData;
-		textureCoords[p * 4 * 2 + 7] = 1.0f / 10.0f + packedIdData;
+		textureCoords[p * 4 * 2 + 6] = 1.0f / 10.0f + packedLifeData;
+		textureCoords[p * 4 * 2 + 7] = 0.0f + packedIdData;
 	}
 
 	for(uint32_t p = 0; p < numParticles; p++) {
@@ -817,7 +817,7 @@ void PixelpartEffect2D::add_particle_trails(ParticleMeshInstance& meshInstance, 
 		ParticleMeshInstance::ParticleTrail& trail = entry.second;
 		trail.length = 0.0;
 
-		if(trail.numParticles < 2) {
+		if(trail.numParticles < 2u) {
 			continue;
 		}
 
@@ -868,10 +868,10 @@ void PixelpartEffect2D::add_particle_trails(ParticleMeshInstance& meshInstance, 
 
 		for(int p = 0; p < static_cast<int>(trail.numParticles) - 1; p++) {
 			indices[p * 6 + 0] = p * 4 + 0;
-			indices[p * 6 + 1] = p * 4 + 2;
-			indices[p * 6 + 2] = p * 4 + 1;
-			indices[p * 6 + 3] = p * 4 + 2;
-			indices[p * 6 + 4] = p * 4 + 3;
+			indices[p * 6 + 1] = p * 4 + 1;
+			indices[p * 6 + 2] = p * 4 + 2;
+			indices[p * 6 + 3] = p * 4 + 3;
+			indices[p * 6 + 4] = p * 4 + 2;
 			indices[p * 6 + 5] = p * 4 + 1;
 		}
 
