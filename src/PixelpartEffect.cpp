@@ -1,4 +1,5 @@
 #include "PixelpartEffect.h"
+#include "PixelpartShaders.h"
 #include "PixelpartSortUtil.h"
 #include "PixelpartUtil.h"
 #include "ParticleSolverCPU.h"
@@ -28,8 +29,6 @@ void PixelpartEffect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_speed"), &PixelpartEffect::get_speed);
 	ClassDB::bind_method(D_METHOD("set_frame_rate", "r"), &PixelpartEffect::set_frame_rate);
 	ClassDB::bind_method(D_METHOD("get_frame_rate"), &PixelpartEffect::get_frame_rate);
-	ClassDB::bind_method(D_METHOD("set_particle_materials", "materials"), &PixelpartEffect::set_particle_materials);
-	ClassDB::bind_method(D_METHOD("get_particle_materials"), &PixelpartEffect::get_particle_materials);
 	ClassDB::bind_method(D_METHOD("get_import_scale"), &PixelpartEffect::get_import_scale);
 	ClassDB::bind_method(D_METHOD("set_effect", "effect_res"), &PixelpartEffect::set_effect);
 	ClassDB::bind_method(D_METHOD("get_effect"), &PixelpartEffect::get_effect);
@@ -55,10 +54,6 @@ void PixelpartEffect::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_time", PROPERTY_HINT_RANGE, "0.0,1000.0,0.01"), "set_loop_time", "get_loop_time");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed", PROPERTY_HINT_RANGE, "0.0,100.0,0.01"), "set_speed", "get_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frame_rate", PROPERTY_HINT_RANGE, "1.0,100.0,1.0"), "set_frame_rate", "get_frame_rate");
-
-	ADD_GROUP("Shading", "");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "particle_materials", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "PixelpartParticleMaterial3D")),
-		"set_particle_materials", "get_particle_materials");
 }
 
 PixelpartEffect::PixelpartEffect() {
@@ -127,18 +122,6 @@ void PixelpartEffect::draw() {
 			return;
 		}
 
-		if(static_cast<int64_t>(particleTypeIndex) < particleMaterials.size()) {
-			Ref<PixelpartParticleMaterial3D> particleMaterial = (Ref<PixelpartParticleMaterial3D>)particleMaterials[particleTypeIndex];
-
-			if(particleMaterial.is_valid() && particleMaterial->is_shader_dirty()) {
-				particleMeshInstances[particleTypeIndex]->update_shader(
-					nativeEffect.particleTypes.getByIndex(particleTypeIndex),
-					particleMaterial);
-
-				particleMaterial->set_shader_dirty(false);
-			}
-		}
-
 		draw_particles(particleTypeIndex);
 	}
 }
@@ -194,13 +177,6 @@ float PixelpartEffect::get_frame_rate() const {
 	return 1.0f / timeStep;
 }
 
-void PixelpartEffect::set_particle_materials(Array materials) {
-	particleMaterials = materials;
-}
-Array PixelpartEffect::get_particle_materials() const {
-	return particleMaterials;
-}
-
 float PixelpartEffect::get_import_scale() const {
 	if(!effectResource.is_valid()) {
 		return 1.0f;
@@ -219,10 +195,6 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> effectRes) {
 	forceFields.clear();
 	colliders.clear();
 	textures.clear();
-
-	if(Engine::get_singleton()->is_editor_hint()) {
-		particleMaterials.clear();
-	}
 
 	effectResource = effectRes;
 	if(effectResource.is_null()) {
@@ -273,20 +245,8 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> effectRes) {
 		RenderingServer* rs = RenderingServer::get_singleton();
 
 		for(uint32_t particleTypeIndex = 0u; particleTypeIndex < nativeEffect.particleTypes.getCount(); particleTypeIndex++) {
-			if(Engine::get_singleton()->is_editor_hint()) {
-				Ref<PixelpartParticleMaterial3D> particleMaterial;
-				particleMaterial.instantiate();
-				particleMaterials.append(particleMaterial);
-			}
-
-			Ref<PixelpartParticleMaterial3D> particleMaterial;
-			if(static_cast<int64_t>(particleTypeIndex) < particleMaterials.size()) {
-				particleMaterial = (Ref<PixelpartParticleMaterial3D>)particleMaterials[particleTypeIndex];
-			}
-
 			particleMeshInstances.emplace_back(std::make_unique<ParticleMeshInstance>(
-				nativeEffect.particleTypes.getByIndex(particleTypeIndex),
-				particleMaterial));
+				nativeEffect.particleTypes.getByIndex(particleTypeIndex)));
 		}
 
 		for(const auto& resource : effectResource->get_project_resources().images) {
@@ -444,7 +404,7 @@ Ref<PixelpartCollider> PixelpartEffect::get_collider_at_index(int index) const {
 	return Ref<PixelpartCollider>();
 }
 
-PixelpartEffect::ParticleMeshInstance::ParticleMeshInstance(const pixelpart::ParticleType& particleType, Ref<PixelpartParticleMaterial3D> particleMaterial) {
+PixelpartEffect::ParticleMeshInstance::ParticleMeshInstance(const pixelpart::ParticleType& particleType) {
 	RenderingServer* rs = RenderingServer::get_singleton();
 
 	mesh.instantiate();
@@ -454,7 +414,7 @@ PixelpartEffect::ParticleMeshInstance::ParticleMeshInstance(const pixelpart::Par
 	rs->instance_set_base(instanceRID, mesh->get_rid());
 
 	particleType.shader.build(shaderBuildResult);
-	update_shader(particleType, particleMaterial);
+	update_shader(particleType);
 }
 PixelpartEffect::ParticleMeshInstance::~ParticleMeshInstance() {
 	RenderingServer* rs = RenderingServer::get_singleton();
@@ -462,13 +422,12 @@ PixelpartEffect::ParticleMeshInstance::~ParticleMeshInstance() {
 	rs->free_rid(instanceRID);
 }
 
-void PixelpartEffect::ParticleMeshInstance::update_shader(const pixelpart::ParticleType& particleType, Ref<PixelpartParticleMaterial3D> particleMaterial) {
+void PixelpartEffect::ParticleMeshInstance::update_shader(const pixelpart::ParticleType& particleType) {
 	shader = PixelpartShaders::get_instance()->get_spatial_shader(shaderBuildResult.code,
 		particleType.blendMode,
-		particleMaterial.is_valid() ? particleMaterial->get_shading_mode() :  BaseMaterial3D::SHADING_MODE_UNSHADED,
-		particleMaterial.is_valid() ? particleMaterial->get_diffuse_mode() : BaseMaterial3D::DIFFUSE_BURLEY,
-		particleMaterial.is_valid() ? particleMaterial->get_specular_mode() : BaseMaterial3D::SPECULAR_SCHLICK_GGX,
-		particleMaterial.is_valid() ? particleMaterial->get_normal_mode() : PARTICLE_NORMAL_MODE_MESH);
+		BaseMaterial3D::SHADING_MODE_UNSHADED,
+		BaseMaterial3D::DIFFUSE_BURLEY,
+		BaseMaterial3D::SPECULAR_SCHLICK_GGX);
 
 	shaderMaterial->set_shader(shader);
 }
@@ -526,17 +485,6 @@ void PixelpartEffect::draw_particles(uint32_t particleTypeIndex) {
 	Ref<ShaderMaterial> shaderMaterial = meshInstance.get_shader_material();
 	shaderMaterial->set_shader_parameter("u_EffectTime", static_cast<float>(particleEngine->getTime()));
 	shaderMaterial->set_shader_parameter("u_ObjectTime", static_cast<float>(particleEngine->getTime() - particleEmitter.lifetimeStart));
-
-	if(static_cast<int64_t>(particleTypeIndex) < particleMaterials.size()) {
-		Ref<PixelpartParticleMaterial3D> particleMaterial = (Ref<PixelpartParticleMaterial3D>)particleMaterials[particleTypeIndex];
-
-		if(particleMaterial.is_valid()) {
-			shaderMaterial->set_shader_parameter("u_StaticNormal", particleMaterial->get_static_normal());
-			shaderMaterial->set_shader_parameter("u_Metallic", particleMaterial->get_metallic());
-			shaderMaterial->set_shader_parameter("u_Specular", particleMaterial->get_specular());
-			shaderMaterial->set_shader_parameter("u_Roughness", particleMaterial->get_roughness());
-		}
-	}
 
 	for(std::size_t t = 0; t < meshInstance.get_texture_count(); t++) {
 		String samplerName = String("TEXTURE") + String::num_int64(t);

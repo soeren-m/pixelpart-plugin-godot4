@@ -2,7 +2,6 @@
 #define PIXELPART_SHADERS_H
 
 #include "BlendMode.h"
-#include "ParticleNormalMode.h"
 #include <godot_cpp/classes/shader.hpp>
 #include <godot_cpp/classes/base_material3d.hpp>
 #include <godot_cpp/classes/canvas_item_material.hpp>
@@ -24,8 +23,7 @@ public:
 		pixelpart::BlendMode blendMode,
 		BaseMaterial3D::ShadingMode shadingMode,
 		BaseMaterial3D::DiffuseMode diffuseMode,
-		BaseMaterial3D::SpecularMode specularMode,
-		ParticleNormalMode normalMode);
+		BaseMaterial3D::SpecularMode specularMode);
 
 	Ref<Shader> get_shader(const std::string& shaderSource,
 		const std::string& shaderType,

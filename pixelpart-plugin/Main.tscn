@@ -1,9 +1,7 @@
-[gd_scene load_steps=6 format=3 uid="uid://bt7ogxf0ux7r6"]
+[gd_scene load_steps=5 format=3 uid="uid://bt7ogxf0ux7r6"]
 
 [ext_resource type="Script" path="res://EffectScript2D.gd" id="1_udfml"]
 [ext_resource type="PixelpartEffectResource" uid="uid://c325ufunoewvq" path="res://effects/SampleEffect2D.ppfx" id="2_lbmho"]
-
-[sub_resource type="PixelpartParticleMaterial2D" id="PixelpartParticleMaterial2D_anwbc"]
 
 [sub_resource type="Gradient" id="Gradient_572vs"]
 colors = PackedColorArray(0, 0, 0, 0, 1, 1, 1, 1)
@@ -18,7 +16,6 @@ script = ExtResource("1_udfml")
 
 [node name="SampleEffect" type="PixelpartEffect2D" parent="."]
 effect = ExtResource("2_lbmho")
-particle_materials = [SubResource("PixelpartParticleMaterial2D_anwbc")]
 position = Vector2(400, 400)
 
 [node name="PointLight2D" type="PointLight2D" parent="."]

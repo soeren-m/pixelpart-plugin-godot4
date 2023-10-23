@@ -1,6 +1,7 @@
 #include "PixelpartLibrary.h"
 #include "PixelpartEffect.h"
 #include "PixelpartEffect2D.h"
+#include "PixelpartShaders.h"
 #include <gdextension_interface.h>
 #include <godot_cpp/godot.hpp>
 
@@ -15,8 +16,6 @@ void pixelpart_register(godot::ModuleInitializationLevel p_level) {
 	godot::ClassDB::register_class<godot::PixelpartCurve3>();
 	godot::ClassDB::register_class<godot::PixelpartGradient>();
 	godot::ClassDB::register_class<godot::PixelpartEffectResource>();
-	godot::ClassDB::register_class<godot::PixelpartParticleMaterial3D>();
-	godot::ClassDB::register_class<godot::PixelpartParticleMaterial2D>();
 	godot::ClassDB::register_class<godot::PixelpartEffect>();
 	godot::ClassDB::register_class<godot::PixelpartEffect2D>();
 	godot::ClassDB::register_class<godot::PixelpartParticleEmitter>();

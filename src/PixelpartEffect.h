@@ -6,7 +6,6 @@
 #include "PixelpartParticleType.h"
 #include "PixelpartForceField.h"
 #include "PixelpartCollider.h"
-#include "PixelpartParticleMaterial3D.h"
 #include "ParticleEngine.h"
 #include <godot_cpp/core/binder_common.hpp>
 #include <godot_cpp/variant/transform3d.hpp>
@@ -52,9 +51,6 @@ public:
 	void set_frame_rate(float r);
 	float get_frame_rate() const;
 
-	void set_particle_materials(Array materials);
-	Array get_particle_materials() const;
-
 	float get_import_scale() const;
 
 	void set_effect(Ref<PixelpartEffectResource> effectRes);
@@ -91,13 +87,13 @@ private:
 			std::vector<pixelpart::floatd> index;
 		};
 
-		ParticleMeshInstance(const pixelpart::ParticleType& particleType, Ref<PixelpartParticleMaterial3D> particleMaterial);
+		ParticleMeshInstance(const pixelpart::ParticleType& particleType);
 		ParticleMeshInstance(const ParticleMeshInstance&) = delete;
 		~ParticleMeshInstance();
 
 		ParticleMeshInstance& operator=(const ParticleMeshInstance&) = delete;
 
-		void update_shader(const pixelpart::ParticleType& particleType, Ref<PixelpartParticleMaterial3D> particleMaterial);
+		void update_shader(const pixelpart::ParticleType& particleType);
 
 		Ref<Shader> get_shader() const;
 		Ref<ShaderMaterial> get_shader_material() const;
@@ -151,8 +147,6 @@ private:
 	float loopTime = 1.0f;
 	float speed = 1.0f;
 	float timeStep = 1.0f / 60.0f;
-
-	Array particleMaterials;
 
 	std::vector<std::unique_ptr<ParticleMeshInstance>> particleMeshInstances;
 	std::unordered_map<std::string, Ref<ImageTexture>> textures;

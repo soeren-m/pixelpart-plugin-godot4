@@ -65,8 +65,7 @@ Ref<Shader> PixelpartShaders::get_spatial_shader(const std::string& shaderSource
 	pixelpart::BlendMode blendMode,
 	BaseMaterial3D::ShadingMode shadingMode,
 	BaseMaterial3D::DiffuseMode diffuseMode,
-	BaseMaterial3D::SpecularMode specularMode,
-	ParticleNormalMode normalMode) {
+	BaseMaterial3D::SpecularMode specularMode) {
 	std::string renderMode = "cull_disabled";
 
 	switch(blendMode) {
@@ -127,15 +126,6 @@ Ref<Shader> PixelpartShaders::get_spatial_shader(const std::string& shaderSource
 		FORCE = CUSTOM1.xyz;
 		LIFE = UV2.x;
 		OBJECT_ID = UV2.y;)!";
-
-	switch(normalMode) {
-		case ParticleNormalMode::PARTICLE_NORMAL_MODE_STATIC:
-			vertexShaderSource += "\nNORMAL = normalize(u_StaticNormal);";
-			break;
-		default:
-			vertexShaderSource += "\nNORMAL = normalize(NORMAL);";
-			break;
-	}
 
 	std::string additionalFragmentShaderSource = R"!(if(!OUTPUT_IS_SRGB) {
 			__SHADER_COLOR__.rgb = mix(pow((__SHADER_COLOR__.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), __SHADER_COLOR__.rgb * (1.0 / 12.92), lessThan(__SHADER_COLOR__.rgb, vec3(0.04045)));
