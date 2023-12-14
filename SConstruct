@@ -79,10 +79,6 @@ if (env["TARGET_ARCH"] == "amd64" or
     is64 = True
 
 opts = Variables([], ARGUMENTS)
-opts.Add(EnumVariable("version", "Godot version", "4.1",
-    allowed_values=("4.0", "4.1"),
-    ignorecase=2
-))
 opts.Add(EnumVariable("platform", "Target platform", host_platform,
     allowed_values=("linux", "freebsd", "osx", "windows", "android", "ios", "web"),
     ignorecase=2
@@ -111,14 +107,6 @@ if host_platform == "windows" and env["platform"] != "android":
     elif env["bits"] == "32":
         env = Environment(TARGET_ARCH="x86")
     opts.Update(env)
-
-godot_cpp_path = "godot-cpp-41"
-if env["version"] == "4.0":
-    godot_cpp_path = "godot-cpp-40"
-    env.Append(CPPDEFINES=["GODOT_4_0"])
-elif env["version"] == "4.1":
-    godot_cpp_path = "godot-cpp-41"
-    env.Append(CPPDEFINES=["GODOT_4_1"])
 
 if env["target"] == "debug":
     env.Append(CPPDEFINES=["DEBUG_ENABLED", "DEBUG_METHODS_ENABLED"])
@@ -368,6 +356,8 @@ elif env["platform"] == "web":
         env.Append(CCFLAGS=["-O3"])
 
     target_path = "libpixelpart.wasm-" + "32" + ".wasm"
+
+godot_cpp_path = "godot-cpp-41"
 
 json_api_file = ""
 if "custom_api_file" in env:

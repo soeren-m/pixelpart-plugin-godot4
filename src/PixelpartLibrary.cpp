@@ -39,18 +39,6 @@ void pixelpart_unregister(godot::ModuleInitializationLevel p_level) {
 }
 
 extern "C" {
-#ifdef GODOT_4_0
-GDExtensionBool GDE_EXPORT pixelpart_init(const GDExtensionInterface *p_interface, GDExtensionClassLibraryPtr p_library, GDExtensionInitialization* r_initialization) {
-	godot::GDExtensionBinding::InitObject initObj(p_interface, p_library, r_initialization);
-
-	initObj.register_initializer(pixelpart_register);
-	initObj.register_terminator(pixelpart_unregister);
-	initObj.set_minimum_library_initialization_level(godot::MODULE_INITIALIZATION_LEVEL_SCENE);
-
-	return initObj.init();
-}
-
-#else
 GDExtensionBool GDE_EXPORT pixelpart_init(GDExtensionInterfaceGetProcAddress p_get_proc_address, GDExtensionClassLibraryPtr p_library, GDExtensionInitialization* r_initialization) {
 	godot::GDExtensionBinding::InitObject initObj(p_get_proc_address, p_library, r_initialization);
 
@@ -60,6 +48,4 @@ GDExtensionBool GDE_EXPORT pixelpart_init(GDExtensionInterfaceGetProcAddress p_g
 
 	return initObj.init();
 }
-
-#endif
 }
