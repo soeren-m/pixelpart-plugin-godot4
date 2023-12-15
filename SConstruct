@@ -357,7 +357,7 @@ elif env["platform"] == "web":
 
     target_path = "libpixelpart.wasm-" + "32" + ".wasm"
 
-godot_cpp_path = "godot-cpp-41"
+godot_cpp_path = "godot-cpp"
 
 json_api_file = ""
 if "custom_api_file" in env:
