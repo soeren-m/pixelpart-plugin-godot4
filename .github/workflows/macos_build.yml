@@ -1,0 +1,28 @@
+name: macOS build
+on:
+  workflow_call:
+
+jobs:
+  build-macos:
+    runs-on: macOS-latest
+    name: Build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update submodules
+        uses: ./.github/actions/submodules
+
+      - name: Install common dependencies
+        uses: ./.github/actions/deps
+
+      - name: Compile
+        run: python build.py platform=macos
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: pixelpart-macos
+          path: |
+            ./pixelpart-plugin/addons/pixelpart/bin

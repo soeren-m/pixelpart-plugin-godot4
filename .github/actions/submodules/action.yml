@@ -1,0 +1,10 @@
+name: Update submodules
+
+description: Update submodules of the repository
+
+runs:
+  using: "composite"
+  steps:
+    - name: Update submodules
+      shell: bash
+      run: git submodule update --init --recursive

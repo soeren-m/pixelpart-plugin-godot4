@@ -1,0 +1,34 @@
+name: Linux build
+on:
+  workflow_call:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-20.04
+    name: Build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update submodules
+        uses: ./.github/actions/submodules
+
+      - name: Install common dependencies
+        uses: ./.github/actions/deps
+
+      - name: Install gcc-multilib
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc-multilib
+          sudo apt-get install g++-multilib
+
+      - name: Compile
+        run: python build.py platform=linux
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: pixelpart-linux
+          path: |
+            ./pixelpart-plugin/addons/pixelpart/bin

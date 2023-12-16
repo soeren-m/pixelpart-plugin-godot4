@@ -1,0 +1,44 @@
+name: Web build
+on:
+  workflow_call:
+
+jobs:
+  build-web:
+    runs-on: ubuntu-20.04
+    name: Build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update submodules
+        uses: ./.github/actions/submodules
+
+      - name: Install common dependencies
+        uses: ./.github/actions/deps
+
+      - name: Cache emsdk
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: ./emsdk
+          key: ${{ runner.os }}-emsdk-3_1_18-v1
+
+      - name: Install emsdk
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 https://github.com/emscripten-core/emsdk.git
+          ./emsdk/emsdk install 3.1.18
+
+      - name: Compile
+        run: |
+          ./emsdk/emsdk activate 3.1.18
+          source ./emsdk/emsdk_env.sh
+          python build.py platform=web
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: pixelpart-web
+          path: |
+            ./pixelpart-plugin/addons/pixelpart/bin

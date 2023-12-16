@@ -1,0 +1,27 @@
+name: Setup Python and SCons
+
+description: Setup Python, install the pip version of SCons
+
+inputs:
+  python-version:
+    description: The python version to use
+    default: "3.x"
+  python-arch:
+    description: The python architecture
+    default: "x64"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python-version }}
+        architecture: ${{ inputs.python-arch }}
+
+    - name: Setup SCons
+      shell: bash
+      run: |
+        python -c "import sys; print(sys.version)"
+        python -m pip install scons==4.4.0
+        scons --version

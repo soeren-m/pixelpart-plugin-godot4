@@ -1,0 +1,69 @@
+name: Build
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches:
+      - master
+      - develop
+
+jobs:
+  windows-build:
+    name: Windows build
+    uses: ./.github/workflows/windows_build.yml
+
+  linux-build:
+    name: Linux build
+    uses: ./.github/workflows/linux_build.yml
+
+  macos-build:
+    name: macOS build
+    uses: ./.github/workflows/macos_build.yml
+
+  web-build:
+    name: Web build
+    uses: ./.github/workflows/web_build.yml
+
+  package:
+    name: Package plugin
+    runs-on: ubuntu-20.04
+    needs: [windows-build, linux-build, macos-build, web-build]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: pixelpart-windows
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: pixelpart-linux
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: pixelpart-macos
+
+      - name: Download web artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: pixelpart-web
+
+      - name: Copy binaries
+        run: |
+          mkdir ./pixelpart-plugin/addons/pixelpart/bin
+          cp -r pixelpart-windows/*.dll ./pixelpart-plugin/addons/pixelpart/bin/
+          cp -r pixelpart-linux/*.so ./pixelpart-plugin/addons/pixelpart/bin/
+          cp -r pixelpart-macos/*.dylib ./pixelpart-plugin/addons/pixelpart/bin/
+          cp -r pixelpart-web/*.wasm ./pixelpart-plugin/addons/pixelpart/bin/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: pixelpart-plugin-godot4
+          path: ./pixelpart-plugin/addons
