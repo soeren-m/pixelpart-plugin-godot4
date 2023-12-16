@@ -9,8 +9,8 @@ elif "platform=linux" in sys.argv:
     subprocess.run("scons platform=linux bits=32 target=release generate_bindings=true", shell = True)
     subprocess.run("scons platform=linux bits=64 target=release generate_bindings=true", shell = True)
 
-elif "platform=osx" in sys.argv:
-    subprocess.run("scons platform=osx bits=64 target=release generate_bindings=true", shell = True)
+elif "platform=macos" in sys.argv:
+    subprocess.run("scons platform=macos bits=64 target=release generate_bindings=true", shell = True)
 
 elif "platform=android" in sys.argv:
     subprocess.run("scons platform=android android_arch=armv7 target=release generate_bindings=true", shell = True)

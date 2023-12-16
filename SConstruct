@@ -63,7 +63,7 @@ if sys.platform.startswith("linux"):
 elif sys.platform.startswith("freebsd"):
     host_platform = "freebsd"
 elif sys.platform == "darwin":
-    host_platform = "osx"
+    host_platform = "macos"
 elif sys.platform == "win32" or sys.platform == "msys":
     host_platform = "windows"
 else:
@@ -80,7 +80,7 @@ if (env["TARGET_ARCH"] == "amd64" or
 
 opts = Variables([], ARGUMENTS)
 opts.Add(EnumVariable("platform", "Target platform", host_platform,
-    allowed_values=("linux", "freebsd", "osx", "windows", "android", "ios", "web"),
+    allowed_values=("linux", "freebsd", "macos", "windows", "android", "ios", "web"),
     ignorecase=2
 ))
 opts.Add(EnumVariable("bits", "Target platform bits", "64" if is64 else "32", allowed_values=("32", "64")))
@@ -88,9 +88,6 @@ opts.Add(BoolVariable("use_mingw", "Use the MinGW compiler instead of MSVC - onl
 opts.Add(EnumVariable("target", "Compilation target", "debug", allowed_values=("debug", "release"), ignorecase=2))
 opts.Add(PathVariable("custom_api_file", "Path to a custom JSON API file", None, PathVariable.PathIsFile))
 opts.Add(BoolVariable("generate_bindings", "Generate GDNative API bindings", False))
-opts.Add("macos_deployment_target", "macOS deployment target", "default")
-opts.Add("macos_sdk_path", "macOS SDK path", "")
-opts.Add(EnumVariable("macos_arch", "Target macOS architecture", "universal", ["universal", "x86_64", "arm64"]))
 opts.Add(EnumVariable("ios_arch", "Target iOS architecture", "arm64", ["armv7", "arm64", "x86_64"]))
 opts.Add(BoolVariable("ios_simulator", "Target iOS Simulator", False))
 opts.Add("IPHONEPATH", "Path to iPhone toolchain", "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain")
@@ -131,39 +128,34 @@ if env["platform"] == "linux" or env["platform"] == "freebsd":
 
     target_path = "libpixelpart.linux-" + env["bits"] + ".so"
 
-elif env["platform"] == "osx":
+elif env["platform"] == "macos":
     if env["bits"] == "32":
         raise ValueError("Only 64-bit builds are supported for the macOS target.")
 
     env["CC"] = "clang"
     env["CXX"] = "clang++"
 
-    if env["macos_arch"] == "universal":
-        env.Append(LINKFLAGS=["-arch", "x86_64", "-arch", "arm64"])
-        env.Append(CCFLAGS=["-arch", "x86_64", "-arch", "arm64"])
-    else:
-        env.Append(LINKFLAGS=["-arch", env["macos_arch"]])
-        env.Append(CCFLAGS=["-arch", env["macos_arch"]])
-
-    env.Append(CFLAGS=["-DHAVE_UNISTD_H"])
-    env.Append(CXXFLAGS=["-std=c++17"])
-
-    if env["macos_deployment_target"] != "default":
-        env.Append(CCFLAGS=["-mmacosx-version-min=" + env["macos_deployment_target"]])
-        env.Append(LINKFLAGS=["-mmacosx-version-min=" + env["macos_deployment_target"]])
-
-    if env["macos_sdk_path"]:
-        env.Append(CCFLAGS=["-isysroot", env["macos_sdk_path"]])
-        env.Append(LINKFLAGS=["-isysroot", env["macos_sdk_path"]])
-
-    env.Append(LINKFLAGS=["-framework", "Cocoa", "-Wl,-undefined,dynamic_lookup"])
+    env.Append(CCFLAGS=[
+        "-arch", "x86_64",
+        "-arch", "arm64",
+        "-mmacosx-version-min=10.10"])
+    env.Append(CFLAGS=[
+        "-DHAVE_UNISTD_H"])
+    env.Append(CXXFLAGS=[
+        "-std=c++17"])
+    env.Append(LINKFLAGS=[
+        "-arch", "x86_64",
+        "-arch", "arm64",
+        "-mmacosx-version-min=10.10",
+        "-framework", "Cocoa",
+        "-Wl,-undefined,dynamic_lookup"])
 
     if env["target"] == "debug":
         env.Append(CCFLAGS=["-Og", "-g"])
     elif env["target"] == "release":
         env.Append(CCFLAGS=["-O3"])
 
-    target_path = "libpixelpart.osx.dylib"
+    target_path = "libpixelpart.macos.dylib"
 
 elif env["platform"] == "ios":
     if env["ios_simulator"]:
@@ -208,7 +200,7 @@ elif env["platform"] == "windows":
         elif env["target"] == "release":
             env.Append(CCFLAGS=["/O2", "/EHsc", "/DNDEBUG", "/MT"])
 
-    elif host_platform == "linux" or host_platform == "freebsd" or host_platform == "osx":
+    elif host_platform == "linux" or host_platform == "freebsd" or host_platform == "macos":
         if env["bits"] == "64":
             env["CXX"] = "x86_64-w64-mingw32-g++"
             env["AR"] = "x86_64-w64-mingw32-ar"
@@ -231,7 +223,7 @@ elif env["platform"] == "windows":
         env["SPAWN"] = mySpawn
         env.Replace(ARFLAGS=["q"])
 
-    if host_platform == "linux" or host_platform == "freebsd" or host_platform == "osx" or env["use_mingw"]:
+    if host_platform == "linux" or host_platform == "freebsd" or host_platform == "macos" or env["use_mingw"]:
         env.Append(CCFLAGS=["-O3", "-Wwrite-strings"])
         env.Append(LINKFLAGS=["--static", "-Wl,--no-undefined", "-static-libgcc", "-static-libstdc++"])
 
@@ -260,7 +252,7 @@ elif env["platform"] == "android":
     toolchain = env["ANDROID_NDK_ROOT"] + "/toolchains/llvm/prebuilt/"
     if host_platform == "linux":
         toolchain += "linux-x86_64"
-    elif host_platform == "osx":
+    elif host_platform == "macos":
         toolchain += "darwin-x86_64"
     env.PrependENVPath("PATH", toolchain + "/bin")
 
