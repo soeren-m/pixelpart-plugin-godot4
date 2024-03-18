@@ -1,0 +1,15 @@
+[remap]
+
+importer="pixelpart.effect"
+type="Resource"
+uid="uid://dp5tftsvwvupu"
+path="res://.godot/imported/InTest2d.ppfx-7c4c484cb5e99bee44b1c82a689513ad.res"
+
+[deps]
+
+source_file="res://effects/InTest2d.ppfx"
+dest_files=["res://.godot/imported/InTest2d.ppfx-7c4c484cb5e99bee44b1c82a689513ad.res"]
+
+[params]
+
+scale=100.0

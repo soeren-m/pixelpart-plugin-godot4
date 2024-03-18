@@ -13,16 +13,14 @@ func _ready():
 	if particleEmitter == null:
 		return
 
-	# Set particle property
-	particleType.velocity_variance = 0.2
-
 	# Define animated property
 	particleType.get_opacity().clear()
 	particleType.get_opacity().add_point(0.0, 1.0)
 	particleType.get_opacity().add_point(1.0, 0.0)
 
 	# Set animated property to constant value
-	particleEmitter.get_spread().set(360.0)
+	particleEmitter.get_spread().clear()
+	particleEmitter.get_spread().add_point(0.0, 360.0)
 
 	# Spawn some extra particles
 	particleType.spawn_particles(200)

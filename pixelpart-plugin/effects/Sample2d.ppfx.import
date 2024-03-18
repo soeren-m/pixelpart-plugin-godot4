@@ -1,0 +1,15 @@
+[remap]
+
+importer="pixelpart.effect"
+type="Resource"
+uid="uid://j4w4e84vfkma"
+path="res://.godot/imported/Sample2d.ppfx-b1bc9212bef10d63fa869cb6c6d0d4b1.res"
+
+[deps]
+
+source_file="res://effects/Sample2d.ppfx"
+dest_files=["res://.godot/imported/Sample2d.ppfx-b1bc9212bef10d63fa869cb6c6d0d4b1.res"]
+
+[params]
+
+scale=100.0
