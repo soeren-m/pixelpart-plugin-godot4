@@ -10,7 +10,19 @@
 namespace godot {
 class PixelpartParticleMesh2D {
 public:
-	struct ParticleTrail {
+	PixelpartParticleMesh2D(PixelpartGraphicsResourceStore& resourceStore, const pixelpart::Effect& effect, const pixelpart::ParticleType& particleType);
+	PixelpartParticleMesh2D(const PixelpartParticleMesh2D&) = delete;
+	~PixelpartParticleMesh2D();
+
+	PixelpartParticleMesh2D& operator=(const PixelpartParticleMesh2D&) = delete;
+
+	void draw(Node2D* parentNode,
+		const pixelpart::Effect& effect, const pixelpart::ParticleType& particleType,
+		const pixelpart::ParticleData& particles, uint32_t numParticles,
+		pixelpart::float_t scaleX, pixelpart::float_t scaleY, pixelpart::float_t t);
+
+private:
+	struct ParticleTrailData {
 		uint32_t numParticles = 0u;
 		pixelpart::float_t length = 0.0;
 
@@ -29,18 +41,6 @@ public:
 		PackedColorArray colorArray;
 	};
 
-	PixelpartParticleMesh2D(PixelpartGraphicsResourceStore& resourceStore, const pixelpart::Effect& effect, const pixelpart::ParticleType& particleType);
-	PixelpartParticleMesh2D(const PixelpartParticleMesh2D&) = delete;
-	~PixelpartParticleMesh2D();
-
-	PixelpartParticleMesh2D& operator=(const PixelpartParticleMesh2D&) = delete;
-
-	void draw(Node2D* parentNode,
-		const pixelpart::Effect& effect, const pixelpart::ParticleType& particleType,
-		const pixelpart::ParticleData& particles, uint32_t numParticles,
-		pixelpart::float_t scaleX, pixelpart::float_t scaleY, pixelpart::float_t t);
-
-private:
 	void add_particle_sprites(const pixelpart::Effect& effect, const pixelpart::ParticleType& particleType,
 		const pixelpart::ParticleData& particles, uint32_t numParticles,
 		pixelpart::float_t scaleX, pixelpart::float_t scaleY, pixelpart::float_t t);
@@ -50,7 +50,6 @@ private:
 
 	pixelpart::vec3_t rotate2d(const pixelpart::vec3_t& p, const pixelpart::vec3_t& o, pixelpart::float_t a);
 	pixelpart::mat3_t rotation3d(const pixelpart::vec3_t& angle);
-	pixelpart::mat3_t lookAt(const pixelpart::vec3_t& direction);
 
 	PixelpartGraphicsResourceStore& resources;
 
@@ -62,7 +61,12 @@ private:
 	std::unordered_map<std::string, uint32_t> textureParameterSamplers;
 	std::vector<std::string> textureResourceIds;
 
-	std::unordered_map<uint32_t, ParticleTrail> trails;
+	PackedInt32Array indexArray;
+	PackedVector2Array positionArray;
+	PackedVector2Array textureCoordArray;
+	PackedColorArray colorArray;
+
+	std::unordered_map<uint32_t, ParticleTrailData> trails;
 };
 }
 

@@ -349,50 +349,6 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> effectRes) {
 	particleEngine->setEffect(&effect);
 
 	try {
-		for(pixelpart::ParticleEmitter& particleEmitter : effect.particleEmitters) {
-			Ref<PixelpartParticleEmitter> emitterRef;
-			emitterRef.instantiate();
-			emitterRef->init(effectResource, &particleEmitter, particleEngine.get());
-
-			particleEmitters[particleEmitter.name] = emitterRef;
-		}
-
-		for(pixelpart::ParticleType& particleType : effect.particleTypes) {
-			Ref<PixelpartParticleType> particleTypeRef;
-			particleTypeRef.instantiate();
-			particleTypeRef->init(effectResource, &particleType, particleEngine.get());
-
-			particleTypes[particleType.name] = particleTypeRef;
-		}
-
-		for(pixelpart::ForceField& forceField : effect.forceFields) {
-			Ref<PixelpartForceField> forceFieldRef;
-			forceFieldRef.instantiate();
-			forceFieldRef->init(effectResource, &forceField, particleEngine.get());
-
-			forceFields[forceField.name] = forceFieldRef;
-		}
-
-		for(pixelpart::Collider& collider : effect.colliders) {
-			Ref<PixelpartCollider> colliderRef;
-			colliderRef.instantiate();
-			colliderRef->init(effectResource, &collider, particleEngine.get());
-
-			colliders[collider.name] = colliderRef;
-		}
-
-		for(uint32_t particleTypeIndex = 0u; particleTypeIndex < effect.particleTypes.getCount(); particleTypeIndex++) {
-			try {
-				particleMeshes.emplace_back(std::make_unique<PixelpartParticleMesh3D>(graphicsResources,
-					effect, effect.particleTypes.getByIndex(particleTypeIndex)));
-			}
-			catch(const std::exception& e) {
-				particleMeshes.emplace_back(nullptr);
-
-				UtilityFunctions::push_warning("Could not create particle mesh");
-			}
-		}
-
 		for(const auto& resourceEntry : effect.resources.images) {
 			const pixelpart::ImageResource& imageResource = resourceEntry.second;
 
@@ -443,6 +399,50 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> effectRes) {
 				Mesh::ARRAY_FORMAT_VERTEX | Mesh::ARRAY_FORMAT_NORMAL | Mesh::ARRAY_FORMAT_TEX_UV | Mesh::ARRAY_FORMAT_INDEX);
 
 			graphicsResources.meshes[resourceEntry.first] = mesh;
+		}
+
+		for(pixelpart::ParticleEmitter& particleEmitter : effect.particleEmitters) {
+			Ref<PixelpartParticleEmitter> emitterRef;
+			emitterRef.instantiate();
+			emitterRef->init(effectResource, &particleEmitter, particleEngine.get());
+
+			particleEmitters[particleEmitter.name] = emitterRef;
+		}
+
+		for(pixelpart::ParticleType& particleType : effect.particleTypes) {
+			Ref<PixelpartParticleType> particleTypeRef;
+			particleTypeRef.instantiate();
+			particleTypeRef->init(effectResource, &particleType, particleEngine.get());
+
+			particleTypes[particleType.name] = particleTypeRef;
+		}
+
+		for(pixelpart::ForceField& forceField : effect.forceFields) {
+			Ref<PixelpartForceField> forceFieldRef;
+			forceFieldRef.instantiate();
+			forceFieldRef->init(effectResource, &forceField, particleEngine.get());
+
+			forceFields[forceField.name] = forceFieldRef;
+		}
+
+		for(pixelpart::Collider& collider : effect.colliders) {
+			Ref<PixelpartCollider> colliderRef;
+			colliderRef.instantiate();
+			colliderRef->init(effectResource, &collider, particleEngine.get());
+
+			colliders[collider.name] = colliderRef;
+		}
+
+		for(uint32_t particleTypeIndex = 0u; particleTypeIndex < effect.particleTypes.getCount(); particleTypeIndex++) {
+			try {
+				particleMeshes.emplace_back(std::make_unique<PixelpartParticleMesh3D>(graphicsResources,
+					effect, effect.particleTypes.getByIndex(particleTypeIndex)));
+			}
+			catch(const std::exception& e) {
+				particleMeshes.emplace_back(nullptr);
+
+				UtilityFunctions::push_warning("Could not create particle mesh");
+			}
 		}
 	}
 	catch(const std::exception& e) {

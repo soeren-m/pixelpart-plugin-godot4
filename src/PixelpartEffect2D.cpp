@@ -368,7 +368,7 @@ void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> effectRes) {
 	effect = effectResource->get_project().effect;
 	particleEngine->setEffect(&effect);
 
-	pixelpart::refreshEffectProperties(effect); // TODO: do this when property changes!!
+	pixelpart::refreshEffectProperties(effect);
 
 	try {
 		for(pixelpart::ParticleEmitter& particleEmitter : effect.particleEmitters) {

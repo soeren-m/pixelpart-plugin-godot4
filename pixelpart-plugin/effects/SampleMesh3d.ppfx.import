@@ -1,0 +1,15 @@
+[remap]
+
+importer="pixelpart.effect"
+type="Resource"
+uid="uid://cict53h88m4oa"
+path="res://.godot/imported/SampleMesh3d.ppfx-6570485062c6f189f09bfe745ed4a5d5.res"
+
+[deps]
+
+source_file="res://effects/SampleMesh3d.ppfx"
+dest_files=["res://.godot/imported/SampleMesh3d.ppfx-6570485062c6f189f09bfe745ed4a5d5.res"]
+
+[params]
+
+scale=2.0

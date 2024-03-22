@@ -1,0 +1,15 @@
+[remap]
+
+importer="pixelpart.effect"
+type="Resource"
+uid="uid://o0y1xfxfskjc"
+path="res://.godot/imported/SampleTrail3d.ppfx-e88bdf4f61e0d2a6b598506d447c4706.res"
+
+[deps]
+
+source_file="res://effects/SampleTrail3d.ppfx"
+dest_files=["res://.godot/imported/SampleTrail3d.ppfx-e88bdf4f61e0d2a6b598506d447c4706.res"]
+
+[params]
+
+scale=10.0

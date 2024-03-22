@@ -15,6 +15,9 @@ public:
 		std::vector<pixelpart::VariantParameter> parameters;
 	};
 
+	static const std::string builtInMaterialPrefix;
+	static const std::string uniformPrefix;
+
 	PixelpartShaderGenerator();
 
 	Ref<Shader> get_builtin_canvas_item_shader(const std::string& shaderId);

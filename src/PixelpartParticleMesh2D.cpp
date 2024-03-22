@@ -18,7 +18,7 @@ PixelpartParticleMesh2D::PixelpartParticleMesh2D(PixelpartGraphicsResourceStore&
 		for(uint32_t parameterIndex = 0u, samplerIndex = 0u; parameterIndex < metadata.parameters.size(); parameterIndex++) {
 			const pixelpart::VariantParameter& parameter = metadata.parameters[parameterIndex];
 
-			std::string parameterName = "u_" + parameter.name; // TODO: prefix
+			std::string parameterName = PixelpartShaderGenerator::uniformPrefix + parameter.name;
 			shaderParameterNames[parameterIndex] = parameterName;
 
 			if(parameter.defaultValue.type == pixelpart::VariantParameter::Value::type_resource_image) {
@@ -71,13 +71,12 @@ void PixelpartParticleMesh2D::draw(Node2D* parentNode,
 	const pixelpart::ParticleEmitter& particleEmitter = effect.particleEmitters.get(particleType.parentId);
 
 	PixelpartShaderGenerator& shaderGenerator = PixelpartSystem::get_instance()->get_shader_generator();
-	std::string parameterPrefix = "u_";
+	std::string parameterPrefix = PixelpartShaderGenerator::uniformPrefix;
 	std::unordered_map<pixelpart::id_t, pixelpart::VariantParameter> parameters;
 
 	if(shaderGenerator.has_builtin_canvas_item_shader(particleType.materialInstance.materialId)) {
 		const PixelpartShaderGenerator::ShaderMetadata& metadata = shaderGenerator.get_builtin_canvas_item_shader_metadata(particleType.materialInstance.materialId);
 
-		// TODO: do better
 		for(uint32_t parameterIndex = 0u; parameterIndex < metadata.parameters.size(); parameterIndex++) {
 			parameters[parameterIndex] = metadata.parameters[parameterIndex];
 		}
@@ -137,7 +136,6 @@ void PixelpartParticleMesh2D::draw(Node2D* parentNode,
 				break;
 			}
 			case pixelpart::VariantParameter::Value::type_resource_image: {
-				//uint32_t samplerIndex = textureParameterSamplers.at(parameter.name);
 				if(resources.textures.count(parameterValue.getResourceId()) != 0u) {
 					rs->material_set_param(materialRID, paramName, resources.textures.at(parameterValue.getResourceId())->get_rid());
 				}
@@ -180,20 +178,12 @@ void PixelpartParticleMesh2D::add_particle_sprites(const pixelpart::Effect& effe
 	const pixelpart::ParticleEmitter& particleEmitter = effect.particleEmitters.get(particleType.parentId);
 	pixelpart::float_t alpha = std::fmod(t - particleEmitter.lifetimeStart, particleEmitter.lifetimeDuration) / particleEmitter.lifetimeDuration;
 
-	PackedInt32Array indexArray;
-	PackedVector2Array positionArray;
-	PackedVector2Array textureCoordArray;
-	PackedColorArray colorArray;
 	indexArray.resize(numParticles * 6);
 	positionArray.resize(numParticles * 4);
 	textureCoordArray.resize(numParticles * 4);
 	colorArray.resize(numParticles * 4);
 
 	int32_t* indices = indexArray.ptrw();
-	Vector2* positions = positionArray.ptrw();
-	float* textureCoords = reinterpret_cast<float*>(textureCoordArray.ptrw());
-	float* colors = reinterpret_cast<float*>(colorArray.ptrw());
-
 	for(int32_t p = 0; p < static_cast<int32_t>(numParticles); p++) {
 		indices[p * 6 + 0] = p * 4 + 0;
 		indices[p * 6 + 1] = p * 4 + 1;
@@ -203,6 +193,7 @@ void PixelpartParticleMesh2D::add_particle_sprites(const pixelpart::Effect& effe
 		indices[p * 6 + 5] = p * 4 + 3;
 	}
 
+	Vector2* positions = positionArray.ptrw();
 	for(uint32_t p = 0u; p < numParticles; p++) {
 		pixelpart::vec3_t worldPosition[4];
 
@@ -253,6 +244,7 @@ void PixelpartParticleMesh2D::add_particle_sprites(const pixelpart::Effect& effe
 		positions[p * 4 + 3] = toGd(pixelpart::vec2_t(worldPosition[3]) * scale);
 	}
 
+	float* textureCoords = reinterpret_cast<float*>(textureCoordArray.ptrw());
 	for(uint32_t p = 0u; p < numParticles; p++) {
 		float packedLifeData = toGd(std::floor(particles.life[p] * packFactor));
 		float packedIdData = static_cast<float>(particles.id[p] + 1u);
@@ -267,6 +259,8 @@ void PixelpartParticleMesh2D::add_particle_sprites(const pixelpart::Effect& effe
 		textureCoords[p * 4 * 2 + 7] = 0.0f + packedIdData;
 	}
 
+	// TODO: packing can be done better
+	float* colors = reinterpret_cast<float*>(colorArray.ptrw());
 	for(uint32_t p = 0u; p < numParticles; p++) {
 		float packedVelocityX = toGd(std::floor(particles.velocity[p].x * packFactor) + packFactor);
 		float packedVelocityY = toGd(std::floor(particles.velocity[p].y * packFactor) + packFactor);
@@ -321,7 +315,7 @@ void PixelpartParticleMesh2D::add_particle_trails(const pixelpart::Effect& effec
 		entry.second.numParticles = 0u;
 	}
 
-	ParticleTrail* currentTrail = nullptr;
+	ParticleTrailData* currentTrail = nullptr;
 	for(uint32_t p = 0u, particleParentId = 0u, trailId = 0xFFFFFFFEu; p < numParticles; p++) {
 		particleParentId = particles.parentId[sortKeys[p]];
 
@@ -432,7 +426,7 @@ void PixelpartParticleMesh2D::add_particle_trails(const pixelpart::Effect& effec
 	RenderingServer* rs = RenderingServer::get_singleton();
 
 	for(auto& entry : trails) {
-		ParticleTrail& trail = entry.second;
+		ParticleTrailData& trail = entry.second;
 		trail.length = 0.0;
 
 		if(trail.position.size() < 2u) {
@@ -481,10 +475,6 @@ void PixelpartParticleMesh2D::add_particle_trails(const pixelpart::Effect& effec
 		trail.colorArray.resize(numTrailSegments * 5);
 
 		int32_t* indices = trail.indexArray.ptrw();
-		float* positions = reinterpret_cast<float*>(trail.positionArray.ptrw());
-		float* textureCoords = reinterpret_cast<float*>(trail.textureCoordArray.ptrw());
-		float* colors = reinterpret_cast<float*>(trail.colorArray.ptrw());
-
 		for(int32_t p = 0; p < numTrailSegments; p++) {
 			indices[p * 12 + 0] = p * 5 + 0;
 			indices[p * 12 + 1] = p * 5 + 1;
@@ -500,6 +490,7 @@ void PixelpartParticleMesh2D::add_particle_trails(const pixelpart::Effect& effec
 			indices[p * 12 + 11] = p * 5 + 4;
 		}
 
+		float* positions = reinterpret_cast<float*>(trail.positionArray.ptrw());
 		for(int32_t p = 0; p < numTrailSegments; p++) {
 			pixelpart::vec3_t startToEdge = trail.direction[p] * std::max(trail.size[p].x, trail.size[p].y) * 0.5;
 			pixelpart::vec3_t endToEdge = trail.direction[p + 1] * std::max(trail.size[p + 1].x, trail.size[p + 1].y) * 0.5;
@@ -524,6 +515,7 @@ void PixelpartParticleMesh2D::add_particle_trails(const pixelpart::Effect& effec
 			positions[p * 5 * 2 + 9] = toGd(vertexPositions[4].y * scaleY);
 		}
 
+		float* textureCoords = reinterpret_cast<float*>(trail.textureCoordArray.ptrw());
 		switch(particleType.trailRendererSettings.textureRotation) {
 			case 1u:
 				for(int32_t p = 0; p < numTrailSegments; p++) {
@@ -586,7 +578,7 @@ void PixelpartParticleMesh2D::add_particle_trails(const pixelpart::Effect& effec
 				break;
 		}
 
-		float packedIdData = toGd(entry.first + packFactor);
+		float packedIdData = static_cast<float>(entry.first + 1u);
 		for(int32_t p = 0; p < numTrailSegments; p++) {
 			float packedLifeDataStart = toGd(std::floor(trail.life[p] * packFactor) + packFactor);
 			float packedLifeDataEnd = toGd(std::floor(trail.life[p + 1] * packFactor) + packFactor);
@@ -604,6 +596,7 @@ void PixelpartParticleMesh2D::add_particle_trails(const pixelpart::Effect& effec
 			textureCoords[p * 5 * 2 + 9] = textureCoords[p * 5 * 2 + 9] / 10.0f + packedIdData;
 		}
 
+		float* colors = reinterpret_cast<float*>(trail.colorArray.ptrw());
 		for(int32_t p = 0; p < numTrailSegments; p++) {
 			float packedVelocityXStart = toGd(std::floor(trail.velocity[p].x * packFactor) + packFactor);
 			float packedVelocityYStart = toGd(std::floor(trail.velocity[p].y * packFactor) + packFactor);
@@ -670,13 +663,5 @@ pixelpart::mat3_t PixelpartParticleMesh2D::rotation3d(const pixelpart::vec3_t& a
 		pixelpart::vec3_t(cy * cr + sy * sp * sr, sr * cp, -sy * cr + cy * sp * sr),
 		pixelpart::vec3_t(-cy * sr + sy * sp * cr, cr * cp, sr * sy + cy * sp * cr),
 		pixelpart::vec3_t(sy * cp, -sp, cy * cp));
-}
-pixelpart::mat3_t PixelpartParticleMesh2D::lookAt(const pixelpart::vec3_t& direction) {
-	pixelpart::vec3_t up = pixelpart::vec3_t(0.0, 1.0, 0.0);
-	pixelpart::vec3_t front = glm::normalize(direction);
-	pixelpart::vec3_t right = glm::normalize(glm::cross(front, up));
-	up = glm::normalize(glm::cross(right, front));
-
-	return pixelpart::mat3_t(right, up, front);
 }
 }

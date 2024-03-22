@@ -26,11 +26,11 @@ varying float OBJECT_ID;
 {common}
 
 void vertex() {
-	// TODO: instancing
-	VELOCITY = CUSTOM0.xyz;
-	FORCE = CUSTOM1.xyz;
-	LIFE = UV2.x;
-	OBJECT_ID = UV2.y;
+	NORMAL = -NORMAL;
+	VELOCITY = vec3(0.0, 0.0, 0.0);
+	FORCE = vec3(0.0, 0.0, 0.0);
+	LIFE = 0.0;
+	OBJECT_ID = 0.0;
 }
 
 void fragment() {

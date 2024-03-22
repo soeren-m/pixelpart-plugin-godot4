@@ -4,9 +4,10 @@
 #include <godot_cpp/classes/rendering_server.hpp>
 
 namespace godot {
-PixelpartShaderGenerator::PixelpartShaderGenerator() {
-	std::string builtInMaterialPrefix = "builtIn-";
+const std::string PixelpartShaderGenerator::builtInMaterialPrefix = "builtIn-";
+const std::string PixelpartShaderGenerator::uniformPrefix = "u_";
 
+PixelpartShaderGenerator::PixelpartShaderGenerator() {
 	// TODO: why soft particles, distance fade for 2d?
 
 	std::vector<pixelpart::VariantParameter> unlitBaseShaderParameters = std::vector<pixelpart::VariantParameter>{

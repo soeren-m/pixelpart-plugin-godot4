@@ -5,7 +5,7 @@
 #include <effect/Effect.h>
 #include <engine/ParticleData.h>
 #include <godot_cpp/classes/node3d.hpp>
-#include <godot_cpp/classes/mesh.hpp>
+#include <godot_cpp/classes/multi_mesh.hpp>
 #include <godot_cpp/classes/shader.hpp>
 #include <godot_cpp/classes/shader_material.hpp>
 #include <godot_cpp/classes/camera3d.hpp>
@@ -13,7 +13,19 @@
 namespace godot {
 class PixelpartParticleMesh3D {
 public:
-	struct ParticleTrail {
+	PixelpartParticleMesh3D(PixelpartGraphicsResourceStore& resourceStore, const pixelpart::Effect& effect, const pixelpart::ParticleType& particleType);
+	PixelpartParticleMesh3D(const PixelpartParticleMesh3D&) = delete;
+	~PixelpartParticleMesh3D();
+
+	PixelpartParticleMesh3D& operator=(const PixelpartParticleMesh3D&) = delete;
+
+	void draw(Node3D* parentNode,
+		const pixelpart::Effect& effect, const pixelpart::ParticleType& particleType,
+		const pixelpart::ParticleData& particles, uint32_t numParticles,
+		pixelpart::float_t scale, pixelpart::float_t t);
+
+private:
+	struct ParticleTrailData {
 		uint32_t numParticles = 0u;
 		pixelpart::float_t length = 0.0;
 
@@ -28,18 +40,6 @@ public:
 		std::vector<pixelpart::float_t> index;
 	};
 
-	PixelpartParticleMesh3D(PixelpartGraphicsResourceStore& resourceStore, const pixelpart::Effect& effect, const pixelpart::ParticleType& particleType);
-	PixelpartParticleMesh3D(const PixelpartParticleMesh3D&) = delete;
-	~PixelpartParticleMesh3D();
-
-	PixelpartParticleMesh3D& operator=(const PixelpartParticleMesh3D&) = delete;
-
-	void draw(Node3D* parentNode,
-		const pixelpart::Effect& effect, const pixelpart::ParticleType& particleType,
-		const pixelpart::ParticleData& particles, uint32_t numParticles,
-		pixelpart::float_t scale, pixelpart::float_t t);
-
-private:
 	void add_particle_sprites(Node3D* parentNode,
 		const pixelpart::Effect& effect, const pixelpart::ParticleType& particleType,
 		const pixelpart::ParticleData& particles, uint32_t numParticles,
@@ -53,7 +53,8 @@ private:
 		const pixelpart::ParticleData& particles, uint32_t numParticles,
 		pixelpart::float_t scale, pixelpart::float_t t);
 
-	const pixelpart::ParticleData* sort_particles(const pixelpart::ParticleData& particles, uint32_t numParticles, pixelpart::ParticleSortCriterion sortCriterion, Camera3D* camera);
+	const pixelpart::ParticleData* sort_particles(const pixelpart::ParticleData& particles, uint32_t numParticles, pixelpart::ParticleSortCriterion sortCriterion,
+		Node3D* parentNode, Camera3D* camera);
 
 	pixelpart::mat3_t rotation3d(const pixelpart::vec3_t& angle);
 	pixelpart::mat3_t lookAt(const pixelpart::vec3_t& direction);
@@ -62,7 +63,8 @@ private:
 
 	RID instanceRID;
 
-	Ref<Mesh> mesh;
+	Ref<ArrayMesh> arrayMesh;
+	Ref<MultiMesh> multiMesh;
 	Ref<Shader> shader;
 	Ref<ShaderMaterial> shaderMaterial;
 	std::unordered_map<pixelpart::id_t, std::string> shaderParameterNames;
@@ -72,7 +74,17 @@ private:
 	pixelpart::ParticleData sortedParticleData;
 	std::vector<uint32_t> sortKeys;
 
-	std::unordered_map<uint32_t, ParticleTrail> trails;
+	PackedInt32Array indexArray;
+	PackedVector3Array vertexArray;
+	PackedVector3Array normalArray;
+	PackedVector2Array uvArray;
+	PackedVector2Array uv2Array;
+	PackedColorArray colorArray;
+	PackedFloat32Array custom0Array;
+	PackedFloat32Array custom1Array;
+	PackedFloat32Array instanceDataArray;
+
+	std::unordered_map<uint32_t, ParticleTrailData> trails;
 };
 }
 

@@ -5,7 +5,6 @@
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/world3d.hpp>
 #include <godot_cpp/classes/viewport.hpp>
-#include <godot_cpp/classes/multi_mesh.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 namespace godot {
@@ -13,24 +12,6 @@ PixelpartParticleMesh3D::PixelpartParticleMesh3D(PixelpartGraphicsResourceStore&
 	resources(resourceStore) {
 	RenderingServer* rs = RenderingServer::get_singleton();
 	PixelpartShaderGenerator& shaderGenerator = PixelpartSystem::get_instance()->get_shader_generator();
-
-	switch(particleType.renderer) {
-		case pixelpart::ParticleRendererType::sprite:
-		case pixelpart::ParticleRendererType::trail: {
-			Ref<ArrayMesh> arrayMesh;
-			arrayMesh.instantiate();
-			mesh = arrayMesh;
-			break;
-		}
-		case pixelpart::ParticleRendererType::mesh: {
-			Ref<MultiMesh> multiMesh;
-			multiMesh.instantiate();
-			multiMesh->set_use_colors(true);
-			multiMesh->set_use_custom_data(true);
-			mesh = multiMesh;
-			break;
-		}
-	}
 
 	if(shaderGenerator.has_builtin_spatial_shader(particleType.materialInstance.materialId)) {
 		shader = shaderGenerator.get_builtin_spatial_shader(particleType.materialInstance.materialId);
@@ -40,7 +21,7 @@ PixelpartParticleMesh3D::PixelpartParticleMesh3D(PixelpartGraphicsResourceStore&
 		for(uint32_t parameterIndex = 0u, samplerIndex = 0u; parameterIndex < metadata.parameters.size(); parameterIndex++) {
 			const pixelpart::VariantParameter& parameter = metadata.parameters[parameterIndex];
 
-			std::string parameterName = "u_" + parameter.name; // TODO: prefix
+			std::string parameterName = PixelpartShaderGenerator::uniformPrefix + parameter.name;
 			shaderParameterNames[parameterIndex] = parameterName;
 
 			if(parameter.defaultValue.type == pixelpart::VariantParameter::Value::type_resource_image) {
@@ -58,15 +39,48 @@ PixelpartParticleMesh3D::PixelpartParticleMesh3D(PixelpartGraphicsResourceStore&
 			shaderBuildResult.mainCode, shaderBuildResult.parameterCode,
 			materialResource.blendMode, materialResource.lightingMode);
 	}
-	else {
-		UtilityFunctions::push_warning("Could not create particle material");
-	}
 
 	shaderMaterial.instantiate();
-	shaderMaterial->set_shader(shader);
+
+	if(shader.is_valid()) {
+		shaderMaterial->set_shader(shader);
+	}
+	else {
+		UtilityFunctions::push_error("Could not create particle material");
+	}
 
 	instanceRID = rs->instance_create();
-	rs->instance_set_base(instanceRID, mesh->get_rid());
+
+	switch(particleType.renderer) {
+		case pixelpart::ParticleRendererType::sprite:
+		case pixelpart::ParticleRendererType::trail:
+			arrayMesh.instantiate();
+			rs->instance_set_base(instanceRID, arrayMesh->get_rid());
+
+			break;
+
+		case pixelpart::ParticleRendererType::mesh:
+			multiMesh.instantiate();
+			multiMesh->set_transform_format(MultiMesh::TRANSFORM_3D);
+			multiMesh->set_use_colors(true);
+			multiMesh->set_use_custom_data(true);
+			if(resources.meshes.count(particleType.meshRendererSettings.meshResourceId) != 0u) {
+				Ref<ArrayMesh> baseMesh = resources.meshes.at(particleType.meshRendererSettings.meshResourceId);
+				baseMesh->surface_set_material(0, shaderMaterial);
+
+				multiMesh->set_mesh(baseMesh);
+			}
+			else {
+				UtilityFunctions::push_error("Mesh \"", String(particleType.meshRendererSettings.meshResourceId.c_str()), "\" not found");
+			}
+
+			rs->instance_set_base(instanceRID, multiMesh->get_rid());
+
+			break;
+
+		default:
+			break;
+	}
 }
 PixelpartParticleMesh3D::~PixelpartParticleMesh3D() {
 	RenderingServer* rs = RenderingServer::get_singleton();
@@ -78,7 +92,17 @@ void PixelpartParticleMesh3D::draw(Node3D* parentNode,
 	const pixelpart::Effect& effect, const pixelpart::ParticleType& particleType,
 	const pixelpart::ParticleData& particles, uint32_t numParticles,
 	pixelpart::float_t scale, pixelpart::float_t t) {
-	//mesh->clear_surfaces(); // TODO
+	switch(particleType.renderer) {
+		case pixelpart::ParticleRendererType::sprite:
+		case pixelpart::ParticleRendererType::trail:
+			arrayMesh->clear_surfaces();
+			break;
+		case pixelpart::ParticleRendererType::mesh:
+			multiMesh->set_visible_instance_count(0);
+			break;
+		default:
+			break;
+	}
 
 	if(!parentNode->is_visible() || !particleType.visible) {
 		return;
@@ -86,16 +110,14 @@ void PixelpartParticleMesh3D::draw(Node3D* parentNode,
 
 	const pixelpart::ParticleEmitter& particleEmitter = effect.particleEmitters.get(particleType.parentId);
 
-	shaderMaterial->set_shader_parameter("u_EffectTime", static_cast<float>(t));
-	shaderMaterial->set_shader_parameter("u_ObjectTime", static_cast<float>(t - particleEmitter.lifetimeStart));
-
 	PixelpartShaderGenerator& shaderGenerator = PixelpartSystem::get_instance()->get_shader_generator();
-	std::string parameterPrefix = "u_";
+	std::string parameterPrefix = PixelpartShaderGenerator::uniformPrefix;
 	std::unordered_map<pixelpart::id_t, pixelpart::VariantParameter> parameters;
 
-	if(shaderGenerator.has_builtin_canvas_item_shader(particleType.materialInstance.materialId)) {
-		const PixelpartShaderGenerator::ShaderMetadata& metadata = shaderGenerator.get_builtin_canvas_item_shader_metadata(particleType.materialInstance.materialId);
+	if(shaderGenerator.has_builtin_spatial_shader(particleType.materialInstance.materialId)) {
+		const PixelpartShaderGenerator::ShaderMetadata& metadata = shaderGenerator.get_builtin_spatial_shader_metadata(particleType.materialInstance.materialId);
 
+		// TODO: do better
 		for(uint32_t parameterIndex = 0u; parameterIndex < metadata.parameters.size(); parameterIndex++) {
 			parameters[parameterIndex] = metadata.parameters[parameterIndex];
 		}
@@ -166,6 +188,9 @@ void PixelpartParticleMesh3D::draw(Node3D* parentNode,
 		}
 	}
 
+	shaderMaterial->set_shader_parameter("u_EffectTime", static_cast<float>(t));
+	shaderMaterial->set_shader_parameter("u_ObjectTime", static_cast<float>(t - particleEmitter.lifetimeStart));
+
 	RenderingServer* rs = RenderingServer::get_singleton();
 	rs->instance_set_scenario(instanceRID, parentNode->get_world_3d()->get_scenario());
 	rs->instance_set_transform(instanceRID, parentNode->get_global_transform());
@@ -184,8 +209,17 @@ void PixelpartParticleMesh3D::draw(Node3D* parentNode,
 			break;
 	}
 
-	if(mesh->get_surface_count() > 0) {
-		mesh->surface_set_material(0, shaderMaterial);
+	switch(particleType.renderer) {
+		case pixelpart::ParticleRendererType::sprite:
+		case pixelpart::ParticleRendererType::trail:
+			if(arrayMesh->get_surface_count() > 0) {
+				arrayMesh->surface_set_material(0, shaderMaterial);
+			}
+			break;
+		case pixelpart::ParticleRendererType::mesh:
+			break;
+		default:
+			break;
 	}
 }
 
@@ -207,21 +241,13 @@ void PixelpartParticleMesh3D::add_particle_sprites(Node3D* parentNode,
 
 	const pixelpart::ParticleData* particleRenderData = &particles;
 	if(particleType.spriteRendererSettings.sortCriterion != pixelpart::ParticleSortCriterion::none) {
-		particleRenderData = sort_particles(particles, numParticles, particleType.spriteRendererSettings.sortCriterion, camera);
+		particleRenderData = sort_particles(particles, numParticles, particleType.spriteRendererSettings.sortCriterion, parentNode, camera);
 	}
 
-	pixelpart::vec3_t cameraPosition = fromGd(camera->get_global_transform().origin);
+	pixelpart::vec3_t cameraPosition = fromGd(camera->get_global_transform().origin - parentNode->get_global_position());
 	pixelpart::vec3_t cameraRight = fromGd(camera->get_global_transform().basis.get_column(0));
 	pixelpart::vec3_t cameraUp = fromGd(camera->get_global_transform().basis.get_column(1));
 
-	PackedInt32Array indexArray;
-	PackedVector3Array vertexArray;
-	PackedVector3Array normalArray;
-	PackedVector2Array uvArray;
-	PackedVector2Array uv2Array;
-	PackedColorArray colorArray;
-	PackedFloat32Array custom0Array;
-	PackedFloat32Array custom1Array;
 	indexArray.resize(numParticles * 6);
 	vertexArray.resize(numParticles * 4);
 	normalArray.resize(numParticles * 4);
@@ -232,14 +258,6 @@ void PixelpartParticleMesh3D::add_particle_sprites(Node3D* parentNode,
 	custom1Array.resize(numParticles * 4 * 4);
 
 	int32_t* indices = indexArray.ptrw();
-	Vector3* positions = vertexArray.ptrw();
-	Vector3* normals = normalArray.ptrw();
-	Color* colors = colorArray.ptrw();
-	float* uvs = reinterpret_cast<float*>(uvArray.ptrw());
-	float* uvs2 = reinterpret_cast<float*>(uv2Array.ptrw());
-	float* custom0 = custom0Array.ptrw();
-	float* custom1 = custom1Array.ptrw();
-
 	for(int32_t p = 0; p < static_cast<int32_t>(numParticles); p++) {
 		indices[p * 6 + 0] = p * 4 + 0;
 		indices[p * 6 + 1] = p * 4 + 1;
@@ -249,6 +267,8 @@ void PixelpartParticleMesh3D::add_particle_sprites(Node3D* parentNode,
 		indices[p * 6 + 5] = p * 4 + 3;
 	}
 
+	Vector3* positions = vertexArray.ptrw();
+	Vector3* normals = normalArray.ptrw();
 	for(uint32_t p = 0u; p < numParticles; p++) {
 		pixelpart::mat3_t rotationMatrix = rotation3d(particleRenderData->rotation[p]);
 		pixelpart::vec3_t pivot = particleType.pivot.get() * particleRenderData->size[p];
@@ -314,6 +334,7 @@ void PixelpartParticleMesh3D::add_particle_sprites(Node3D* parentNode,
 		normals[p * 4 + 3] = toGd(normal);
 	}
 
+	Color* colors = colorArray.ptrw();
 	for(uint32_t p = 0u; p < numParticles; p++) {
 		colors[p * 4 + 0] = toGdColor(particleRenderData->color[p]);
 		colors[p * 4 + 1] = toGdColor(particleRenderData->color[p]);
@@ -321,6 +342,7 @@ void PixelpartParticleMesh3D::add_particle_sprites(Node3D* parentNode,
 		colors[p * 4 + 3] = toGdColor(particleRenderData->color[p]);
 	}
 
+	float* uvs = reinterpret_cast<float*>(uvArray.ptrw());
 	for(uint32_t p = 0u; p < numParticles; p++) {
 		uvs[p * 4 * 2 + 0] = 0.0f;
 		uvs[p * 4 * 2 + 1] = 0.0f;
@@ -332,6 +354,7 @@ void PixelpartParticleMesh3D::add_particle_sprites(Node3D* parentNode,
 		uvs[p * 4 * 2 + 7] = 0.0f;
 	}
 
+	float* uvs2 = reinterpret_cast<float*>(uv2Array.ptrw());
 	for(uint32_t p = 0u; p < numParticles; p++) {
 		uvs2[p * 4 * 2 + 0] = static_cast<float>(particleRenderData->life[p]);
 		uvs2[p * 4 * 2 + 1] = static_cast<float>(particleRenderData->id[p]);
@@ -343,6 +366,7 @@ void PixelpartParticleMesh3D::add_particle_sprites(Node3D* parentNode,
 		uvs2[p * 4 * 2 + 7] = static_cast<float>(particleRenderData->id[p]);
 	}
 
+	float* custom0 = custom0Array.ptrw();
 	for(uint32_t p = 0u; p < numParticles; p++) {
 		custom0[p * 4 * 4 + 0] = static_cast<float>(particleRenderData->velocity[p].x);
 		custom0[p * 4 * 4 + 1] = static_cast<float>(particleRenderData->velocity[p].y);
@@ -362,6 +386,7 @@ void PixelpartParticleMesh3D::add_particle_sprites(Node3D* parentNode,
 		custom0[p * 4 * 4 + 15] = 0.0f;
 	}
 
+	float* custom1 = custom1Array.ptrw();
 	for(uint32_t p = 0u; p < numParticles; p++) {
 		custom1[p * 4 * 4 + 0] = static_cast<float>(particleRenderData->force[p].x);
 		custom1[p * 4 * 4 + 1] = static_cast<float>(particleRenderData->force[p].y);
@@ -392,7 +417,6 @@ void PixelpartParticleMesh3D::add_particle_sprites(Node3D* parentNode,
 	meshArray[Mesh::ARRAY_CUSTOM1] = custom1Array;
 	meshArray[Mesh::ARRAY_INDEX] = indexArray;
 
-	Ref<ArrayMesh> arrayMesh = (Ref<ArrayMesh>)mesh;
 	arrayMesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, meshArray, Array(), Dictionary(),
 		Mesh::ARRAY_FORMAT_VERTEX | Mesh::ARRAY_FORMAT_NORMAL | Mesh::ARRAY_FORMAT_COLOR |
 		Mesh::ARRAY_FORMAT_TEX_UV | Mesh::ARRAY_FORMAT_TEX_UV2 |
@@ -412,6 +436,13 @@ void PixelpartParticleMesh3D::add_particle_trails(Node3D* parentNode,
 		return;
 	}
 
+	Camera3D* camera = parentNode->get_viewport()->get_camera_3d();
+	if(!camera) {
+		return;
+	}
+
+	pixelpart::vec3_t cameraPosition = fromGd(camera->get_global_transform().origin - parentNode->get_global_position());
+
 	std::vector<uint32_t> sortKeys(numParticles);
 	std::iota(sortKeys.begin(), sortKeys.end(), 0u);
 	std::sort(sortKeys.begin(), sortKeys.end(), [&particles](uint32_t p0, uint32_t p1) {
@@ -424,7 +455,7 @@ void PixelpartParticleMesh3D::add_particle_trails(Node3D* parentNode,
 		entry.second.numParticles = 0u;
 	}
 
-	PixelpartParticleMesh3D::ParticleTrail* currentTrail = nullptr;
+	ParticleTrailData* currentTrail = nullptr;
 	for(uint32_t p = 0u, particleParentId = 0u, trailId = 0xFFFFFFFEu; p < numParticles; p++) {
 		particleParentId = particles.parentId[sortKeys[p]];
 
@@ -536,7 +567,7 @@ void PixelpartParticleMesh3D::add_particle_trails(Node3D* parentNode,
 
 	int64_t numTotalTrailSegments = 0;
 	for(auto& entry : trails) {
-		PixelpartParticleMesh3D::ParticleTrail& trail = entry.second;
+		ParticleTrailData& trail = entry.second;
 		if(trail.position.size() < 2u) {
 			continue;
 		}
@@ -548,16 +579,6 @@ void PixelpartParticleMesh3D::add_particle_trails(Node3D* parentNode,
 		return;
 	}
 
-	Ref<ArrayMesh> mesh = mesh;
-
-	PackedInt32Array indexArray;
-	PackedVector3Array vertexArray;
-	PackedVector3Array normalArray;
-	PackedVector2Array uvArray;
-	PackedVector2Array uv2Array;
-	PackedColorArray colorArray;
-	PackedFloat32Array custom0Array;
-	PackedFloat32Array custom1Array;
 	indexArray.resize(numTotalTrailSegments * 12);
 	vertexArray.resize(numTotalTrailSegments * 5);
 	normalArray.resize(numTotalTrailSegments * 5);
@@ -578,7 +599,7 @@ void PixelpartParticleMesh3D::add_particle_trails(Node3D* parentNode,
 	float* custom1 = custom1Array.ptrw();
 
 	for(auto& entry : trails) {
-		PixelpartParticleMesh3D::ParticleTrail& trail = entry.second;
+		ParticleTrailData& trail = entry.second;
 		trail.length = 0.0;
 
 		if(trail.position.size() < 2u) {
@@ -621,10 +642,23 @@ void PixelpartParticleMesh3D::add_particle_trails(Node3D* parentNode,
 		}
 
 		for(uint32_t p = 0u; p < static_cast<uint32_t>(trail.position.size()) - 1u; p++) {
-			pixelpart::vec3_t startToEdge = trail.directionToEdge[p] * std::max(trail.size[p].x, trail.size[p].y) * 0.5;
-			pixelpart::vec3_t endToEdge = trail.directionToEdge[p + 1u] * std::max(trail.size[p + 1u].x, trail.size[p + 1u].y) * 0.5;
+			pixelpart::vec3_t startToEdgeDirection = trail.directionToEdge[p];
+			pixelpart::vec3_t endToEdgeDirection = trail.directionToEdge[p + 1u];
 
-			pixelpart::vec2_t vertexTextureCoords[5];
+			if(particleType.alignmentMode == pixelpart::AlignmentMode::camera) {
+				pixelpart::vec3_t cameraToStart = glm::normalize(trail.position[p] - cameraPosition);
+				pixelpart::vec3_t cameraToEnd = glm::normalize(trail.position[p + 1u] - cameraPosition);
+				if(glm::abs(glm::dot(cameraToStart, trail.directionToEdge[p])) < 1.0) {
+					startToEdgeDirection = glm::normalize(glm::cross(cameraToStart, trail.directionToEdge[p]));
+				}
+				if(glm::abs(glm::dot(cameraToEnd, trail.directionToEdge[p + 1u])) < 1.0) {
+					endToEdgeDirection = glm::normalize(glm::cross(cameraToEnd, trail.directionToEdge[p + 1u]));
+				}
+			}
+
+			pixelpart::vec3_t startToEdge = startToEdgeDirection * std::max(trail.size[p].x, trail.size[p].y) * 0.5;
+			pixelpart::vec3_t endToEdge = endToEdgeDirection * std::max(trail.size[p + 1u].x, trail.size[p + 1u].y) * 0.5;
+
 			pixelpart::vec3_t vertexPositions[5] = {
 				(trail.position[p] + startToEdge) * scale,
 				(trail.position[p] - startToEdge) * scale,
@@ -632,13 +666,12 @@ void PixelpartParticleMesh3D::add_particle_trails(Node3D* parentNode,
 				(trail.position[p + 1u] - endToEdge) * scale,
 				(trail.position[p] + trail.position[p + 1u]) * 0.5 * scale
 			};
-			pixelpart::vec3_t vertexNormals[3] = {
-				glm::cross(trail.directionToEdge[p], trail.direction[p]),
-				glm::cross(trail.directionToEdge[p + 1u], trail.direction[p + 1u]),
-				pixelpart::vec3_t(0.0)
+			pixelpart::vec3_t vertexNormals[2] = {
+				glm::cross(startToEdgeDirection, trail.direction[p]),
+				glm::cross(endToEdgeDirection, trail.direction[p + 1u])
 			};
-			vertexNormals[2u] = (vertexNormals[0u] + vertexNormals[1u]) * 0.5;
 
+			pixelpart::vec2_t vertexTextureCoords[5];
 			switch(particleType.trailRendererSettings.textureRotation) {
 				case 1u:
 					vertexTextureCoords[0] = pixelpart::vec2_t(trail.index[p] * particleType.trailRendererSettings.textureUVFactor, 1.0);
@@ -696,7 +729,7 @@ void PixelpartParticleMesh3D::add_particle_trails(Node3D* parentNode,
 			normals[vertexIndex * 5 + 1] = toGd(vertexNormals[0]);
 			normals[vertexIndex * 5 + 2] = toGd(vertexNormals[1]);
 			normals[vertexIndex * 5 + 3] = toGd(vertexNormals[1]);
-			normals[vertexIndex * 5 + 4] = toGd(vertexNormals[2]);
+			normals[vertexIndex * 5 + 4] = toGd((vertexNormals[0] + vertexNormals[1]) * 0.5);
 
 			colors[vertexIndex * 5 + 0] = toGdColor(trail.color[p]);
 			colors[vertexIndex * 5 + 1] = toGdColor(trail.color[p]);
@@ -773,7 +806,7 @@ void PixelpartParticleMesh3D::add_particle_trails(Node3D* parentNode,
 	meshArray[Mesh::ARRAY_CUSTOM1] = custom1Array;
 	meshArray[Mesh::ARRAY_INDEX] = indexArray;
 
-	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, meshArray, Array(), Dictionary(),
+	arrayMesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, meshArray, Array(), Dictionary(),
 		Mesh::ARRAY_FORMAT_VERTEX | Mesh::ARRAY_FORMAT_NORMAL | Mesh::ARRAY_FORMAT_COLOR |
 		Mesh::ARRAY_FORMAT_TEX_UV | Mesh::ARRAY_FORMAT_TEX_UV2 |
 		Mesh::ARRAY_FORMAT_CUSTOM0 | Mesh::ARRAY_FORMAT_CUSTOM1 |
@@ -787,8 +820,6 @@ void PixelpartParticleMesh3D::add_particle_meshes(Node3D* parentNode,
 	const pixelpart::ParticleData& particles, uint32_t numParticles,
 	pixelpart::float_t scale, pixelpart::float_t t) {
 	const pixelpart::float_t packFactor = 10000.0;
-
-	Ref<MultiMesh> multiMesh = (Ref<MultiMesh>)mesh;
 
 	if(numParticles == 0u) {
 		return;
@@ -804,27 +835,18 @@ void PixelpartParticleMesh3D::add_particle_meshes(Node3D* parentNode,
 
 	const pixelpart::ParticleData* particleRenderData = &particles;
 	if(particleType.meshRendererSettings.sortCriterion != pixelpart::ParticleSortCriterion::none) {
-		particleRenderData = sort_particles(particles, numParticles, particleType.meshRendererSettings.sortCriterion, camera);
+		particleRenderData = sort_particles(particles, numParticles, particleType.meshRendererSettings.sortCriterion, parentNode, camera);
 	}
 
-	pixelpart::vec3_t cameraPosition = fromGd(camera->get_global_transform().origin);
+	pixelpart::vec3_t cameraPosition = fromGd(camera->get_global_transform().origin - parentNode->get_global_position()); // TODO: space?
 	pixelpart::vec3_t cameraRight = fromGd(camera->get_global_transform().basis.get_column(0));
 	pixelpart::vec3_t cameraUp = fromGd(camera->get_global_transform().basis.get_column(1));
 
-	PackedFloat32Array instanceDataArray;
-	instanceDataArray.resize(numParticles * 20);
-
+	instanceDataArray.resize(numParticles * 20); // TODO: allocate once!
 	float* instanceData = instanceDataArray.ptrw();
 
 	for(uint32_t p = 0u; p < numParticles; p++) {
-		pixelpart::vec3_t pivot = particleType.pivot.get() * particleRenderData->size[p];
-
-		pixelpart::mat4_t transformationMatrix(1.0);
-		transformationMatrix *= glm::scale(particleRenderData->size[p]);
-		transformationMatrix *= glm::translate(-pivot);
-		transformationMatrix *= pixelpart::mat4_t(rotation3d(particleRenderData->rotation[p]));
-		transformationMatrix *= glm::translate(pivot);
-
+		pixelpart::mat4_t transformationMatrix = glm::scale(pixelpart::vec3_t(scale));
 		switch(particleType.alignmentMode) {
 			case pixelpart::AlignmentMode::motion:
 				transformationMatrix *= pixelpart::mat4_t(lookAt(particleRenderData->velocity[p]));
@@ -839,19 +861,25 @@ void PixelpartParticleMesh3D::add_particle_meshes(Node3D* parentNode,
 				break;
 		}
 
+		pixelpart::vec3_t pivot = particleType.pivot.get() * particleRenderData->size[p];
+		transformationMatrix *= glm::translate(pivot);
+		transformationMatrix *= pixelpart::mat4_t(rotation3d(particleRenderData->rotation[p]));
+		transformationMatrix *= glm::translate(-pivot);
+
 		transformationMatrix *= glm::translate(particleRenderData->globalPosition[p]);
+		transformationMatrix *= glm::scale(particleRenderData->size[p]);
 
 		instanceData[p * 20 + 0] = static_cast<float>(transformationMatrix[0][0]);
-		instanceData[p * 20 + 1] = static_cast<float>(transformationMatrix[0][0]);
-		instanceData[p * 20 + 2] = static_cast<float>(transformationMatrix[0][0]);
+		instanceData[p * 20 + 1] = static_cast<float>(transformationMatrix[0][1]);
+		instanceData[p * 20 + 2] = static_cast<float>(transformationMatrix[0][2]);
 		instanceData[p * 20 + 3] = static_cast<float>(transformationMatrix[3][0]);
-		instanceData[p * 20 + 4] = static_cast<float>(transformationMatrix[0][0]);
-		instanceData[p * 20 + 5] = static_cast<float>(transformationMatrix[0][0]);
-		instanceData[p * 20 + 6] = static_cast<float>(transformationMatrix[0][0]);
+		instanceData[p * 20 + 4] = static_cast<float>(transformationMatrix[1][0]);
+		instanceData[p * 20 + 5] = static_cast<float>(transformationMatrix[1][1]);
+		instanceData[p * 20 + 6] = static_cast<float>(transformationMatrix[1][2]);
 		instanceData[p * 20 + 7] = static_cast<float>(transformationMatrix[3][1]);
-		instanceData[p * 20 + 8] = static_cast<float>(transformationMatrix[0][0]);
-		instanceData[p * 20 + 9] = static_cast<float>(transformationMatrix[0][0]);
-		instanceData[p * 20 + 10] = static_cast<float>(transformationMatrix[0][0]);
+		instanceData[p * 20 + 8] = static_cast<float>(transformationMatrix[2][0]);
+		instanceData[p * 20 + 9] = static_cast<float>(transformationMatrix[2][1]);
+		instanceData[p * 20 + 10] = static_cast<float>(transformationMatrix[2][2]);
 		instanceData[p * 20 + 11] = static_cast<float>(transformationMatrix[3][2]);
 
 		instanceData[p * 20 + 12] = static_cast<float>(particleRenderData->color[p].r);
@@ -876,17 +904,20 @@ void PixelpartParticleMesh3D::add_particle_meshes(Node3D* parentNode,
 		instanceData[p * 20 + 19] = packedCustomW;
 	}
 
+	multiMesh->set_visible_instance_count(-1);
+	multiMesh->set_instance_count(static_cast<int32_t>(numParticles));
 	multiMesh->set_buffer(instanceDataArray);
 }
 
-const pixelpart::ParticleData* PixelpartParticleMesh3D::sort_particles(const pixelpart::ParticleData& particles, uint32_t numParticles, pixelpart::ParticleSortCriterion sortCriterion, Camera3D* camera) {
+const pixelpart::ParticleData* PixelpartParticleMesh3D::sort_particles(const pixelpart::ParticleData& particles, uint32_t numParticles, pixelpart::ParticleSortCriterion sortCriterion,
+	Node3D* parentNode, Camera3D* camera) {
 	if(sortCriterion == pixelpart::ParticleSortCriterion::none || numParticles <= 1u) {
 		return &particles;
 	}
 
 	sortedParticleData.resize(particles.id.size());
 	sortKeys.resize(particles.id.size());
-	std::iota(sortKeys.begin(), sortKeys.begin() + numParticles, 0);
+	std::iota(sortKeys.begin(), sortKeys.begin() + numParticles, 0u);
 
 	switch(sortCriterion) {
 		case pixelpart::ParticleSortCriterion::age: {
@@ -899,7 +930,7 @@ const pixelpart::ParticleData* PixelpartParticleMesh3D::sort_particles(const pix
 		}
 
 		case pixelpart::ParticleSortCriterion::distance: {
-			pixelpart::vec3_t cameraPosition = fromGd(camera->get_global_transform().origin);
+			pixelpart::vec3_t cameraPosition = fromGd(camera->get_global_transform().origin - parentNode->get_global_position()); // TODO: space?
 
 			insertionSort(sortKeys.begin(), sortKeys.begin() + numParticles,
 				[&particles, cameraPosition](uint32_t i, uint32_t j) {
