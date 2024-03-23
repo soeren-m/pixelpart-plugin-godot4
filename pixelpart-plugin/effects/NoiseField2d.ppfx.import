@@ -1,0 +1,15 @@
+[remap]
+
+importer="pixelpart.effect"
+type="Resource"
+uid="uid://ky6cqnl8reow"
+path="res://.godot/imported/NoiseField2d.ppfx-c2be50d2ca96ec91685002e574026d75.res"
+
+[deps]
+
+source_file="res://effects/NoiseField2d.ppfx"
+dest_files=["res://.godot/imported/NoiseField2d.ppfx-c2be50d2ca96ec91685002e574026d75.res"]
+
+[params]
+
+scale=200.0

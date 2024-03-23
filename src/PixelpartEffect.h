@@ -7,7 +7,7 @@
 #include "PixelpartParticleType.h"
 #include "PixelpartForceField.h"
 #include "PixelpartCollider.h"
-#include "engine/ParticleEngine.h"
+#include <engine/ParticleEngine.h>
 #include <godot_cpp/core/binder_common.hpp>
 #include <godot_cpp/variant/transform3d.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>

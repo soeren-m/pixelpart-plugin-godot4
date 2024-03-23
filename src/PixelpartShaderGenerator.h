@@ -1,9 +1,9 @@
 #ifndef PIXELPART_SHADER_GENERATOR_H
 #define PIXELPART_SHADER_GENERATOR_H
 
-#include "effect/BlendMode.h"
-#include "effect/LightingMode.h"
-#include "shader/ShaderGraph.h"
+#include <effect/BlendMode.h>
+#include <effect/LightingMode.h>
+#include <shader/ShaderGraph.h>
 #include <godot_cpp/classes/shader.hpp>
 #include <godot_cpp/classes/base_material3d.hpp>
 #include <godot_cpp/classes/canvas_item_material.hpp>

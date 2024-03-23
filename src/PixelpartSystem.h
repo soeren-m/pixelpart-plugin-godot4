@@ -2,7 +2,7 @@
 #define PIXELPART_SYSTEM_H
 
 #include "PixelpartShaderGenerator.h"
-#include "common/ThreadPool.h"
+#include <common/ThreadPool.h>
 
 namespace godot {
 class PixelpartSystem {

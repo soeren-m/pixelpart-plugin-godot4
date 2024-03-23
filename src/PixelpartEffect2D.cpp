@@ -210,67 +210,79 @@ bool PixelpartEffect2D::get_flip_v() const {
 void PixelpartEffect2D::set_input_bool(String name, bool value) {
 	pixelpart::EffectInputSet::iterator inputIt = findInput(name);
 	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Effect input \"", name, "\" not found");
+		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
 		return;
 	}
 
 	inputIt->second.value = pixelpart::VariantValue::Bool(value);
+
 	pixelpart::refreshEffectProperties(effect);
+	particleEngine->refreshParticleSolver();
 }
 void PixelpartEffect2D::set_input_int(String name, int value) {
 	pixelpart::EffectInputSet::iterator inputIt = findInput(name);
 	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Effect input \"", name, "\" not found");
+		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
 		return;
 	}
 
 	inputIt->second.value = pixelpart::VariantValue::Int(fromGd(value));
+
 	pixelpart::refreshEffectProperties(effect);
+	particleEngine->refreshParticleSolver();
 }
 void PixelpartEffect2D::set_input_float(String name, float value) {
 	pixelpart::EffectInputSet::iterator inputIt = findInput(name);
 	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Effect input \"", name, "\" not found");
+		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
 		return;
 	}
 
 	inputIt->second.value = pixelpart::VariantValue::Float(fromGd(value));
+
 	pixelpart::refreshEffectProperties(effect);
+	particleEngine->refreshParticleSolver();
 }
 void PixelpartEffect2D::set_input_float2(String name, Vector2 value) {
 	pixelpart::EffectInputSet::iterator inputIt = findInput(name);
 	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Effect input \"", name, "\" not found");
+		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
 		return;
 	}
 
 	inputIt->second.value = pixelpart::VariantValue::Float2(fromGd(value));
+
 	pixelpart::refreshEffectProperties(effect);
+	particleEngine->refreshParticleSolver();
 }
 void PixelpartEffect2D::set_input_float3(String name, Vector3 value) {
 	pixelpart::EffectInputSet::iterator inputIt = findInput(name);
 	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Effect input \"", name, "\" not found");
+		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
 		return;
 	}
 
 	inputIt->second.value = pixelpart::VariantValue::Float3(fromGd(value));
+
 	pixelpart::refreshEffectProperties(effect);
+	particleEngine->refreshParticleSolver();
 }
 void PixelpartEffect2D::set_input_float4(String name, Vector4 value) {
 	pixelpart::EffectInputSet::iterator inputIt = findInput(name);
 	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Effect input \"", name, "\" not found");
+		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
 		return;
 	}
 
 	inputIt->second.value = pixelpart::VariantValue::Float4(fromGd(value));
+
 	pixelpart::refreshEffectProperties(effect);
+	particleEngine->refreshParticleSolver();
 }
 bool PixelpartEffect2D::get_input_bool(String name) const {
 	pixelpart::EffectInputSet::const_iterator inputIt = findInput(name);
 	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Effect input \"", name, "\" not found");
+		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
 		return false;
 	}
 
@@ -279,7 +291,7 @@ bool PixelpartEffect2D::get_input_bool(String name) const {
 int PixelpartEffect2D::get_input_int(String name) const {
 	pixelpart::EffectInputSet::const_iterator inputIt = findInput(name);
 	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Effect input \"", name, "\" not found");
+		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
 		return 0;
 	}
 
@@ -288,7 +300,7 @@ int PixelpartEffect2D::get_input_int(String name) const {
 float PixelpartEffect2D::get_input_float(String name) const {
 	pixelpart::EffectInputSet::const_iterator inputIt = findInput(name);
 	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Effect input \"", name, "\" not found");
+		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
 		return 0.0f;
 	}
 
@@ -297,7 +309,7 @@ float PixelpartEffect2D::get_input_float(String name) const {
 Vector2 PixelpartEffect2D::get_input_float2(String name) const {
 	pixelpart::EffectInputSet::const_iterator inputIt = findInput(name);
 	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Effect input \"", name, "\" not found");
+		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
 		return Vector2(0.0f, 0.0f);
 	}
 
@@ -306,7 +318,7 @@ Vector2 PixelpartEffect2D::get_input_float2(String name) const {
 Vector3 PixelpartEffect2D::get_input_float3(String name) const {
 	pixelpart::EffectInputSet::const_iterator inputIt = findInput(name);
 	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Effect input \"", name, "\" not found");
+		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
 		return Vector3(0.0f, 0.0f, 0.0f);
 	}
 
@@ -315,7 +327,7 @@ Vector3 PixelpartEffect2D::get_input_float3(String name) const {
 Vector4 PixelpartEffect2D::get_input_float4(String name) const {
 	pixelpart::EffectInputSet::const_iterator inputIt = findInput(name);
 	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Effect input \"", name, "\" not found");
+		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
 		return Vector4(0.0f, 0.0f, 0.0f, 0.0f);
 	}
 
@@ -366,11 +378,26 @@ void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> effectRes) {
 	effectResource->load();
 
 	effect = effectResource->get_project().effect;
-	particleEngine->setEffect(&effect);
-
 	pixelpart::refreshEffectProperties(effect);
 
+	particleEngine->setEffect(&effect);
+	particleEngine->refreshParticleSolver();
+
 	try {
+		for(const auto& resource : effect.resources.images) {
+			PackedByteArray imageData;
+			imageData.resize(static_cast<int64_t>(resource.second.data.size()));
+
+			std::memcpy(imageData.ptrw(), resource.second.data.data(), resource.second.data.size());
+
+			Ref<Image> image = Image::create_from_data(
+				static_cast<int32_t>(resource.second.width),
+				static_cast<int32_t>(resource.second.height),
+				false, Image::FORMAT_RGBA8, imageData);
+
+			graphicsResources.textures[resource.first] = ImageTexture::create_from_image(image);
+		}
+
 		for(pixelpart::ParticleEmitter& particleEmitter : effect.particleEmitters) {
 			Ref<PixelpartParticleEmitter> emitterRef;
 			emitterRef.instantiate();
@@ -406,20 +433,6 @@ void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> effectRes) {
 		for(uint32_t particleTypeIndex = 0u; particleTypeIndex < effect.particleTypes.getCount(); particleTypeIndex++) {
 			particleMeshes.emplace_back(std::make_unique<PixelpartParticleMesh2D>(graphicsResources,
 				effect, effect.particleTypes.getByIndex(particleTypeIndex)));
-		}
-
-		for(const auto& resource : effect.resources.images) {
-			PackedByteArray imageData;
-			imageData.resize(static_cast<int64_t>(resource.second.data.size()));
-
-			std::memcpy(imageData.ptrw(), resource.second.data.data(), resource.second.data.size());
-
-			Ref<Image> image = Image::create_from_data(
-				static_cast<int32_t>(resource.second.width),
-				static_cast<int32_t>(resource.second.height),
-				false, Image::FORMAT_RGBA8, imageData);
-
-			graphicsResources.textures[resource.first] = ImageTexture::create_from_image(image);
 		}
 	}
 	catch(const std::exception& e) {

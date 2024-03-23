@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://ck7m2fuu4mk3q"]
 
 [ext_resource type="Script" path="res://EffectScript3D.gd" id="1_dsdr7"]
-[ext_resource type="PixelpartEffectResource" uid="uid://cict53h88m4oa" path="res://effects/SampleMesh3d.ppfx" id="2_dkova"]
+[ext_resource type="PixelpartEffectResource" uid="uid://o0y1xfxfskjc" path="res://effects/SampleTrail3d.ppfx" id="2_sv6yr"]
 
 [sub_resource type="Sky" id="Sky_asj0q"]
 
@@ -21,7 +21,7 @@ transform = Transform3D(-4.37114e-08, 0.422618, -0.906308, 0, 0.906308, 0.422618
 environment = SubResource("Environment_r6ga3")
 
 [node name="SampleEffect" type="PixelpartEffect" parent="."]
-effect = ExtResource("2_dkova")
+effect = ExtResource("2_sv6yr")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.04549, 2.21144, 0.824204)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]

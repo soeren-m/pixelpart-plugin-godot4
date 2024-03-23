@@ -838,10 +838,6 @@ void PixelpartParticleMesh3D::add_particle_meshes(Node3D* parentNode,
 		particleRenderData = sort_particles(particles, numParticles, particleType.meshRendererSettings.sortCriterion, parentNode, camera);
 	}
 
-	pixelpart::vec3_t cameraPosition = fromGd(camera->get_global_transform().origin - parentNode->get_global_position()); // TODO: space?
-	pixelpart::vec3_t cameraRight = fromGd(camera->get_global_transform().basis.get_column(0));
-	pixelpart::vec3_t cameraUp = fromGd(camera->get_global_transform().basis.get_column(1));
-
 	instanceDataArray.resize(numParticles * 20); // TODO: allocate once!
 	float* instanceData = instanceDataArray.ptrw();
 
@@ -849,25 +845,25 @@ void PixelpartParticleMesh3D::add_particle_meshes(Node3D* parentNode,
 		pixelpart::mat4_t transformationMatrix = glm::scale(pixelpart::vec3_t(scale));
 		switch(particleType.alignmentMode) {
 			case pixelpart::AlignmentMode::motion:
-				transformationMatrix *= pixelpart::mat4_t(lookAt(particleRenderData->velocity[p]));
+				transformationMatrix = pixelpart::mat4_t(lookAt(particleRenderData->velocity[p])) * transformationMatrix;
 				break;
 			case pixelpart::AlignmentMode::emission:
-				transformationMatrix *= pixelpart::mat4_t(lookAt(particleEmitter.position.get(alpha) - particleRenderData->globalPosition[p]));
+				transformationMatrix = pixelpart::mat4_t(lookAt(particleEmitter.position.get(alpha) - particleRenderData->globalPosition[p])) * transformationMatrix;
 				break;
 			case pixelpart::AlignmentMode::emitter:
-				transformationMatrix *= pixelpart::mat4_t(rotation3d(particleEmitter.orientation.get(alpha)));
+				transformationMatrix = pixelpart::mat4_t(rotation3d(particleEmitter.orientation.get(alpha))) * transformationMatrix;
 				break;
 			default:
 				break;
 		}
 
 		pixelpart::vec3_t pivot = particleType.pivot.get() * particleRenderData->size[p];
-		transformationMatrix *= glm::translate(pivot);
-		transformationMatrix *= pixelpart::mat4_t(rotation3d(particleRenderData->rotation[p]));
-		transformationMatrix *= glm::translate(-pivot);
+		transformationMatrix = glm::translate(transformationMatrix, pivot);
+		transformationMatrix = pixelpart::mat4_t(rotation3d(particleRenderData->rotation[p])) * transformationMatrix;
+		transformationMatrix = glm::translate(transformationMatrix, -pivot);
 
-		transformationMatrix *= glm::translate(particleRenderData->globalPosition[p]);
-		transformationMatrix *= glm::scale(particleRenderData->size[p]);
+		transformationMatrix = glm::translate(transformationMatrix, particleRenderData->globalPosition[p]);
+		transformationMatrix = glm::scale(transformationMatrix, particleRenderData->size[p]);
 
 		instanceData[p * 20 + 0] = static_cast<float>(transformationMatrix[0][0]);
 		instanceData[p * 20 + 1] = static_cast<float>(transformationMatrix[0][1]);
@@ -881,6 +877,18 @@ void PixelpartParticleMesh3D::add_particle_meshes(Node3D* parentNode,
 		instanceData[p * 20 + 9] = static_cast<float>(transformationMatrix[2][1]);
 		instanceData[p * 20 + 10] = static_cast<float>(transformationMatrix[2][2]);
 		instanceData[p * 20 + 11] = static_cast<float>(transformationMatrix[3][2]);
+		/*instanceData[p * 20 + 0] = static_cast<float>(transformationMatrix[0][0]);
+		instanceData[p * 20 + 1] = static_cast<float>(transformationMatrix[1][0]);
+		instanceData[p * 20 + 2] = static_cast<float>(transformationMatrix[2][0]);
+		instanceData[p * 20 + 3] = static_cast<float>(transformationMatrix[3][0]);
+		instanceData[p * 20 + 4] = static_cast<float>(transformationMatrix[0][1]);
+		instanceData[p * 20 + 5] = static_cast<float>(transformationMatrix[1][1]);
+		instanceData[p * 20 + 6] = static_cast<float>(transformationMatrix[2][1]);
+		instanceData[p * 20 + 7] = static_cast<float>(transformationMatrix[3][1]);
+		instanceData[p * 20 + 8] = static_cast<float>(transformationMatrix[0][2]);
+		instanceData[p * 20 + 9] = static_cast<float>(transformationMatrix[1][2]);
+		instanceData[p * 20 + 10] = static_cast<float>(transformationMatrix[2][2]);
+		instanceData[p * 20 + 11] = static_cast<float>(transformationMatrix[3][2]);*/
 
 		instanceData[p * 20 + 12] = static_cast<float>(particleRenderData->color[p].r);
 		instanceData[p * 20 + 13] = static_cast<float>(particleRenderData->color[p].g);

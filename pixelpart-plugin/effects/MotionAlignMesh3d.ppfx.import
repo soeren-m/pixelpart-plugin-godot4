@@ -1,0 +1,15 @@
+[remap]
+
+importer="pixelpart.effect"
+type="Resource"
+uid="uid://viqlma5hii7x"
+path="res://.godot/imported/MotionAlignMesh3d.ppfx-f7b99369c4495caecbd0f46f91a12acf.res"
+
+[deps]
+
+source_file="res://effects/MotionAlignMesh3d.ppfx"
+dest_files=["res://.godot/imported/MotionAlignMesh3d.ppfx-f7b99369c4495caecbd0f46f91a12acf.res"]
+
+[params]
+
+scale=2.0

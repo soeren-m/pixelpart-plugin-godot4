@@ -21,6 +21,7 @@ void PixelpartCollider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_num_points"), &PixelpartCollider::get_num_points);
 	ClassDB::bind_method(D_METHOD("get_width"), &PixelpartCollider::get_width);
 	ClassDB::bind_method(D_METHOD("get_orientation"), &PixelpartCollider::get_orientation);
+	ClassDB::bind_method(D_METHOD("get_kill_on_contact"), &PixelpartCollider::get_kill_on_contact);
 	ClassDB::bind_method(D_METHOD("get_bounce"), &PixelpartCollider::get_bounce);
 	ClassDB::bind_method(D_METHOD("get_friction"), &PixelpartCollider::get_friction);
 
@@ -171,6 +172,17 @@ Ref<PixelpartStaticPropertyFloat> PixelpartCollider::get_orientation() const {
 	}
 
 	return Ref<PixelpartStaticPropertyFloat>();
+}
+Ref<PixelpartStaticPropertyBool> PixelpartCollider::get_kill_on_contact() const {
+	if(collider && particleEngine) {
+		Ref<PixelpartStaticPropertyBool> property;
+		property.instantiate();
+		property->init(&collider->killOnContact, particleEngine);
+
+		return property;
+	}
+
+	return Ref<PixelpartStaticPropertyBool>();
 }
 
 Ref<PixelpartAnimatedPropertyFloat> PixelpartCollider::get_bounce() const {

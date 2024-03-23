@@ -1,5 +1,6 @@
 #include "PixelpartSystem.h"
 #include "shaders/PixelpartShaderLanguage.h"
+#include <property/ComputeGraph.h>
 
 namespace godot {
 PixelpartSystem* PixelpartSystem::instance = nullptr;
@@ -9,6 +10,8 @@ PixelpartSystem* PixelpartSystem::get_instance() {
 
 PixelpartSystem::PixelpartSystem() {
 	instance = this;
+
+	pixelpart::ComputeGraph::nodeFactory.registerBuiltInNodes();
 
 	nlohmann::ordered_json modelJson = nlohmann::json::parse(
 		PixelpartShaderGraph_json,

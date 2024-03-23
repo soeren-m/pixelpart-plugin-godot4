@@ -207,63 +207,21 @@
                     "compute_graph": {
                         "nodes": [
                             [
-                                1,
-                                {
-                                    "type": "compute_node_multiply",
-                                    "name": "",
-                                    "inputs": [
-                                        {
-                                            "id": 1,
-                                            "node": 4294967295,
-                                            "slot": 0
-                                        },
-                                        {
-                                            "id": 2,
-                                            "node": 2,
-                                            "slot": 0
-                                        }
-                                    ],
-                                    "parameter_values": [],
-                                    "position": {
-                                        "x": -2.0,
-                                        "y": 65.0
-                                    }
-                                }
-                            ],
-                            [
                                 0,
                                 {
                                     "type": "compute_node_output",
                                     "name": "",
                                     "inputs": [
                                         {
-                                            "id": 3,
-                                            "node": 1,
-                                            "slot": 0
+                                            "id": 4294967295,
+                                            "node": 4294967295,
+                                            "slot": 4294967295
                                         }
                                     ],
                                     "parameter_values": [],
                                     "position": {
-                                        "x": 140.0,
-                                        "y": -2.0
-                                    }
-                                }
-                            ],
-                            [
-                                2,
-                                {
-                                    "type": "compute_node_number",
-                                    "name": "",
-                                    "inputs": [],
-                                    "parameter_values": [
-                                        {
-                                            "type": "float",
-                                            "value": 300.0
-                                        }
-                                    ],
-                                    "position": {
-                                        "x": -300.0,
-                                        "y": 66.0
+                                        "x": 0.0,
+                                        "y": 0.0
                                     }
                                 }
                             ]
@@ -1144,11 +1102,20 @@
                         "interpolation": "linear",
                         "points": [
                             [
-                                0.5,
+                                0.05000000074505806,
                                 {
-                                    "x": 1.0,
-                                    "y": 1.0,
-                                    "z": 1.0,
+                                    "x": 0.07929515838623047,
+                                    "y": 0.07929515838623047,
+                                    "z": 0.07929515838623047,
+                                    "w": 1.0
+                                }
+                            ],
+                            [
+                                0.8150000018067658,
+                                {
+                                    "x": 0.27753305435180664,
+                                    "y": 0.27753305435180664,
+                                    "z": 0.27753305435180664,
                                     "w": 1.0
                                 }
                             ]
@@ -1157,65 +1124,21 @@
                     "compute_graph": {
                         "nodes": [
                             [
-                                1,
-                                {
-                                    "type": "compute_node_colorramp",
-                                    "name": "",
-                                    "inputs": [
-                                        {
-                                            "id": 0,
-                                            "node": 4294967295,
-                                            "slot": 0
-                                        }
-                                    ],
-                                    "parameter_values": [
-                                        {
-                                            "type": "gradient",
-                                            "value": {
-                                                "interpolation": "linear",
-                                                "points": [
-                                                    [
-                                                        0.08124999329447746,
-                                                        {
-                                                            "x": 0.20075252652168274,
-                                                            "y": 0.5119979977607727,
-                                                            "z": 0.7537688612937927
-                                                        }
-                                                    ],
-                                                    [
-                                                        0.9300430417060852,
-                                                        {
-                                                            "x": 0.8844221234321594,
-                                                            "y": 0.22956427931785583,
-                                                            "z": 0.1644403040409088
-                                                        }
-                                                    ]
-                                                ]
-                                            }
-                                        }
-                                    ],
-                                    "position": {
-                                        "x": 9.0,
-                                        "y": 24.0
-                                    }
-                                }
-                            ],
-                            [
                                 0,
                                 {
                                     "type": "compute_node_output",
                                     "name": "",
                                     "inputs": [
                                         {
-                                            "id": 1,
-                                            "node": 1,
-                                            "slot": 0
+                                            "id": 4294967295,
+                                            "node": 4294967295,
+                                            "slot": 4294967295
                                         }
                                     ],
                                     "parameter_values": [],
                                     "position": {
-                                        "x": 371.0,
-                                        "y": 46.0
+                                        "x": 0.0,
+                                        "y": 0.0
                                     }
                                 }
                             ]
@@ -1305,6 +1228,10 @@
                             [
                                 0.5,
                                 1.0
+                            ],
+                            [
+                                1.0,
+                                0.0
                             ]
                         ]
                     },
@@ -1406,7 +1333,7 @@
                             0,
                             {
                                 "type": "resource_image",
-                                "value": "__default__@sprites/basic_01.png"
+                                "value": "basic_01.png5238315589538229833@sprites/basic_01.png"
                             }
                         ],
                         [
@@ -1487,12 +1414,628 @@
                 }
             }
         ],
-        "force_fields": [],
+        "force_fields": [
+            {
+                "id": 0,
+                "parent_id": null,
+                "name": "Force",
+                "lifetime_start": 0.0,
+                "lifetime_duration": 1.0,
+                "repeat": true,
+                "position": {
+                    "curve": {
+                        "interpolation": "linear",
+                        "points": [
+                            [
+                                0.0,
+                                {
+                                    "x": 0.0,
+                                    "y": 0.0,
+                                    "z": 0.0
+                                }
+                            ]
+                        ]
+                    },
+                    "compute_graph": {
+                        "nodes": [
+                            [
+                                0,
+                                {
+                                    "type": "compute_node_output",
+                                    "name": "",
+                                    "inputs": [
+                                        {
+                                            "id": 4294967295,
+                                            "node": 4294967295,
+                                            "slot": 4294967295
+                                        }
+                                    ],
+                                    "parameter_values": [],
+                                    "position": {
+                                        "x": 0.0,
+                                        "y": 0.0
+                                    }
+                                }
+                            ]
+                        ]
+                    },
+                    "compute_operation": "set",
+                    "compute_target": {
+                        "type": "result",
+                        "index": 0
+                    }
+                },
+                "type": "noise_field",
+                "exclusion_list": [],
+                "size": {
+                    "curve": {
+                        "interpolation": "linear",
+                        "points": [
+                            [
+                                0.5,
+                                {
+                                    "x": -0.1,
+                                    "y": -0.1,
+                                    "z": -0.1
+                                }
+                            ]
+                        ]
+                    },
+                    "compute_graph": {
+                        "nodes": [
+                            [
+                                0,
+                                {
+                                    "type": "compute_node_output",
+                                    "name": "",
+                                    "inputs": [
+                                        {
+                                            "id": 4294967295,
+                                            "node": 4294967295,
+                                            "slot": 4294967295
+                                        }
+                                    ],
+                                    "parameter_values": [],
+                                    "position": {
+                                        "x": 0.0,
+                                        "y": 0.0
+                                    }
+                                }
+                            ]
+                        ]
+                    },
+                    "compute_operation": "set",
+                    "compute_target": {
+                        "type": "result",
+                        "index": 0
+                    }
+                },
+                "orientation": {
+                    "curve": {
+                        "interpolation": "linear",
+                        "points": [
+                            [
+                                0.5,
+                                {
+                                    "x": 0.0,
+                                    "y": 0.0,
+                                    "z": 0.0
+                                }
+                            ]
+                        ]
+                    },
+                    "compute_graph": {
+                        "nodes": [
+                            [
+                                0,
+                                {
+                                    "type": "compute_node_output",
+                                    "name": "",
+                                    "inputs": [
+                                        {
+                                            "id": 4294967295,
+                                            "node": 4294967295,
+                                            "slot": 4294967295
+                                        }
+                                    ],
+                                    "parameter_values": [],
+                                    "position": {
+                                        "x": 0.0,
+                                        "y": 0.0
+                                    }
+                                }
+                            ]
+                        ]
+                    },
+                    "compute_operation": "set",
+                    "compute_target": {
+                        "type": "result",
+                        "index": 0
+                    }
+                },
+                "strength": {
+                    "curve": {
+                        "interpolation": "linear",
+                        "points": [
+                            [
+                                0.5,
+                                0.58
+                            ]
+                        ]
+                    },
+                    "compute_graph": {
+                        "nodes": [
+                            [
+                                0,
+                                {
+                                    "type": "compute_node_output",
+                                    "name": "",
+                                    "inputs": [
+                                        {
+                                            "id": 4294967295,
+                                            "node": 4294967295,
+                                            "slot": 4294967295
+                                        }
+                                    ],
+                                    "parameter_values": [],
+                                    "position": {
+                                        "x": 0.0,
+                                        "y": 0.0
+                                    }
+                                }
+                            ]
+                        ]
+                    },
+                    "compute_operation": "set",
+                    "compute_target": {
+                        "type": "result",
+                        "index": 0
+                    }
+                },
+                "attraction_field": null,
+                "acceleration_field": {
+                    "direction": {
+                        "curve": {
+                            "interpolation": "linear",
+                            "points": [
+                                [
+                                    0.5,
+                                    {
+                                        "x": 0.0,
+                                        "y": 0.0,
+                                        "z": 0.0
+                                    }
+                                ]
+                            ]
+                        },
+                        "compute_graph": {
+                            "nodes": [
+                                [
+                                    0,
+                                    {
+                                        "type": "compute_node_output",
+                                        "name": "",
+                                        "inputs": [
+                                            {
+                                                "id": 4294967295,
+                                                "node": 4294967295,
+                                                "slot": 4294967295
+                                            }
+                                        ],
+                                        "parameter_values": [],
+                                        "position": {
+                                            "x": 0.0,
+                                            "y": 0.0
+                                        }
+                                    }
+                                ]
+                            ]
+                        },
+                        "compute_operation": "set",
+                        "compute_target": {
+                            "type": "result",
+                            "index": 0
+                        }
+                    },
+                    "direction_variance": {
+                        "curve": {
+                            "interpolation": "linear",
+                            "points": [
+                                [
+                                    0.5,
+                                    0.0
+                                ]
+                            ]
+                        },
+                        "compute_graph": {
+                            "nodes": [
+                                [
+                                    0,
+                                    {
+                                        "type": "compute_node_output",
+                                        "name": "",
+                                        "inputs": [
+                                            {
+                                                "id": 4294967295,
+                                                "node": 4294967295,
+                                                "slot": 4294967295
+                                            }
+                                        ],
+                                        "parameter_values": [],
+                                        "position": {
+                                            "x": 0.0,
+                                            "y": 0.0
+                                        }
+                                    }
+                                ]
+                            ]
+                        },
+                        "compute_operation": "set",
+                        "compute_target": {
+                            "type": "result",
+                            "index": 0
+                        }
+                    },
+                    "strength_variance": {
+                        "curve": {
+                            "interpolation": "linear",
+                            "points": [
+                                [
+                                    0.5,
+                                    0.0
+                                ]
+                            ]
+                        },
+                        "compute_graph": {
+                            "nodes": [
+                                [
+                                    0,
+                                    {
+                                        "type": "compute_node_output",
+                                        "name": "",
+                                        "inputs": [
+                                            {
+                                                "id": 4294967295,
+                                                "node": 4294967295,
+                                                "slot": 4294967295
+                                            }
+                                        ],
+                                        "parameter_values": [],
+                                        "position": {
+                                            "x": 0.0,
+                                            "y": 0.0
+                                        }
+                                    }
+                                ]
+                            ]
+                        },
+                        "compute_operation": "set",
+                        "compute_target": {
+                            "type": "result",
+                            "index": 0
+                        }
+                    },
+                    "grid_size_x": 1,
+                    "grid_size_y": 1,
+                    "grid_size_z": 1,
+                    "grid_direction": [
+                        {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        }
+                    ],
+                    "grid_strength": [
+                        0.0
+                    ]
+                },
+                "vector_field": {
+                    "resource_id": "",
+                    "filter": "none",
+                    "tightness": {
+                        "curve": {
+                            "interpolation": "linear",
+                            "points": [
+                                [
+                                    0.5,
+                                    1.0
+                                ]
+                            ]
+                        },
+                        "compute_graph": {
+                            "nodes": [
+                                [
+                                    0,
+                                    {
+                                        "type": "compute_node_output",
+                                        "name": "",
+                                        "inputs": [
+                                            {
+                                                "id": 4294967295,
+                                                "node": 4294967295,
+                                                "slot": 4294967295
+                                            }
+                                        ],
+                                        "parameter_values": [],
+                                        "position": {
+                                            "x": 0.0,
+                                            "y": 0.0
+                                        }
+                                    }
+                                ]
+                            ]
+                        },
+                        "compute_operation": "set",
+                        "compute_target": {
+                            "type": "result",
+                            "index": 0
+                        }
+                    }
+                },
+                "noise_field": {
+                    "octaves": {
+                        "value": 4,
+                        "compute_graph": {
+                            "nodes": [
+                                [
+                                    0,
+                                    {
+                                        "type": "compute_node_output",
+                                        "name": "",
+                                        "inputs": [
+                                            {
+                                                "id": 4294967295,
+                                                "node": 4294967295,
+                                                "slot": 4294967295
+                                            }
+                                        ],
+                                        "parameter_values": [],
+                                        "position": {
+                                            "x": 0.0,
+                                            "y": 0.0
+                                        }
+                                    }
+                                ]
+                            ]
+                        },
+                        "compute_operation": "set"
+                    },
+                    "frequency": {
+                        "curve": {
+                            "interpolation": "linear",
+                            "points": [
+                                [
+                                    0.5,
+                                    1.0
+                                ]
+                            ]
+                        },
+                        "compute_graph": {
+                            "nodes": [
+                                [
+                                    0,
+                                    {
+                                        "type": "compute_node_output",
+                                        "name": "",
+                                        "inputs": [
+                                            {
+                                                "id": 4294967295,
+                                                "node": 4294967295,
+                                                "slot": 4294967295
+                                            }
+                                        ],
+                                        "parameter_values": [],
+                                        "position": {
+                                            "x": 0.0,
+                                            "y": 0.0
+                                        }
+                                    }
+                                ]
+                            ]
+                        },
+                        "compute_operation": "set",
+                        "compute_target": {
+                            "type": "result",
+                            "index": 0
+                        }
+                    },
+                    "persistence": {
+                        "curve": {
+                            "interpolation": "linear",
+                            "points": [
+                                [
+                                    0.5,
+                                    0.5
+                                ]
+                            ]
+                        },
+                        "compute_graph": {
+                            "nodes": [
+                                [
+                                    0,
+                                    {
+                                        "type": "compute_node_output",
+                                        "name": "",
+                                        "inputs": [
+                                            {
+                                                "id": 4294967295,
+                                                "node": 4294967295,
+                                                "slot": 4294967295
+                                            }
+                                        ],
+                                        "parameter_values": [],
+                                        "position": {
+                                            "x": 0.0,
+                                            "y": 0.0
+                                        }
+                                    }
+                                ]
+                            ]
+                        },
+                        "compute_operation": "set",
+                        "compute_target": {
+                            "type": "result",
+                            "index": 0
+                        }
+                    },
+                    "lacunarity": {
+                        "curve": {
+                            "interpolation": "linear",
+                            "points": [
+                                [
+                                    0.5,
+                                    2.0
+                                ]
+                            ]
+                        },
+                        "compute_graph": {
+                            "nodes": [
+                                [
+                                    0,
+                                    {
+                                        "type": "compute_node_output",
+                                        "name": "",
+                                        "inputs": [
+                                            {
+                                                "id": 4294967295,
+                                                "node": 4294967295,
+                                                "slot": 4294967295
+                                            }
+                                        ],
+                                        "parameter_values": [],
+                                        "position": {
+                                            "x": 0.0,
+                                            "y": 0.0
+                                        }
+                                    }
+                                ]
+                            ]
+                        },
+                        "compute_operation": "set",
+                        "compute_target": {
+                            "type": "result",
+                            "index": 0
+                        }
+                    },
+                    "animated": true,
+                    "animation_time_scale": {
+                        "value": 1.0,
+                        "compute_graph": {
+                            "nodes": [
+                                [
+                                    0,
+                                    {
+                                        "type": "compute_node_output",
+                                        "name": "",
+                                        "inputs": [
+                                            {
+                                                "id": 4294967295,
+                                                "node": 4294967295,
+                                                "slot": 4294967295
+                                            }
+                                        ],
+                                        "parameter_values": [],
+                                        "position": {
+                                            "x": 0.0,
+                                            "y": 0.0
+                                        }
+                                    }
+                                ]
+                            ]
+                        },
+                        "compute_operation": "set"
+                    },
+                    "animation_time_base": {
+                        "value": 0.0,
+                        "compute_graph": {
+                            "nodes": [
+                                [
+                                    0,
+                                    {
+                                        "type": "compute_node_output",
+                                        "name": "",
+                                        "inputs": [
+                                            {
+                                                "id": 4294967295,
+                                                "node": 4294967295,
+                                                "slot": 4294967295
+                                            }
+                                        ],
+                                        "parameter_values": [],
+                                        "position": {
+                                            "x": 0.0,
+                                            "y": 0.0
+                                        }
+                                    }
+                                ]
+                            ]
+                        },
+                        "compute_operation": "set"
+                    }
+                },
+                "drag_field": {
+                    "velocity_influence": {
+                        "value": 1.0,
+                        "compute_graph": {
+                            "nodes": [
+                                [
+                                    0,
+                                    {
+                                        "type": "compute_node_output",
+                                        "name": "",
+                                        "inputs": [
+                                            {
+                                                "id": 4294967295,
+                                                "node": 4294967295,
+                                                "slot": 4294967295
+                                            }
+                                        ],
+                                        "parameter_values": [],
+                                        "position": {
+                                            "x": 0.0,
+                                            "y": 0.0
+                                        }
+                                    }
+                                ]
+                            ]
+                        },
+                        "compute_operation": "set"
+                    },
+                    "size_influence": {
+                        "value": 1.0,
+                        "compute_graph": {
+                            "nodes": [
+                                [
+                                    0,
+                                    {
+                                        "type": "compute_node_output",
+                                        "name": "",
+                                        "inputs": [
+                                            {
+                                                "id": 4294967295,
+                                                "node": 4294967295,
+                                                "slot": 4294967295
+                                            }
+                                        ],
+                                        "parameter_values": [],
+                                        "position": {
+                                            "x": 0.0,
+                                            "y": 0.0
+                                        }
+                                    }
+                                ]
+                            ]
+                        },
+                        "compute_operation": "set"
+                    }
+                }
+            }
+        ],
         "colliders": [],
         "light_sources": [],
         "resources": {
             "images": {
-                "__default__": {
+                "basic_01.png5238315589538229833": {
                     "name": "unknown",
                     "width": 256,
                     "height": 256,
@@ -1505,29 +2048,18 @@
             "materials": {},
             "vector_fields": {}
         },
-        "inputs": [
-            [
-                0,
-                {
-                    "name": "TestInput",
-                    "value": {
-                        "type": "float",
-                        "value": 0.5
-                    }
-                }
-            ]
-        ]
+        "inputs": []
     },
     "post_processing": {
         "effects": []
     },
     "camera": {
         "position": {
-            "x": 0.0,
-            "y": 0.0,
+            "x": 0.008610085933469236,
+            "y": 0.42600897094234824,
             "z": 1.0
         },
-        "zoom": 1.0,
+        "zoom": 1.2069969155341485,
         "fov": 60.0,
         "pitch": 0.0,
         "yaw": 0.0,

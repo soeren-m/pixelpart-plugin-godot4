@@ -2,6 +2,7 @@
 #define PIXELPART_COLLIDER_H
 
 #include "PixelpartEffectResource.h"
+#include "properties/PixelpartStaticPropertyBool.h"
 #include "properties/PixelpartStaticPropertyFloat.h"
 #include "properties/PixelpartAnimatedPropertyFloat.h"
 
@@ -36,7 +37,7 @@ public:
 
 	Ref<PixelpartStaticPropertyFloat> get_width() const;
 	Ref<PixelpartStaticPropertyFloat> get_orientation() const;
-	//Ref<PixelpartStaticPropertyBool> get_kill_on_contact() const; TODO
+	Ref<PixelpartStaticPropertyBool> get_kill_on_contact() const;
 
 	Ref<PixelpartAnimatedPropertyFloat> get_bounce() const;
 	Ref<PixelpartAnimatedPropertyFloat> get_friction() const;

@@ -15,6 +15,7 @@ void pixelpart_register(godot::ModuleInitializationLevel p_level) {
 		return;
 	}
 
+	godot::ClassDB::register_class<godot::PixelpartStaticPropertyBool>();
 	godot::ClassDB::register_class<godot::PixelpartStaticPropertyInt>();
 	godot::ClassDB::register_class<godot::PixelpartStaticPropertyFloat>();
 	godot::ClassDB::register_class<godot::PixelpartStaticPropertyFloat2>();

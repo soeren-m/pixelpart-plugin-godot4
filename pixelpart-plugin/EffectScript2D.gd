@@ -3,7 +3,7 @@ extends Node2D
 const Pixelpart = preload("res://addons/pixelpart/src/PixelpartCommon.gd")
 
 func _ready():
-	#$SampleEffect.set_input_float("TestInput", 0.5)
+	$SampleEffect.set_input_float("TestInput", 1.0)
 	
 	# Get particle type by name
 	var particleType = $SampleEffect.find_particle_type("Particle")
