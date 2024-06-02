@@ -2,9 +2,9 @@
 #define PIXELPART_COLLIDER_H
 
 #include "PixelpartEffectResource.h"
-#include "PixelpartCurve.h"
-#include "Collider.h"
-#include "ParticleEngine.h"
+#include "property/PixelpartStaticPropertyBool.h"
+#include "property/PixelpartStaticPropertyFloat.h"
+#include "property/PixelpartAnimatedPropertyFloat.h"
 
 namespace godot {
 class PixelpartCollider : public RefCounted {
@@ -15,7 +15,7 @@ public:
 
 	PixelpartCollider();
 
-	void init(Ref<PixelpartEffectResource> resource, pixelpart::Collider* collider, pixelpart::ParticleEngine* engine);
+	void init(Ref<PixelpartEffectResource> resource, pixelpart::Collider* colliderPtr, pixelpart::ParticleEngine* particleEnginePtr);
 
 	int get_id() const;
 	String get_name() const;
@@ -35,13 +35,17 @@ public:
 	Vector3 get_point(int index) const;
 	int get_num_points() const;
 
-	Ref<PixelpartCurve> get_bounce() const;
-	Ref<PixelpartCurve> get_friction() const;
+	Ref<PixelpartStaticPropertyFloat> get_width() const;
+	Ref<PixelpartStaticPropertyFloat> get_orientation() const;
+	Ref<PixelpartStaticPropertyBool> get_kill_on_contact() const;
+
+	Ref<PixelpartAnimatedPropertyFloat> get_bounce() const;
+	Ref<PixelpartAnimatedPropertyFloat> get_friction() const;
 
 private:
 	Ref<PixelpartEffectResource> effectResource;
-	pixelpart::Collider* nativeCollider = nullptr;
-	pixelpart::ParticleEngine* nativeParticleEngine = nullptr;
+	pixelpart::Collider* collider = nullptr;
+	pixelpart::ParticleEngine* particleEngine = nullptr;
 };
 }
 

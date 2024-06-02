@@ -42,7 +42,7 @@ void PixelpartEffectResource::load() {
 	}
 
 	try {
-		project = pixelpart::deserialize((const char*)data.ptr(), data.size(), projectResources);
+		project = pixelpart::deserialize((const char*)data.ptr(), data.size());
 	}
 	catch(const std::exception& e) {
 		UtilityFunctions::printerr(String("Failed to parse effect file: ") + get_path());
@@ -52,7 +52,6 @@ void PixelpartEffectResource::load() {
 }
 void PixelpartEffectResource::release() {
 	project = pixelpart::Project();
-	projectResources = pixelpart::ResourceDatabase();
 	loaded = false;
 }
 
@@ -72,8 +71,5 @@ float PixelpartEffectResource::get_scale() const {
 
 const pixelpart::Project& PixelpartEffectResource::get_project() const {
 	return project;
-}
-const pixelpart::ResourceDatabase& PixelpartEffectResource::get_project_resources() const {
-	return projectResources;
 }
 }

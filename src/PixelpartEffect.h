@@ -6,13 +6,11 @@
 #include "PixelpartParticleType.h"
 #include "PixelpartForceField.h"
 #include "PixelpartCollider.h"
-#include "ParticleEngine.h"
+#include "rendering/PixelpartParticleMesh3D.h"
+#include <engine/ParticleEngine.h>
 #include <godot_cpp/core/binder_common.hpp>
 #include <godot_cpp/variant/transform3d.hpp>
-#include <godot_cpp/classes/node3d.hpp>
-#include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
-#include <godot_cpp/classes/shader_material.hpp>
 #include <godot_cpp/classes/image_texture.hpp>
 
 namespace godot {
@@ -51,6 +49,21 @@ public:
 	void set_frame_rate(float r);
 	float get_frame_rate() const;
 
+	void set_input_bool(String name, bool value);
+	void set_input_int(String name, int value);
+	void set_input_float(String name, float value);
+	void set_input_float2(String name, Vector2 value);
+	void set_input_float3(String name, Vector3 value);
+	void set_input_float4(String name, Vector4 value);
+	bool get_input_bool(String name) const;
+	int get_input_int(String name) const;
+	float get_input_float(String name) const;
+	Vector2 get_input_float2(String name) const;
+	Vector3 get_input_float3(String name) const;
+	Vector4 get_input_float4(String name) const;
+
+	void spawn_particles(int particleTypeId, int count);
+
 	float get_import_scale() const;
 
 	void set_effect(Ref<PixelpartEffectResource> effectRes);
@@ -70,69 +83,11 @@ public:
 	Ref<PixelpartCollider> get_collider_at_index(int index) const;
 
 private:
-	class ParticleMeshInstance {
-	public:
-		struct ParticleTrail {
-			uint32_t numParticles = 0u;
-			pixelpart::floatd length = 0.0;
-
-			std::vector<pixelpart::vec3d> position;
-			std::vector<pixelpart::vec3d> size;
-			std::vector<pixelpart::vec4d> color;
-			std::vector<pixelpart::vec3d> velocity;
-			std::vector<pixelpart::vec3d> force;
-			std::vector<pixelpart::floatd> life;
-			std::vector<pixelpart::vec3d> direction;
-			std::vector<pixelpart::vec3d> directionToEdge;
-			std::vector<pixelpart::floatd> index;
-		};
-
-		ParticleMeshInstance(const pixelpart::ParticleType& particleType);
-		ParticleMeshInstance(const ParticleMeshInstance&) = delete;
-		~ParticleMeshInstance();
-
-		ParticleMeshInstance& operator=(const ParticleMeshInstance&) = delete;
-
-		void update_shader(const pixelpart::ParticleType& particleType);
-
-		Ref<Shader> get_shader() const;
-		Ref<ShaderMaterial> get_shader_material() const;
-		Ref<ArrayMesh> get_mesh() const;
-		RID get_instance_rid() const;
-
-		std::string get_texture_id(std::size_t index) const;
-		std::size_t get_texture_count() const;
-
-		pixelpart::ParticleData& get_sorted_particle_data();
-		std::vector<uint32_t>& get_sort_keys();
-
-		std::unordered_map<uint32_t, ParticleTrail>& get_trails();
-
-	private:
-		RID instanceRID;
-		Ref<ArrayMesh> mesh;
-		Ref<Shader> shader;
-		Ref<ShaderMaterial> shaderMaterial;
-
-		pixelpart::ShaderGraph::BuildResult shaderBuildResult;
-
-		pixelpart::ParticleData sortedParticleData;
-		std::vector<uint32_t> sortKeys;
-
-		std::unordered_map<uint32_t, ParticleTrail> trails;
-	};
-
-	void draw_particles(uint32_t particleTypeIndex);
-
-	void add_particle_mesh(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, pixelpart::floatd scale);
-	void add_particle_sprites(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, pixelpart::floatd scale);
-	void add_particle_trails(ParticleMeshInstance& meshInstance, const pixelpart::ParticleType& particleType, const pixelpart::ParticleData& particles, uint32_t numParticles, pixelpart::floatd scale);
-
-	pixelpart::mat3d rotation3d(const pixelpart::vec3d& angle);
-	pixelpart::mat3d lookAt(const pixelpart::vec3d& direction);
+	pixelpart::EffectInputCollection::iterator findInput(String name);
+	pixelpart::EffectInputCollection::const_iterator findInput(String name) const;
 
 	Ref<PixelpartEffectResource> effectResource;
-	pixelpart::Effect nativeEffect;
+	pixelpart::Effect effect;
 
 	std::unordered_map<std::string, Ref<PixelpartParticleEmitter>> particleEmitters;
 	std::unordered_map<std::string, Ref<PixelpartParticleType>> particleTypes;
@@ -140,6 +95,7 @@ private:
 	std::unordered_map<std::string, Ref<PixelpartCollider>> colliders;
 
 	std::unique_ptr<pixelpart::ParticleEngine> particleEngine;
+	uint32_t particleCapacity = 10000u;
 	float simulationTime = 0.0f;
 
 	bool playing = true;
@@ -148,8 +104,9 @@ private:
 	float speed = 1.0f;
 	float timeStep = 1.0f / 60.0f;
 
-	std::vector<std::unique_ptr<ParticleMeshInstance>> particleMeshInstances;
-	std::unordered_map<std::string, Ref<ImageTexture>> textures;
+	std::vector<std::unique_ptr<PixelpartParticleMesh3D>> particleMeshes;
+
+	PixelpartGraphicsResourceStore graphicsResources;
 };
 }
 

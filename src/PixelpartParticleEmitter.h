@@ -1,12 +1,9 @@
-#ifndef PIXELPART_PARTICLEEMITTER_H
-#define PIXELPART_PARTICLEEMITTER_H
+#ifndef PIXELPART_PARTICLE_EMITTER_H
+#define PIXELPART_PARTICLE_EMITTER_H
 
 #include "PixelpartEffectResource.h"
-#include "PixelpartCurve.h"
-#include "PixelpartCurve3.h"
-#include "PixelpartGradient.h"
-#include "ParticleEmitter.h"
-#include "ParticleEngine.h"
+#include "property/PixelpartAnimatedPropertyFloat.h"
+#include "property/PixelpartAnimatedPropertyFloat3.h"
 
 namespace godot {
 class PixelpartParticleEmitter : public RefCounted {
@@ -17,7 +14,7 @@ public:
 
 	PixelpartParticleEmitter();
 
-	void init(Ref<PixelpartEffectResource> resource, pixelpart::ParticleEmitter* particleEmitter, pixelpart::ParticleEngine* engine);
+	void init(Ref<PixelpartEffectResource> resource, pixelpart::ParticleEmitter* particleEmitterPtr, pixelpart::ParticleEngine* particleEnginePtr);
 
 	int get_id() const;
 	int get_parent_id() const;
@@ -32,29 +29,41 @@ public:
 	bool is_active() const;
 	float get_local_time() const;
 
-	Ref<PixelpartCurve3> get_position() const;
+	Ref<PixelpartAnimatedPropertyFloat3> get_position() const;
 
 	void set_shape(int type);
 	int get_shape() const;
+	void add_shape_point(Vector3 point);
+	void remove_shape_point(int index);
+	void set_shape_point(int index, Vector3 point);
+	int get_num_shape_points() const;
+	Vector3 get_shape_point(int index) const;
 
-	Ref<PixelpartCurve3> get_path() const;
-	Ref<PixelpartCurve3> get_size() const;
-	Ref<PixelpartCurve3> get_orientation() const;
+	Ref<PixelpartAnimatedPropertyFloat3> get_size() const;
+	Ref<PixelpartAnimatedPropertyFloat3> get_orientation() const;
 
 	void set_distribution(int mode);
-	void set_emission_mode(int mode);
-	void set_direction_mode(int mode);
 	int get_distribution() const;
+	void set_grid_order(int mode);
+	int get_grid_order() const;
+	void set_grid_size(int width, int height, int depth);
+	int get_grid_width() const;
+	int get_grid_height() const;
+	int get_grid_depth() const;
+	void set_emission_mode(int mode);
 	int get_emission_mode() const;
+	void set_direction_mode(int mode);
 	int get_direction_mode() const;
-
-	Ref<PixelpartCurve3> get_direction() const;
-	Ref<PixelpartCurve> get_spread() const;
+	Ref<PixelpartAnimatedPropertyFloat3> get_direction() const;
+	Ref<PixelpartAnimatedPropertyFloat> get_spread() const;
 
 private:
+	void set_shape_points(const std::vector<pixelpart::vec3_t>& points);
+	std::vector<pixelpart::vec3_t> get_shape_points() const;
+
 	Ref<PixelpartEffectResource> effectResource;
-	pixelpart::ParticleEmitter* nativeParticleEmitter = nullptr;
-	pixelpart::ParticleEngine* nativeParticleEngine = nullptr;
+	pixelpart::ParticleEmitter* particleEmitter = nullptr;
+	pixelpart::ParticleEngine* particleEngine = nullptr;
 };
 }
 

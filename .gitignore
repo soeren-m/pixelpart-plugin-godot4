@@ -1,6 +1,7 @@
 # Directories
 /bin/*
 /build/*
+/.venv/*
 /.vscode/*
 
 # Prerequisites

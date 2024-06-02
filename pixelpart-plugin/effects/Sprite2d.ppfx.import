@@ -1,0 +1,15 @@
+[remap]
+
+importer="pixelpart.effect"
+type="Resource"
+uid="uid://de1e7uaah4pxr"
+path="res://.godot/imported/Sprite2d.ppfx-6635307e687aff9554bcebb72a46ceeb.res"
+
+[deps]
+
+source_file="res://effects/Sprite2d.ppfx"
+dest_files=["res://.godot/imported/Sprite2d.ppfx-6635307e687aff9554bcebb72a46ceeb.res"]
+
+[params]
+
+scale=100.0

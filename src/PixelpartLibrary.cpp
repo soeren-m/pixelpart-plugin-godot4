@@ -1,20 +1,31 @@
 #include "PixelpartLibrary.h"
 #include "PixelpartEffect.h"
 #include "PixelpartEffect2D.h"
-#include "PixelpartShaders.h"
+#include "property/PixelpartStaticPropertyFloat2.h"
+#include "property/PixelpartAnimatedPropertyInt.h"
+#include "property/PixelpartAnimatedPropertyFloat2.h"
+#include "PixelpartSystem.h"
 #include <gdextension_interface.h>
 #include <godot_cpp/godot.hpp>
 
-godot::PixelpartShaders* shaders = nullptr;
+godot::PixelpartSystem* pixelpartSystem = nullptr;
 
 void pixelpart_register(godot::ModuleInitializationLevel p_level) {
 	if(p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
 
-	godot::ClassDB::register_class<godot::PixelpartCurve>();
-	godot::ClassDB::register_class<godot::PixelpartCurve3>();
-	godot::ClassDB::register_class<godot::PixelpartGradient>();
+	godot::ClassDB::register_class<godot::PixelpartStaticPropertyBool>();
+	godot::ClassDB::register_class<godot::PixelpartStaticPropertyInt>();
+	godot::ClassDB::register_class<godot::PixelpartStaticPropertyFloat>();
+	godot::ClassDB::register_class<godot::PixelpartStaticPropertyFloat2>();
+	godot::ClassDB::register_class<godot::PixelpartStaticPropertyFloat3>();
+	godot::ClassDB::register_class<godot::PixelpartStaticPropertyFloat4>();
+	godot::ClassDB::register_class<godot::PixelpartAnimatedPropertyInt>();
+	godot::ClassDB::register_class<godot::PixelpartAnimatedPropertyFloat>();
+	godot::ClassDB::register_class<godot::PixelpartAnimatedPropertyFloat2>();
+	godot::ClassDB::register_class<godot::PixelpartAnimatedPropertyFloat3>();
+	godot::ClassDB::register_class<godot::PixelpartAnimatedPropertyFloat4>();
 	godot::ClassDB::register_class<godot::PixelpartEffectResource>();
 	godot::ClassDB::register_class<godot::PixelpartEffect>();
 	godot::ClassDB::register_class<godot::PixelpartEffect2D>();
@@ -23,8 +34,8 @@ void pixelpart_register(godot::ModuleInitializationLevel p_level) {
 	godot::ClassDB::register_class<godot::PixelpartForceField>();
 	godot::ClassDB::register_class<godot::PixelpartCollider>();
 
-	if(!shaders) {
-		shaders = new godot::PixelpartShaders();
+	if(!pixelpartSystem) {
+		pixelpartSystem = new godot::PixelpartSystem();
 	}
 }
 void pixelpart_unregister(godot::ModuleInitializationLevel p_level) {
@@ -32,9 +43,9 @@ void pixelpart_unregister(godot::ModuleInitializationLevel p_level) {
 		return;
 	}
 
-	if(shaders) {
-		delete shaders;
-		shaders = nullptr;
+	if(pixelpartSystem) {
+		delete pixelpartSystem;
+		pixelpartSystem = nullptr;
 	}
 }
 

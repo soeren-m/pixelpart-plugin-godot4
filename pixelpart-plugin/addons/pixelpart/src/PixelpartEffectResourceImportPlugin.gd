@@ -37,7 +37,7 @@ func _get_import_options(path, preset):
 	match preset:
 		Presets.DEFAULT:
 			return [
-				{ "name": "scale", "default_value": 10.0 }
+				{ "name": "scale", "default_value": 1.0 }
 			]
 		_:
 			return []

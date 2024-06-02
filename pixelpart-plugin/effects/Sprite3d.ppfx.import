@@ -1,0 +1,15 @@
+[remap]
+
+importer="pixelpart.effect"
+type="Resource"
+uid="uid://dpokerdn7vbyl"
+path="res://.godot/imported/Sprite3d.ppfx-4da9b561c96163ce6abd48a2299449e4.res"
+
+[deps]
+
+source_file="res://effects/Sprite3d.ppfx"
+dest_files=["res://.godot/imported/Sprite3d.ppfx-4da9b561c96163ce6abd48a2299449e4.res"]
+
+[params]
+
+scale=1.0

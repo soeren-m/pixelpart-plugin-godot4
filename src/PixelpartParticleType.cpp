@@ -1,5 +1,5 @@
 #include "PixelpartParticleType.h"
-#include "PixelpartUtil.h"
+#include "util/PixelpartUtil.h"
 
 namespace godot {
 void PixelpartParticleType::_bind_methods() {
@@ -9,508 +9,472 @@ void PixelpartParticleType::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_position"), &PixelpartParticleType::get_position);
 	ClassDB::bind_method(D_METHOD("get_num_particles"), &PixelpartParticleType::get_num_particles);
 	ClassDB::bind_method(D_METHOD("get_lifespan"), &PixelpartParticleType::get_lifespan);
-	ClassDB::bind_method(D_METHOD("set_lifespan_variance", "variance"), &PixelpartParticleType::set_lifespan_variance);
 	ClassDB::bind_method(D_METHOD("get_lifespan_variance"), &PixelpartParticleType::get_lifespan_variance);
 	ClassDB::bind_method(D_METHOD("set_position_relative", "mode"), &PixelpartParticleType::set_position_relative);
 	ClassDB::bind_method(D_METHOD("is_position_relative"), &PixelpartParticleType::is_position_relative);
-	ClassDB::bind_method(D_METHOD("set_motion_path_force", "force"), &PixelpartParticleType::set_motion_path_force);
 	ClassDB::bind_method(D_METHOD("get_motion_path_force"), &PixelpartParticleType::get_motion_path_force);
 	ClassDB::bind_method(D_METHOD("get_initial_velocity"), &PixelpartParticleType::get_initial_velocity);
-	ClassDB::bind_method(D_METHOD("set_velocity_variance", "variance"), &PixelpartParticleType::set_velocity_variance);
+	ClassDB::bind_method(D_METHOD("get_inherited_velocity"), &PixelpartParticleType::get_inherited_velocity);
 	ClassDB::bind_method(D_METHOD("get_velocity_variance"), &PixelpartParticleType::get_velocity_variance);
 	ClassDB::bind_method(D_METHOD("get_acceleration"), &PixelpartParticleType::get_acceleration);
 	ClassDB::bind_method(D_METHOD("get_radial_acceleration"), &PixelpartParticleType::get_radial_acceleration);
-	ClassDB::bind_method(D_METHOD("get_damping"), &PixelpartParticleType::get_damping);
 	ClassDB::bind_method(D_METHOD("set_rotation_mode", "mode"), &PixelpartParticleType::set_rotation_mode);
-	ClassDB::bind_method(D_METHOD("set_alignment_mode", "mode"), &PixelpartParticleType::set_alignment_mode);
 	ClassDB::bind_method(D_METHOD("get_rotation_mode"), &PixelpartParticleType::get_rotation_mode);
+	ClassDB::bind_method(D_METHOD("set_alignment_mode", "mode"), &PixelpartParticleType::set_alignment_mode);
 	ClassDB::bind_method(D_METHOD("get_alignment_mode"), &PixelpartParticleType::get_alignment_mode);
 	ClassDB::bind_method(D_METHOD("get_initial_rotation"), &PixelpartParticleType::get_initial_rotation);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &PixelpartParticleType::get_rotation);
-	ClassDB::bind_method(D_METHOD("set_rotation_variance", "variance"), &PixelpartParticleType::set_rotation_variance);
-	ClassDB::bind_method(D_METHOD("set_angular_velocity_variance", "variance"), &PixelpartParticleType::set_angular_velocity_variance);
+	ClassDB::bind_method(D_METHOD("get_rotation_by_speed"), &PixelpartParticleType::get_rotation_by_speed);
 	ClassDB::bind_method(D_METHOD("get_rotation_variance"), &PixelpartParticleType::get_rotation_variance);
 	ClassDB::bind_method(D_METHOD("get_angular_velocity_variance"), &PixelpartParticleType::get_angular_velocity_variance);
-	ClassDB::bind_method(D_METHOD("set_pivot", "pivot"), &PixelpartParticleType::set_pivot);
 	ClassDB::bind_method(D_METHOD("get_pivot"), &PixelpartParticleType::get_pivot);
+	ClassDB::bind_method(D_METHOD("get_physical_size"), &PixelpartParticleType::get_physical_size);
 	ClassDB::bind_method(D_METHOD("get_weight"), &PixelpartParticleType::get_weight);
 	ClassDB::bind_method(D_METHOD("get_bounce"), &PixelpartParticleType::get_bounce);
 	ClassDB::bind_method(D_METHOD("get_friction"), &PixelpartParticleType::get_friction);
 	ClassDB::bind_method(D_METHOD("set_visible", "mode"), &PixelpartParticleType::set_visible);
-	ClassDB::bind_method(D_METHOD("set_layer", "layer"), &PixelpartParticleType::set_layer);
 	ClassDB::bind_method(D_METHOD("is_visible"), &PixelpartParticleType::is_visible);
+	ClassDB::bind_method(D_METHOD("set_layer", "layer"), &PixelpartParticleType::set_layer);
 	ClassDB::bind_method(D_METHOD("get_layer"), &PixelpartParticleType::get_layer);
-	ClassDB::bind_method(D_METHOD("get_blend_mode"), &PixelpartParticleType::get_blend_mode);
 	ClassDB::bind_method(D_METHOD("get_initial_size"), &PixelpartParticleType::get_initial_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &PixelpartParticleType::get_size);
-	ClassDB::bind_method(D_METHOD("set_size_variance", "variance"), &PixelpartParticleType::set_size_variance);
 	ClassDB::bind_method(D_METHOD("get_size_variance"), &PixelpartParticleType::get_size_variance);
+	ClassDB::bind_method(D_METHOD("get_stretch"), &PixelpartParticleType::get_stretch);
 	ClassDB::bind_method(D_METHOD("get_color"), &PixelpartParticleType::get_color);
-	ClassDB::bind_method(D_METHOD("set_color_hue_variance", "variance"), &PixelpartParticleType::set_color_hue_variance);
-	ClassDB::bind_method(D_METHOD("set_color_saturation_variance", "variance"), &PixelpartParticleType::set_color_saturation_variance);
-	ClassDB::bind_method(D_METHOD("set_color_value_variance", "variance"), &PixelpartParticleType::set_color_value_variance);
-	ClassDB::bind_method(D_METHOD("get_color_hue_variance"), &PixelpartParticleType::get_color_hue_variance);
-	ClassDB::bind_method(D_METHOD("get_color_saturation_variance"), &PixelpartParticleType::get_color_saturation_variance);
-	ClassDB::bind_method(D_METHOD("get_color_value_variance"), &PixelpartParticleType::get_color_value_variance);
+	ClassDB::bind_method(D_METHOD("get_color_variance"), &PixelpartParticleType::get_color_variance);
 	ClassDB::bind_method(D_METHOD("get_initial_opacity"), &PixelpartParticleType::get_initial_opacity);
 	ClassDB::bind_method(D_METHOD("get_opacity"), &PixelpartParticleType::get_opacity);
-	ClassDB::bind_method(D_METHOD("set_opacity_variance", "variance"), &PixelpartParticleType::set_opacity_variance);
 	ClassDB::bind_method(D_METHOD("get_opacity_variance"), &PixelpartParticleType::get_opacity_variance);
-	ClassDB::bind_method(D_METHOD("spawn_particles"), &PixelpartParticleType::spawn_particles);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifespan_variance"), "set_lifespan_variance", "get_lifespan_variance");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_relative"), "set_position_relative", "is_position_relative");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_path_force"), "set_motion_path_force", "get_motion_path_force");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "velocity_variance"), "set_velocity_variance", "get_velocity_variance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_mode"), "set_rotation_mode", "get_rotation_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment_mode"), "set_alignment_mode", "get_alignment_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation_variance"), "set_rotation_variance", "get_rotation_variance");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity_variance"), "set_angular_velocity_variance", "get_angular_velocity_variance");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "pivot"), "set_pivot", "get_pivot");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer"), "set_layer", "get_layer");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size_variance"), "set_size_variance", "get_size_variance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "color_hue_variance"), "set_color_hue_variance", "get_color_hue_variance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "color_saturation_variance"), "set_color_saturation_variance", "get_color_saturation_variance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "color_value_variance"), "set_color_value_variance", "get_color_value_variance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "opacity_variance"), "set_opacity_variance", "get_opacity_variance");
 }
 
 PixelpartParticleType::PixelpartParticleType() {
 
 }
 
-void PixelpartParticleType::init(Ref<PixelpartEffectResource> resource, pixelpart::ParticleType* particleType, pixelpart::ParticleEngine* engine) {
+void PixelpartParticleType::init(Ref<PixelpartEffectResource> resource, pixelpart::ParticleType* particleTypePtr, pixelpart::ParticleEngine* particleEnginePtr) {
 	effectResource = resource;
-	nativeParticleType = particleType;
-	nativeParticleEngine = engine;
+	particleType = particleTypePtr;
+	particleEngine = particleEnginePtr;
 }
 
 int PixelpartParticleType::get_id() const {
-	if(nativeParticleType) {
-		return static_cast<int>(nativeParticleType->id);
+	if(particleType) {
+		return static_cast<int>(particleType->id);
 	}
 
 	return -1;
 }
 int PixelpartParticleType::get_parent_id() const {
-	if(nativeParticleType) {
-		return static_cast<int>(nativeParticleType->parentId);
+	if(particleType) {
+		return static_cast<int>(particleType->parentId);
 	}
 
 	return -1;
 }
 String PixelpartParticleType::get_name() const {
-	if(nativeParticleType) {
-		return String(nativeParticleType->name.c_str());
+	if(particleType) {
+		return String(particleType->name.c_str());
 	}
 
 	return String();
 }
 
-Ref<PixelpartCurve3> PixelpartParticleType::get_position() const {
-	if(nativeParticleType && nativeParticleEngine) {
-		Ref<PixelpartCurve3> curve;
-		curve.instantiate();
-		curve->init(&nativeParticleType->position, nativeParticleEngine, PixelpartCurve3::ObjectType::particle_type);
+Ref<PixelpartAnimatedPropertyFloat3> PixelpartParticleType::get_position() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat3> property;
+		property.instantiate();
+		property->init(&particleType->position);
 
-		return curve;
+		return property;
 	}
 
-	return Ref<PixelpartCurve3>();
+	return Ref<PixelpartAnimatedPropertyFloat3>();
 }
 
-Ref<PixelpartCurve> PixelpartParticleType::get_num_particles() const {
-	if(nativeParticleType && nativeParticleEngine) {
-		Ref<PixelpartCurve> curve;
-		curve.instantiate();
-		curve->init(&nativeParticleType->numParticles, nativeParticleEngine, PixelpartCurve::ObjectType::particle_type);
+Ref<PixelpartAnimatedPropertyFloat> PixelpartParticleType::get_num_particles() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat> property;
+		property.instantiate();
+		property->init(&particleType->numParticles);
 
-		return curve;
+		return property;
 	}
 
-	return Ref<PixelpartCurve>();
+	return Ref<PixelpartAnimatedPropertyFloat>();
 }
-Ref<PixelpartCurve> PixelpartParticleType::get_lifespan() const {
-	if(nativeParticleType && nativeParticleEngine) {
-		Ref<PixelpartCurve> curve;
-		curve.instantiate();
-		curve->init(&nativeParticleType->lifespan, nativeParticleEngine, PixelpartCurve::ObjectType::particle_type);
+Ref<PixelpartAnimatedPropertyFloat> PixelpartParticleType::get_lifespan() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat> property;
+		property.instantiate();
+		property->init(&particleType->lifespan);
 
-		return curve;
+		return property;
 	}
 
-	return Ref<PixelpartCurve>();
+	return Ref<PixelpartAnimatedPropertyFloat>();
 }
-void PixelpartParticleType::set_lifespan_variance(float variance) {
-	if(nativeParticleType) {
-		nativeParticleType->lifespanVariance = static_cast<pixelpart::floatd>(variance);
-	}
-}
-float PixelpartParticleType::get_lifespan_variance() const {
-	if(nativeParticleType) {
-		return static_cast<float>(nativeParticleType->lifespanVariance);
+Ref<PixelpartStaticPropertyFloat> PixelpartParticleType::get_lifespan_variance() const {
+	if(particleType) {
+		Ref<PixelpartStaticPropertyFloat> property;
+		property.instantiate();
+		property->init(&particleType->lifespanVariance);
+
+		return property;
 	}
 
-	return 0.0f;
+	return Ref<PixelpartStaticPropertyFloat>();
 }
 
 void PixelpartParticleType::set_position_relative(bool mode) {
-	if(nativeParticleType) {
-		nativeParticleType->positionRelative = mode;
+	if(particleType) {
+		particleType->positionRelative = mode;
 	}
 }
 bool PixelpartParticleType::is_position_relative() const {
-	if(nativeParticleType) {
-		return nativeParticleType->positionRelative;
+	if(particleType) {
+		return particleType->positionRelative;
 	}
 
 	return false;
 }
 
-void PixelpartParticleType::set_motion_path_force(float force) {
-	if(nativeParticleType) {
-		nativeParticleType->motionPathForce = static_cast<pixelpart::floatd>(force);
+Ref<PixelpartStaticPropertyFloat> PixelpartParticleType::get_motion_path_force() const {
+	if(particleType) {
+		Ref<PixelpartStaticPropertyFloat> property;
+		property.instantiate();
+		property->init(&particleType->motionPathForce);
+
+		return property;
 	}
+
+	return Ref<PixelpartStaticPropertyFloat>();
 }
-float PixelpartParticleType::get_motion_path_force() const {
-	if(nativeParticleType) {
-		return static_cast<float>(nativeParticleType->motionPathForce);
+Ref<PixelpartAnimatedPropertyFloat> PixelpartParticleType::get_initial_velocity() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat> property;
+		property.instantiate();
+		property->init(&particleType->initialVelocity);
+
+		return property;
 	}
 
-	return 0.0f;
+	return Ref<PixelpartAnimatedPropertyFloat>();
+}
+Ref<PixelpartAnimatedPropertyFloat> PixelpartParticleType::get_inherited_velocity() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat> property;
+		property.instantiate();
+		property->init(&particleType->inheritedVelocity);
+
+		return property;
+	}
+
+	return Ref<PixelpartAnimatedPropertyFloat>();
+}
+Ref<PixelpartStaticPropertyFloat> PixelpartParticleType::get_velocity_variance() const {
+	if(particleType) {
+		Ref<PixelpartStaticPropertyFloat> property;
+		property.instantiate();
+		property->init(&particleType->motionPathForce);
+
+		return property;
+	}
+
+	return Ref<PixelpartStaticPropertyFloat>();
 }
 
-Ref<PixelpartCurve> PixelpartParticleType::get_initial_velocity() const {
-	if(nativeParticleType && nativeParticleEngine) {
-		Ref<PixelpartCurve> curve;
-		curve.instantiate();
-		curve->init(&nativeParticleType->initialVelocity, nativeParticleEngine, PixelpartCurve::ObjectType::particle_type);
+Ref<PixelpartAnimatedPropertyFloat> PixelpartParticleType::get_acceleration() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat> property;
+		property.instantiate();
+		property->init(&particleType->acceleration);
 
-		return curve;
+		return property;
 	}
 
-	return Ref<PixelpartCurve>();
+	return Ref<PixelpartAnimatedPropertyFloat>();
 }
-void PixelpartParticleType::set_velocity_variance(float variance) {
-	if(nativeParticleType) {
-		nativeParticleType->velocityVariance = static_cast<pixelpart::floatd>(variance);
-	}
-}
-float PixelpartParticleType::get_velocity_variance() const {
-	if(nativeParticleType) {
-		return static_cast<float>(nativeParticleType->velocityVariance);
-	}
+Ref<PixelpartAnimatedPropertyFloat> PixelpartParticleType::get_radial_acceleration() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat> property;
+		property.instantiate();
+		property->init(&particleType->radialAcceleration);
 
-	return 0.0f;
-}
-
-Ref<PixelpartCurve> PixelpartParticleType::get_acceleration() const {
-	if(nativeParticleType && nativeParticleEngine) {
-		Ref<PixelpartCurve> curve;
-		curve.instantiate();
-		curve->init(&nativeParticleType->acceleration, nativeParticleEngine, PixelpartCurve::ObjectType::particle_type);
-
-		return curve;
+		return property;
 	}
 
-	return Ref<PixelpartCurve>();
-}
-Ref<PixelpartCurve> PixelpartParticleType::get_radial_acceleration() const {
-	if(nativeParticleType && nativeParticleEngine) {
-		Ref<PixelpartCurve> curve;
-		curve.instantiate();
-		curve->init(&nativeParticleType->radialAcceleration, nativeParticleEngine, PixelpartCurve::ObjectType::particle_type);
-
-		return curve;
-	}
-
-	return Ref<PixelpartCurve>();
-}
-Ref<PixelpartCurve> PixelpartParticleType::get_damping() const {
-	if(nativeParticleType && nativeParticleEngine) {
-		Ref<PixelpartCurve> curve;
-		curve.instantiate();
-		curve->init(&nativeParticleType->damping, nativeParticleEngine, PixelpartCurve::ObjectType::particle_type);
-
-		return curve;
-	}
-
-	return Ref<PixelpartCurve>();
+	return Ref<PixelpartAnimatedPropertyFloat>();
 }
 
 void PixelpartParticleType::set_rotation_mode(int mode) {
-	if(nativeParticleType) {
-		nativeParticleType->rotationMode = static_cast<pixelpart::RotationMode>(mode);
-	}
-}
-void PixelpartParticleType::set_alignment_mode(int mode) {
-	if(nativeParticleType) {
-		nativeParticleType->alignmentMode = static_cast<pixelpart::AlignmentMode>(mode);
+	if(particleType) {
+		particleType->rotationMode = static_cast<pixelpart::RotationMode>(mode);
 	}
 }
 int PixelpartParticleType::get_rotation_mode() const {
-	if(nativeParticleType) {
-		return static_cast<int>(nativeParticleType->rotationMode);
+	if(particleType) {
+		return static_cast<int>(particleType->rotationMode);
 	}
 
 	return static_cast<int>(pixelpart::RotationMode::angle);
 }
+
+void PixelpartParticleType::set_alignment_mode(int mode) {
+	if(particleType) {
+		particleType->alignmentMode = static_cast<pixelpart::AlignmentMode>(mode);
+	}
+}
 int PixelpartParticleType::get_alignment_mode() const {
-	if(nativeParticleType) {
-		return static_cast<int>(nativeParticleType->alignmentMode);
+	if(particleType) {
+		return static_cast<int>(particleType->alignmentMode);
 	}
 
 	return static_cast<int>(pixelpart::AlignmentMode::none);
 }
 
-Ref<PixelpartCurve3> PixelpartParticleType::get_initial_rotation() const {
-	if(nativeParticleType && nativeParticleEngine) {
-		Ref<PixelpartCurve3> curve;
-		curve.instantiate();
-		curve->init(&nativeParticleType->initialRotation, nativeParticleEngine, PixelpartCurve3::ObjectType::particle_type);
+Ref<PixelpartAnimatedPropertyFloat3> PixelpartParticleType::get_initial_rotation() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat3> property;
+		property.instantiate();
+		property->init(&particleType->initialRotation);
 
-		return curve;
+		return property;
 	}
 
-	return Ref<PixelpartCurve3>();
+	return Ref<PixelpartAnimatedPropertyFloat3>();
 }
-Ref<PixelpartCurve3> PixelpartParticleType::get_rotation() const {
-	if(nativeParticleType && nativeParticleEngine) {
-		Ref<PixelpartCurve3> curve;
-		curve.instantiate();
-		curve->init(&nativeParticleType->rotation, nativeParticleEngine, PixelpartCurve3::ObjectType::particle_type);
+Ref<PixelpartAnimatedPropertyFloat3> PixelpartParticleType::get_rotation() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat3> property;
+		property.instantiate();
+		property->init(&particleType->rotation);
 
-		return curve;
-	}
-
-	return Ref<PixelpartCurve3>();
-}
-void PixelpartParticleType::set_rotation_variance(Vector3 variance) {
-	if(nativeParticleType) {
-		nativeParticleType->rotationVariance = fromGd(variance);
-	}
-}
-void PixelpartParticleType::set_angular_velocity_variance(Vector3 variance) {
-	if(nativeParticleType) {
-		nativeParticleType->angularVelocityVariance = fromGd(variance);
-	}
-}
-Vector3 PixelpartParticleType::get_rotation_variance() const {
-	if(nativeParticleType) {
-		return toGd(nativeParticleType->rotationVariance);
+		return property;
 	}
 
-	return Vector3(0.0f, 0.0f, 0.0f);
+	return Ref<PixelpartAnimatedPropertyFloat3>();
 }
-Vector3 PixelpartParticleType::get_angular_velocity_variance() const {
-	if(nativeParticleType) {
-		return toGd(nativeParticleType->angularVelocityVariance);
+Ref<PixelpartAnimatedPropertyFloat3> PixelpartParticleType::get_rotation_by_speed() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat3> property;
+		property.instantiate();
+		property->init(&particleType->rotation);
+
+		return property;
 	}
 
-	return Vector3(0.0f, 0.0f, 0.0f);
+	return Ref<PixelpartAnimatedPropertyFloat3>();
 }
+Ref<PixelpartStaticPropertyFloat3> PixelpartParticleType::get_rotation_variance() const {
+	if(particleType) {
+		Ref<PixelpartStaticPropertyFloat3> property;
+		property.instantiate();
+		property->init(&particleType->rotationVariance);
 
-void PixelpartParticleType::set_pivot(Vector3 pivot) {
-	if(nativeParticleType) {
-		nativeParticleType->pivot = fromGd(pivot);
-	}
-}
-Vector3 PixelpartParticleType::get_pivot() const {
-	if(nativeParticleType) {
-		return toGd(nativeParticleType->pivot);
+		return property;
 	}
 
-	return Vector3(0.0f, 0.0f, 0.0f);
+	return Ref<PixelpartStaticPropertyFloat3>();
+}
+Ref<PixelpartStaticPropertyFloat3> PixelpartParticleType::get_angular_velocity_variance() const {
+	if(particleType) {
+		Ref<PixelpartStaticPropertyFloat3> property;
+		property.instantiate();
+		property->init(&particleType->angularVelocityVariance);
+
+		return property;
+	}
+
+	return Ref<PixelpartStaticPropertyFloat3>();
 }
 
-Ref<PixelpartCurve> PixelpartParticleType::get_weight() const {
-	if(nativeParticleType && nativeParticleEngine) {
-		Ref<PixelpartCurve> curve;
-		curve.instantiate();
-		curve->init(&nativeParticleType->weight, nativeParticleEngine, PixelpartCurve::ObjectType::particle_type);
+Ref<PixelpartStaticPropertyFloat3> PixelpartParticleType::get_pivot() const {
+	if(particleType) {
+		Ref<PixelpartStaticPropertyFloat3> property;
+		property.instantiate();
+		property->init(&particleType->pivot);
 
-		return curve;
+		return property;
 	}
 
-	return Ref<PixelpartCurve>();
+	return Ref<PixelpartStaticPropertyFloat3>();
 }
-Ref<PixelpartCurve> PixelpartParticleType::get_bounce() const {
-	if(nativeParticleType && nativeParticleEngine) {
-		Ref<PixelpartCurve> curve;
-		curve.instantiate();
-		curve->init(&nativeParticleType->bounce, nativeParticleEngine, PixelpartCurve::ObjectType::particle_type);
 
-		return curve;
+Ref<PixelpartAnimatedPropertyFloat> PixelpartParticleType::get_physical_size() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat> property;
+		property.instantiate();
+		property->init(&particleType->physicalSize);
+
+		return property;
 	}
 
-	return Ref<PixelpartCurve>();
+	return Ref<PixelpartAnimatedPropertyFloat>();
 }
-Ref<PixelpartCurve> PixelpartParticleType::get_friction() const {
-	if(nativeParticleType && nativeParticleEngine) {
-		Ref<PixelpartCurve> curve;
-		curve.instantiate();
-		curve->init(&nativeParticleType->friction, nativeParticleEngine, PixelpartCurve::ObjectType::particle_type);
+Ref<PixelpartAnimatedPropertyFloat> PixelpartParticleType::get_weight() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat> property;
+		property.instantiate();
+		property->init(&particleType->weight);
 
-		return curve;
+		return property;
 	}
 
-	return Ref<PixelpartCurve>();
+	return Ref<PixelpartAnimatedPropertyFloat>();
+}
+Ref<PixelpartAnimatedPropertyFloat> PixelpartParticleType::get_bounce() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat> property;
+		property.instantiate();
+		property->init(&particleType->bounce);
+
+		return property;
+	}
+
+	return Ref<PixelpartAnimatedPropertyFloat>();
+}
+Ref<PixelpartAnimatedPropertyFloat> PixelpartParticleType::get_friction() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat> property;
+		property.instantiate();
+		property->init(&particleType->friction);
+
+		return property;
+	}
+
+	return Ref<PixelpartAnimatedPropertyFloat>();
 }
 
 void PixelpartParticleType::set_visible(bool mode) {
-	if(nativeParticleType) {
-		nativeParticleType->visible = mode;
-	}
-}
-void PixelpartParticleType::set_layer(int layer) {
-	if(nativeParticleType) {
-		nativeParticleType->layer = static_cast<uint32_t>(std::max(layer, 0));
+	if(particleType) {
+		particleType->visible = mode;
 	}
 }
 bool PixelpartParticleType::is_visible() const {
-	if(nativeParticleType) {
-		return nativeParticleType->visible;
+	if(particleType) {
+		return particleType->visible;
 	}
 
 	return false;
 }
+
+void PixelpartParticleType::set_layer(int layer) {
+	if(particleType) {
+		particleType->layer = static_cast<uint32_t>(std::max(layer, 0));
+	}
+}
 int PixelpartParticleType::get_layer() const {
-	if(nativeParticleType) {
-		return static_cast<int>(nativeParticleType->layer);
+	if(particleType) {
+		return static_cast<int>(particleType->layer);
 	}
 
 	return 0;
 }
-int PixelpartParticleType::get_blend_mode() const {
-	if(nativeParticleType) {
-		return static_cast<int>(nativeParticleType->blendMode);
+
+Ref<PixelpartAnimatedPropertyFloat> PixelpartParticleType::get_initial_size() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat> property;
+		property.instantiate();
+		property->init(&particleType->initialSize);
+
+		return property;
 	}
 
-	return static_cast<int>(pixelpart::BlendMode::normal);
+	return Ref<PixelpartAnimatedPropertyFloat>();
+}
+Ref<PixelpartAnimatedPropertyFloat3> PixelpartParticleType::get_size() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat3> property;
+		property.instantiate();
+		property->init(&particleType->size);
+
+		return property;
+	}
+
+	return Ref<PixelpartAnimatedPropertyFloat3>();
+}
+Ref<PixelpartStaticPropertyFloat> PixelpartParticleType::get_size_variance() const {
+	if(particleType) {
+		Ref<PixelpartStaticPropertyFloat> property;
+		property.instantiate();
+		property->init(&particleType->sizeVariance);
+
+		return property;
+	}
+
+	return Ref<PixelpartStaticPropertyFloat>();
+}
+Ref<PixelpartAnimatedPropertyFloat3> PixelpartParticleType::get_stretch() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat3> property;
+		property.instantiate();
+		property->init(&particleType->stretch);
+
+		return property;
+	}
+
+	return Ref<PixelpartAnimatedPropertyFloat3>();
 }
 
-Ref<PixelpartCurve> PixelpartParticleType::get_initial_size() const {
-	if(nativeParticleType && nativeParticleEngine) {
-		Ref<PixelpartCurve> curve;
-		curve.instantiate();
-		curve->init(&nativeParticleType->initialSize, nativeParticleEngine, PixelpartCurve::ObjectType::particle_type);
+Ref<PixelpartAnimatedPropertyFloat4> PixelpartParticleType::get_color() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat4> property;
+		property.instantiate();
+		property->init(&particleType->color);
 
-		return curve;
+		return property;
 	}
 
-	return Ref<PixelpartCurve>();
+	return Ref<PixelpartAnimatedPropertyFloat4>();
 }
-Ref<PixelpartCurve3> PixelpartParticleType::get_size() const {
-	if(nativeParticleType && nativeParticleEngine) {
-		Ref<PixelpartCurve3> curve;
-		curve.instantiate();
-		curve->init(&nativeParticleType->size, nativeParticleEngine, PixelpartCurve3::ObjectType::particle_type);
+Ref<PixelpartStaticPropertyFloat4> PixelpartParticleType::get_color_variance() const {
+	if(particleType) {
+		Ref<PixelpartStaticPropertyFloat4> property;
+		property.instantiate();
+		property->init(&particleType->colorVariance);
 
-		return curve;
+		return property;
 	}
 
-	return Ref<PixelpartCurve3>();
+	return Ref<PixelpartStaticPropertyFloat4>();
 }
-void PixelpartParticleType::set_size_variance(float variance) {
-	if(nativeParticleType) {
-		nativeParticleType->sizeVariance = static_cast<pixelpart::floatd>(variance);
+Ref<PixelpartAnimatedPropertyFloat> PixelpartParticleType::get_initial_opacity() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat> property;
+		property.instantiate();
+		property->init(&particleType->initialOpacity);
+
+		return property;
 	}
+
+	return Ref<PixelpartAnimatedPropertyFloat>();
 }
-float PixelpartParticleType::get_size_variance() const {
-	if(nativeParticleType) {
-		return static_cast<float>(nativeParticleType->sizeVariance);
+Ref<PixelpartAnimatedPropertyFloat> PixelpartParticleType::get_opacity() const {
+	if(particleType) {
+		Ref<PixelpartAnimatedPropertyFloat> property;
+		property.instantiate();
+		property->init(&particleType->opacity);
+
+		return property;
 	}
 
-	return 0.0f;
+	return Ref<PixelpartAnimatedPropertyFloat>();
 }
+Ref<PixelpartStaticPropertyFloat> PixelpartParticleType::get_opacity_variance() const {
+	if(particleType) {
+		Ref<PixelpartStaticPropertyFloat> property;
+		property.instantiate();
+		property->init(&particleType->opacityVariance);
 
-Ref<PixelpartGradient> PixelpartParticleType::get_color() const {
-	if(nativeParticleType && nativeParticleEngine) {
-		Ref<PixelpartGradient> curve;
-		curve.instantiate();
-		curve->init(&nativeParticleType->color, nativeParticleEngine, PixelpartGradient::ObjectType::particle_type);
-
-		return curve;
+		return property;
 	}
 
-	return Ref<PixelpartGradient>();
-}
-void PixelpartParticleType::set_color_hue_variance(float variance) {
-	if(nativeParticleType) {
-		nativeParticleType->colorVariance.x = static_cast<pixelpart::floatd>(variance);
-	}
-}
-void PixelpartParticleType::set_color_saturation_variance(float variance) {
-	if(nativeParticleType) {
-		nativeParticleType->colorVariance.y = static_cast<pixelpart::floatd>(variance);
-	}
-}
-void PixelpartParticleType::set_color_value_variance(float variance) {
-	if(nativeParticleType) {
-		nativeParticleType->colorVariance.z = static_cast<pixelpart::floatd>(variance);
-	}
-}
-float PixelpartParticleType::get_color_hue_variance() const {
-	if(nativeParticleType) {
-		return static_cast<float>(nativeParticleType->colorVariance.x);
-	}
-
-	return 0.0f;
-}
-float PixelpartParticleType::get_color_saturation_variance() const {
-	if(nativeParticleType) {
-		return static_cast<float>(nativeParticleType->colorVariance.y);
-	}
-
-	return 0.0f;
-}
-float PixelpartParticleType::get_color_value_variance() const {
-	if(nativeParticleType) {
-		return static_cast<float>(nativeParticleType->colorVariance.z);
-	}
-
-	return 0.0f;
-}
-
-Ref<PixelpartCurve> PixelpartParticleType::get_initial_opacity() const {
-	if(nativeParticleType && nativeParticleEngine) {
-		Ref<PixelpartCurve> curve;
-		curve.instantiate();
-		curve->init(&nativeParticleType->initialOpacity, nativeParticleEngine, PixelpartCurve::ObjectType::particle_type);
-
-		return curve;
-	}
-
-	return Ref<PixelpartCurve>();
-}
-Ref<PixelpartCurve> PixelpartParticleType::get_opacity() const {
-	if(nativeParticleType && nativeParticleEngine) {
-		Ref<PixelpartCurve> curve;
-		curve.instantiate();
-		curve->init(&nativeParticleType->opacity, nativeParticleEngine, PixelpartCurve::ObjectType::particle_type);
-
-		return curve;
-	}
-
-	return Ref<PixelpartCurve>();
-}
-void PixelpartParticleType::set_opacity_variance(float variance) {
-	if(nativeParticleType) {
-		nativeParticleType->opacityVariance = static_cast<pixelpart::floatd>(variance);
-	}
-}
-float PixelpartParticleType::get_opacity_variance() const {
-	if(nativeParticleType) {
-		return static_cast<float>(nativeParticleType->opacityVariance);
-	}
-
-	return 0.0f;
-}
-
-void PixelpartParticleType::spawn_particles(int count) {
-	if(nativeParticleType && nativeParticleEngine && count > 0) {
-		nativeParticleEngine->spawnParticles(nativeParticleType->id, static_cast<uint32_t>(count));
-	}
+	return Ref<PixelpartStaticPropertyFloat>();
 }
 }

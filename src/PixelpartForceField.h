@@ -1,11 +1,11 @@
-#ifndef PIXELPART_FORCEFIELD_H
-#define PIXELPART_FORCEFIELD_H
+#ifndef PIXELPART_FORCE_FIELD_H
+#define PIXELPART_FORCE_FIELD_H
 
 #include "PixelpartEffectResource.h"
-#include "PixelpartCurve.h"
-#include "PixelpartCurve3.h"
-#include "ForceField.h"
-#include "ParticleEngine.h"
+#include "property/PixelpartStaticPropertyInt.h"
+#include "property/PixelpartStaticPropertyFloat.h"
+#include "property/PixelpartAnimatedPropertyFloat.h"
+#include "property/PixelpartAnimatedPropertyFloat3.h"
 
 namespace godot {
 class PixelpartForceField : public RefCounted {
@@ -16,7 +16,7 @@ public:
 
 	PixelpartForceField();
 
-	void init(Ref<PixelpartEffectResource> resource, pixelpart::ForceField* forceField, pixelpart::ParticleEngine* engine);
+	void init(Ref<PixelpartEffectResource> resource, pixelpart::ForceField* forceFieldPtr, pixelpart::ParticleEngine* particleEnginePtr);
 
 	int get_id() const;
 	String get_name() const;
@@ -30,30 +30,44 @@ public:
 	bool is_active() const;
 	float get_local_time() const;
 
-	Ref<PixelpartCurve3> get_position() const;
+	Ref<PixelpartAnimatedPropertyFloat3> get_position() const;
 
 	void set_type(int type);
 	int get_type() const;
 
-	Ref<PixelpartCurve3> get_size() const;
-	Ref<PixelpartCurve3> get_orientation() const;
-	Ref<PixelpartCurve3> get_direction() const;
-	Ref<PixelpartCurve> get_strength() const;
+	Ref<PixelpartAnimatedPropertyFloat3> get_size() const;
+	Ref<PixelpartAnimatedPropertyFloat3> get_orientation() const;
 
-	void set_direction_variance(float variance);
-	void set_strength_variance(float variance);
-	float get_direction_variance() const;
-	float get_strength_variance() const;
+	Ref<PixelpartAnimatedPropertyFloat> get_strength() const;
 
-	void set_grid_size(int width, int height, int depth);
-	int get_grid_width() const;
-	int get_grid_height() const;
-	int get_grid_depth() const;
+	Ref<PixelpartAnimatedPropertyFloat3> get_acceleration_direction() const;
+	Ref<PixelpartAnimatedPropertyFloat> get_acceleration_direction_variance() const;
+	Ref<PixelpartAnimatedPropertyFloat> get_acceleration_strength_variance() const;
+	void set_acceleration_grid_size(int width, int height, int depth);
+	int get_acceleration_grid_width() const;
+	int get_acceleration_grid_height() const;
+	int get_acceleration_grid_depth() const;
+
+	void set_vector_filter(int filter);
+	int get_vector_filter() const;
+	Ref<PixelpartAnimatedPropertyFloat> get_vector_tightness() const;
+
+	Ref<PixelpartStaticPropertyInt> get_noise_octaves() const;
+	Ref<PixelpartAnimatedPropertyFloat> get_noise_frequency() const;
+	Ref<PixelpartAnimatedPropertyFloat> get_noise_persistence() const;
+	Ref<PixelpartAnimatedPropertyFloat> get_noise_lacunarity() const;
+	void set_noise_animated(bool animated);
+	bool get_noise_animated() const;
+	Ref<PixelpartStaticPropertyFloat> get_noise_animation_time_scale() const;
+	Ref<PixelpartStaticPropertyFloat> get_noise_animation_time_base() const;
+
+	Ref<PixelpartStaticPropertyFloat> get_drag_velocity_influence() const;
+	Ref<PixelpartStaticPropertyFloat> get_drag_size_influence() const;
 
 private:
 	Ref<PixelpartEffectResource> effectResource;
-	pixelpart::ForceField* nativeForceField = nullptr;
-	pixelpart::ParticleEngine* nativeParticleEngine = nullptr;
+	pixelpart::ForceField* forceField = nullptr;
+	pixelpart::ParticleEngine* particleEngine = nullptr;
 	std::mt19937 rng;
 };
 }
