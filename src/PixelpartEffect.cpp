@@ -12,6 +12,8 @@
 namespace godot {
 void PixelpartEffect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw"), &PixelpartEffect::draw);
+	ClassDB::bind_method(D_METHOD("set_effect", "effect_res"), &PixelpartEffect::set_effect);
+	ClassDB::bind_method(D_METHOD("get_effect"), &PixelpartEffect::get_effect);
 	ClassDB::bind_method(D_METHOD("play", "p"), &PixelpartEffect::play);
 	ClassDB::bind_method(D_METHOD("pause"), &PixelpartEffect::pause);
 	ClassDB::bind_method(D_METHOD("restart"), &PixelpartEffect::restart);
@@ -26,6 +28,8 @@ void PixelpartEffect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_speed"), &PixelpartEffect::get_speed);
 	ClassDB::bind_method(D_METHOD("set_frame_rate", "r"), &PixelpartEffect::set_frame_rate);
 	ClassDB::bind_method(D_METHOD("get_frame_rate"), &PixelpartEffect::get_frame_rate);
+	ClassDB::bind_method(D_METHOD("set_inputs", "in"), &PixelpartEffect::set_inputs);
+	ClassDB::bind_method(D_METHOD("get_inputs"), &PixelpartEffect::get_inputs);
 	ClassDB::bind_method(D_METHOD("set_input_bool", "name", "value"), &PixelpartEffect::set_input_bool);
 	ClassDB::bind_method(D_METHOD("set_input_int", "name", "value"), &PixelpartEffect::set_input_int);
 	ClassDB::bind_method(D_METHOD("set_input_float", "name", "value"), &PixelpartEffect::set_input_float);
@@ -38,10 +42,10 @@ void PixelpartEffect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_input_float2", "name"), &PixelpartEffect::get_input_float2);
 	ClassDB::bind_method(D_METHOD("get_input_float3", "name"), &PixelpartEffect::get_input_float3);
 	ClassDB::bind_method(D_METHOD("get_input_float4", "name"), &PixelpartEffect::get_input_float4);
+	ClassDB::bind_method(D_METHOD("get_input_type", "name"), &PixelpartEffect::get_input_type);
+	ClassDB::bind_method(D_METHOD("get_input_names"), &PixelpartEffect::get_input_names);
 	ClassDB::bind_method(D_METHOD("spawn_particles", "particleTypeId", "count"), &PixelpartEffect::spawn_particles);
 	ClassDB::bind_method(D_METHOD("get_import_scale"), &PixelpartEffect::get_import_scale);
-	ClassDB::bind_method(D_METHOD("set_effect", "effect_res"), &PixelpartEffect::set_effect);
-	ClassDB::bind_method(D_METHOD("get_effect"), &PixelpartEffect::get_effect);
 	ClassDB::bind_method(D_METHOD("find_particle_emitter"), &PixelpartEffect::find_particle_emitter);
 	ClassDB::bind_method(D_METHOD("find_particle_type"), &PixelpartEffect::find_particle_type);
 	ClassDB::bind_method(D_METHOD("find_force_field"), &PixelpartEffect::find_force_field);
@@ -64,6 +68,9 @@ void PixelpartEffect::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_time", PROPERTY_HINT_RANGE, "0.0,1000.0,0.01"), "set_loop_time", "get_loop_time");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed", PROPERTY_HINT_RANGE, "0.0,100.0,0.01"), "set_speed", "get_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frame_rate", PROPERTY_HINT_RANGE, "1.0,100.0,1.0"), "set_frame_rate", "get_frame_rate");
+
+	ADD_GROUP("Inputs", "");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "inputs"), "set_inputs", "get_inputs");
 }
 
 PixelpartEffect::PixelpartEffect() {
@@ -79,6 +86,8 @@ PixelpartEffect::~PixelpartEffect() {
 
 void PixelpartEffect::_enter_tree() {
 	if(!Engine::get_singleton()->is_editor_hint()) {
+		apply_input_values();
+
 		RenderingServer::get_singleton()->connect("frame_pre_draw", Callable(this, "draw"));
 	}
 }
@@ -141,195 +150,10 @@ void PixelpartEffect::draw() {
 	}
 }
 
-void PixelpartEffect::play(bool p) {
-	playing = p;
-}
-void PixelpartEffect::pause() {
-	playing = false;
-}
-void PixelpartEffect::restart() {
-	if(particleEngine) {
-		particleEngine->restart(true);
-	}
-}
-void PixelpartEffect::reset() {
-	if(particleEngine) {
-		particleEngine->restart(false);
-	}
-}
-bool PixelpartEffect::is_playing() const {
-	return playing;
-}
-float PixelpartEffect::get_time() const {
-	return static_cast<float>(particleEngine->getTime());
-}
-
-void PixelpartEffect::set_loop(bool l) {
-	loop = l;
-}
-bool PixelpartEffect::get_loop() const {
-	return loop;
-}
-
-void PixelpartEffect::set_loop_time(float l) {
-	loopTime = std::max(l, 0.0f);
-}
-float PixelpartEffect::get_loop_time() const {
-	return loopTime;
-}
-
-void PixelpartEffect::set_speed(float s) {
-	speed = std::max(s, 0.0f);
-}
-float PixelpartEffect::get_speed() const {
-	return speed;
-}
-
-void PixelpartEffect::set_frame_rate(float r) {
-	timeStep = 1.0f / std::min(std::max(r, 1.0f), 100.0f);
-}
-float PixelpartEffect::get_frame_rate() const {
-	return 1.0f / timeStep;
-}
-
-void PixelpartEffect::set_input_bool(String name, bool value) {
-	pixelpart::EffectInputCollection::iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return;
-	}
-
-	inputIt->second.value = pixelpart::VariantValue::Bool(value);
-
-	pixelpart::refreshEffectProperties(effect);
-}
-void PixelpartEffect::set_input_int(String name, int value) {
-	pixelpart::EffectInputCollection::iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return;
-	}
-
-	inputIt->second.value = pixelpart::VariantValue::Int(fromGd(value));
-
-	pixelpart::refreshEffectProperties(effect);
-}
-void PixelpartEffect::set_input_float(String name, float value) {
-	pixelpart::EffectInputCollection::iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return;
-	}
-
-	inputIt->second.value = pixelpart::VariantValue::Float(fromGd(value));
-
-	pixelpart::refreshEffectProperties(effect);
-}
-void PixelpartEffect::set_input_float2(String name, Vector2 value) {
-	pixelpart::EffectInputCollection::iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return;
-	}
-
-	inputIt->second.value = pixelpart::VariantValue::Float2(fromGd(value));
-
-	pixelpart::refreshEffectProperties(effect);
-}
-void PixelpartEffect::set_input_float3(String name, Vector3 value) {
-	pixelpart::EffectInputCollection::iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return;
-	}
-
-	inputIt->second.value = pixelpart::VariantValue::Float3(fromGd(value));
-
-	pixelpart::refreshEffectProperties(effect);
-}
-void PixelpartEffect::set_input_float4(String name, Vector4 value) {
-	pixelpart::EffectInputCollection::iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return;
-	}
-
-	inputIt->second.value = pixelpart::VariantValue::Float4(fromGd(value));
-
-	pixelpart::refreshEffectProperties(effect);
-}
-bool PixelpartEffect::get_input_bool(String name) const {
-	pixelpart::EffectInputCollection::const_iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return false;
-	}
-
-	return inputIt->second.value.toBool();
-}
-int PixelpartEffect::get_input_int(String name) const {
-	pixelpart::EffectInputCollection::const_iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return 0;
-	}
-
-	return toGd(inputIt->second.value.toInt());
-}
-float PixelpartEffect::get_input_float(String name) const {
-	pixelpart::EffectInputCollection::const_iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return 0.0f;
-	}
-
-	return toGd(inputIt->second.value.toFloat());
-}
-Vector2 PixelpartEffect::get_input_float2(String name) const {
-	pixelpart::EffectInputCollection::const_iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return Vector2(0.0f, 0.0f);
-	}
-
-	return toGd(inputIt->second.value.toFloat2());
-}
-Vector3 PixelpartEffect::get_input_float3(String name) const {
-	pixelpart::EffectInputCollection::const_iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return Vector3(0.0f, 0.0f, 0.0f);
-	}
-
-	return toGd(inputIt->second.value.toFloat3());
-}
-Vector4 PixelpartEffect::get_input_float4(String name) const {
-	pixelpart::EffectInputCollection::const_iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return Vector4(0.0f, 0.0f, 0.0f, 0.0f);
-	}
-
-	return toGd(inputIt->second.value.toFloat4());
-}
-
-void PixelpartEffect::spawn_particles(int particleTypeId, int count) {
-	if(particleEngine && count > 0) {
-		particleEngine->spawnParticles(static_cast<pixelpart::id_t>(particleTypeId), static_cast<uint32_t>(count));
-	}
-}
-
-
-float PixelpartEffect::get_import_scale() const {
-	if(!effectResource.is_valid()) {
-		return 1.0f;
-	}
-
-	return effectResource->get_scale();
-}
-
 void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> effectRes) {
 	RenderingServer* rs = RenderingServer::get_singleton();
+
+	inputValues.clear();
 
 	particleEmitters.clear();
 	particleTypes.clear();
@@ -362,6 +186,11 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> effectRes) {
 #endif
 
 	try {
+		for(const auto& inputEntry : effect.inputs) {
+			StringName inputName = StringName(inputEntry.second.name.c_str());
+			inputValues[inputName] = toGd(inputEntry.second.value);
+		}
+
 		for(const auto& resourceEntry : effect.resources.images) {
 			const pixelpart::ImageResource& imageResource = resourceEntry.second;
 
@@ -469,6 +298,162 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> effectRes) {
 }
 Ref<PixelpartEffectResource> PixelpartEffect::get_effect() const {
 	return effectResource;
+}
+
+void PixelpartEffect::play(bool p) {
+	playing = p;
+}
+void PixelpartEffect::pause() {
+	playing = false;
+}
+void PixelpartEffect::restart() {
+	if(particleEngine) {
+		particleEngine->restart(true);
+	}
+}
+void PixelpartEffect::reset() {
+	if(particleEngine) {
+		particleEngine->restart(false);
+	}
+}
+bool PixelpartEffect::is_playing() const {
+	return playing;
+}
+float PixelpartEffect::get_time() const {
+	return static_cast<float>(particleEngine->getTime());
+}
+
+void PixelpartEffect::set_loop(bool l) {
+	loop = l;
+}
+bool PixelpartEffect::get_loop() const {
+	return loop;
+}
+
+void PixelpartEffect::set_loop_time(float l) {
+	loopTime = std::max(l, 0.0f);
+}
+float PixelpartEffect::get_loop_time() const {
+	return loopTime;
+}
+
+void PixelpartEffect::set_speed(float s) {
+	speed = std::max(s, 0.0f);
+}
+float PixelpartEffect::get_speed() const {
+	return speed;
+}
+
+void PixelpartEffect::set_frame_rate(float r) {
+	timeStep = 1.0f / std::min(std::max(r, 1.0f), 100.0f);
+}
+float PixelpartEffect::get_frame_rate() const {
+	return 1.0f / timeStep;
+}
+
+void PixelpartEffect::set_inputs(Dictionary in) {
+	inputValues = in;
+	apply_input_values();
+}
+Dictionary PixelpartEffect::get_inputs() const {
+	return inputValues;
+}
+
+void PixelpartEffect::set_input_bool(String name, bool value) {
+	set_input(name, pixelpart::VariantValue::Bool(value));
+}
+void PixelpartEffect::set_input_int(String name, int value) {
+	set_input(name, pixelpart::VariantValue::Int(fromGd(value)));
+}
+void PixelpartEffect::set_input_float(String name, float value) {
+	set_input(name, pixelpart::VariantValue::Float(fromGd(value)));
+}
+void PixelpartEffect::set_input_float2(String name, Vector2 value) {
+	set_input(name, pixelpart::VariantValue::Float2(fromGd(value)));
+}
+void PixelpartEffect::set_input_float3(String name, Vector3 value) {
+	set_input(name, pixelpart::VariantValue::Float3(fromGd(value)));
+}
+void PixelpartEffect::set_input_float4(String name, Vector4 value) {
+	set_input(name, pixelpart::VariantValue::Float4(fromGd(value)));
+}
+bool PixelpartEffect::get_input_bool(String name) const {
+	pixelpart::VariantValue value = get_input(name);
+	if(value.type == pixelpart::VariantValue::type_null) {
+		return false;
+	}
+
+	return value.toBool();
+}
+int PixelpartEffect::get_input_int(String name) const {
+	pixelpart::VariantValue value = get_input(name);
+	if(value.type == pixelpart::VariantValue::type_null) {
+		return 0;
+	}
+
+	return toGd(value.toInt());
+}
+float PixelpartEffect::get_input_float(String name) const {
+	pixelpart::VariantValue value = get_input(name);
+	if(value.type == pixelpart::VariantValue::type_null) {
+		return 0.0f;
+	}
+
+	return toGd(value.toFloat());
+}
+Vector2 PixelpartEffect::get_input_float2(String name) const {
+	pixelpart::VariantValue value = get_input(name);
+	if(value.type == pixelpart::VariantValue::type_null) {
+		return Vector2(0.0f, 0.0f);
+	}
+
+	return toGd(value.toFloat2());
+}
+Vector3 PixelpartEffect::get_input_float3(String name) const {
+	pixelpart::VariantValue value = get_input(name);
+	if(value.type == pixelpart::VariantValue::type_null) {
+		return Vector3(0.0f, 0.0f, 0.0f);
+	}
+
+	return toGd(value.toFloat3());
+}
+Vector4 PixelpartEffect::get_input_float4(String name) const {
+	pixelpart::VariantValue value = get_input(name);
+	if(value.type == pixelpart::VariantValue::type_null) {
+		return Vector4(0.0f, 0.0f, 0.0f, 0.0f);
+	}
+
+	return toGd(value.toFloat4());
+}
+int PixelpartEffect::get_input_type(String name) const {
+	pixelpart::VariantValue value = get_input(name);
+	if(value.type == pixelpart::VariantValue::type_null) {
+		return -1;
+	}
+
+	return static_cast<int>(value.type);
+}
+TypedArray<String> PixelpartEffect::get_input_names() const {
+	TypedArray<String> names;
+	for(const std::pair<pixelpart::id_t, pixelpart::EffectInput>& entry : effect.inputs) {
+		names.append(String(entry.second.name.c_str()));
+	}
+
+	return names;
+}
+
+void PixelpartEffect::spawn_particles(int particleTypeId, int count) {
+	if(particleEngine && count > 0) {
+		particleEngine->spawnParticles(static_cast<pixelpart::id_t>(particleTypeId), static_cast<uint32_t>(count));
+	}
+}
+
+float PixelpartEffect::get_import_scale() const {
+	if(!effectResource.is_valid()) {
+		return 1.0f;
+	}
+
+	return effectResource->get_scale();
 }
 
 Ref<PixelpartParticleEmitter> PixelpartEffect::find_particle_emitter(String name) const {
@@ -600,18 +585,50 @@ Ref<PixelpartCollider> PixelpartEffect::get_collider_at_index(int index) const {
 	return Ref<PixelpartCollider>();
 }
 
-pixelpart::EffectInputCollection::iterator PixelpartEffect::findInput(String name) {
-	std::string inputName = std::string(name.utf8().get_data());
+void PixelpartEffect::apply_input_values() {
+	for(auto& inputEntry : effect.inputs) {
+		StringName inputName = StringName(inputEntry.second.name.c_str());
+		if(!inputValues.has(inputName)) {
+			continue;
+		}
 
-	return std::find_if(effect.inputs.begin(), effect.inputs.end(), [&inputName](const std::pair<pixelpart::id_t, pixelpart::EffectInput>& entry) {
-		return entry.second.name == inputName;
-	});
+		inputEntry.second.value = fromGd(inputValues.get(inputName, Variant()));
+	}
+
+	pixelpart::refreshEffectProperties(effect);
 }
-pixelpart::EffectInputCollection::const_iterator PixelpartEffect::findInput(String name) const {
-	std::string inputName = std::string(name.utf8().get_data());
 
-	return std::find_if(effect.inputs.begin(), effect.inputs.end(), [&inputName](const std::pair<pixelpart::id_t, pixelpart::EffectInput>& entry) {
-		return entry.second.name == inputName;
-	});
+void PixelpartEffect::set_input(String name, const pixelpart::VariantValue& value) {
+	std::string inputName = std::string(name.utf8().get_data());
+	pixelpart::EffectInputCollection::iterator inputIt = std::find_if(
+		effect.inputs.begin(), effect.inputs.end(),
+		[&inputName](const std::pair<pixelpart::id_t, pixelpart::EffectInput>& entry) {
+			return entry.second.name == inputName;
+		});
+
+	if(inputIt == effect.inputs.end()) {
+		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
+		return;
+	}
+
+	inputIt->second.value = value;
+	inputValues[name] = toGd(value);
+
+	pixelpart::refreshEffectProperties(effect);
+}
+pixelpart::VariantValue PixelpartEffect::get_input(String name) const {
+	std::string inputName = std::string(name.utf8().get_data());
+	pixelpart::EffectInputCollection::const_iterator inputIt = std::find_if(
+		effect.inputs.begin(), effect.inputs.end(),
+		[&inputName](const std::pair<pixelpart::id_t, pixelpart::EffectInput>& entry) {
+			return entry.second.name == inputName;
+		});
+
+	if(inputIt == effect.inputs.end()) {
+		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
+		return pixelpart::VariantValue();
+	}
+
+	return inputIt->second.value;
 }
 }

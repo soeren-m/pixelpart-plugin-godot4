@@ -11,6 +11,8 @@
 
 namespace godot {
 void PixelpartEffect2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_effect", "effect_res"), &PixelpartEffect2D::set_effect);
+	ClassDB::bind_method(D_METHOD("get_effect"), &PixelpartEffect2D::get_effect);
 	ClassDB::bind_method(D_METHOD("play", "p"), &PixelpartEffect2D::play);
 	ClassDB::bind_method(D_METHOD("pause"), &PixelpartEffect2D::pause);
 	ClassDB::bind_method(D_METHOD("restart"), &PixelpartEffect2D::restart);
@@ -25,6 +27,8 @@ void PixelpartEffect2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_speed"), &PixelpartEffect2D::get_speed);
 	ClassDB::bind_method(D_METHOD("set_frame_rate", "r"), &PixelpartEffect2D::set_frame_rate);
 	ClassDB::bind_method(D_METHOD("get_frame_rate"), &PixelpartEffect2D::get_frame_rate);
+	ClassDB::bind_method(D_METHOD("set_inputs", "in"), &PixelpartEffect2D::set_inputs);
+	ClassDB::bind_method(D_METHOD("get_inputs"), &PixelpartEffect2D::get_inputs);
 	ClassDB::bind_method(D_METHOD("set_flip_h", "flip"), &PixelpartEffect2D::set_flip_h);
 	ClassDB::bind_method(D_METHOD("set_flip_v", "flip"), &PixelpartEffect2D::set_flip_v);
 	ClassDB::bind_method(D_METHOD("get_flip_h"), &PixelpartEffect2D::get_flip_h);
@@ -41,10 +45,10 @@ void PixelpartEffect2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_input_float2", "name"), &PixelpartEffect2D::get_input_float2);
 	ClassDB::bind_method(D_METHOD("get_input_float3", "name"), &PixelpartEffect2D::get_input_float3);
 	ClassDB::bind_method(D_METHOD("get_input_float4", "name"), &PixelpartEffect2D::get_input_float4);
+	ClassDB::bind_method(D_METHOD("get_input_type", "name"), &PixelpartEffect2D::get_input_type);
+	ClassDB::bind_method(D_METHOD("get_input_names"), &PixelpartEffect2D::get_input_names);
 	ClassDB::bind_method(D_METHOD("spawn_particles", "particleTypeName", "count"), &PixelpartEffect2D::spawn_particles);
 	ClassDB::bind_method(D_METHOD("get_import_scale"), &PixelpartEffect2D::get_import_scale);
-	ClassDB::bind_method(D_METHOD("set_effect", "effect_res"), &PixelpartEffect2D::set_effect);
-	ClassDB::bind_method(D_METHOD("get_effect"), &PixelpartEffect2D::get_effect);
 	ClassDB::bind_method(D_METHOD("find_particle_emitter"), &PixelpartEffect2D::find_particle_emitter);
 	ClassDB::bind_method(D_METHOD("find_particle_type"), &PixelpartEffect2D::find_particle_type);
 	ClassDB::bind_method(D_METHOD("find_force_field"), &PixelpartEffect2D::find_force_field);
@@ -67,6 +71,9 @@ void PixelpartEffect2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed", PROPERTY_HINT_RANGE, "0.0,100.0,0.01"), "set_speed", "get_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frame_rate", PROPERTY_HINT_RANGE, "1.0,100.0,1.0"), "set_frame_rate", "get_frame_rate");
 
+	ADD_GROUP("Inputs", "");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "inputs"), "set_inputs", "get_inputs");
+
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "get_flip_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "get_flip_v");
@@ -81,6 +88,12 @@ PixelpartEffect2D::PixelpartEffect2D() {
 }
 PixelpartEffect2D::~PixelpartEffect2D() {
 
+}
+
+void PixelpartEffect2D::_enter_tree() {
+	if(!Engine::get_singleton()->is_editor_hint()) {
+		apply_input_values();
+	}
 }
 
 void PixelpartEffect2D::_process(double dt) {
@@ -141,210 +154,10 @@ void PixelpartEffect2D::_draw() {
 	}
 }
 
-void PixelpartEffect2D::play(bool p) {
-	playing = p;
-}
-void PixelpartEffect2D::pause() {
-	playing = false;
-}
-void PixelpartEffect2D::restart() {
-	particleEngine->restart(true);
-}
-void PixelpartEffect2D::reset() {
-	particleEngine->restart(false);
-}
-bool PixelpartEffect2D::is_playing() const {
-	return playing;
-}
-float PixelpartEffect2D::get_time() const {
-	return static_cast<float>(particleEngine->getTime());
-}
-
-void PixelpartEffect2D::set_loop(bool l) {
-	loop = l;
-}
-bool PixelpartEffect2D::get_loop() const {
-	return loop;
-}
-
-void PixelpartEffect2D::set_loop_time(float l) {
-	loopTime = std::max(l, 0.0f);
-}
-float PixelpartEffect2D::get_loop_time() const {
-	return loopTime;
-}
-
-void PixelpartEffect2D::set_speed(float s) {
-	speed = std::max(s, 0.0f);
-}
-float PixelpartEffect2D::get_speed() const {
-	return speed;
-}
-
-void PixelpartEffect2D::set_frame_rate(float r) {
-	timeStep = 1.0f / std::min(std::max(r, 1.0f), 100.0f);
-}
-float PixelpartEffect2D::get_frame_rate() const {
-	return 1.0f / timeStep;
-}
-
-void PixelpartEffect2D::set_flip_h(bool flip) {
-	flipH = flip;
-}
-void PixelpartEffect2D::set_flip_v(bool flip) {
-	flipV = flip;
-}
-bool PixelpartEffect2D::get_flip_h() const {
-	return flipH;
-}
-bool PixelpartEffect2D::get_flip_v() const {
-	return flipV;
-}
-
-void PixelpartEffect2D::set_input_bool(String name, bool value) {
-	pixelpart::EffectInputCollection::iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return;
-	}
-
-	inputIt->second.value = pixelpart::VariantValue::Bool(value);
-
-	pixelpart::refreshEffectProperties(effect);
-}
-void PixelpartEffect2D::set_input_int(String name, int value) {
-	pixelpart::EffectInputCollection::iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return;
-	}
-
-	inputIt->second.value = pixelpart::VariantValue::Int(fromGd(value));
-
-	pixelpart::refreshEffectProperties(effect);
-}
-void PixelpartEffect2D::set_input_float(String name, float value) {
-	pixelpart::EffectInputCollection::iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return;
-	}
-
-	inputIt->second.value = pixelpart::VariantValue::Float(fromGd(value));
-
-	pixelpart::refreshEffectProperties(effect);
-}
-void PixelpartEffect2D::set_input_float2(String name, Vector2 value) {
-	pixelpart::EffectInputCollection::iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return;
-	}
-
-	inputIt->second.value = pixelpart::VariantValue::Float2(fromGd(value));
-
-	pixelpart::refreshEffectProperties(effect);
-}
-void PixelpartEffect2D::set_input_float3(String name, Vector3 value) {
-	pixelpart::EffectInputCollection::iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return;
-	}
-
-	inputIt->second.value = pixelpart::VariantValue::Float3(fromGd(value));
-
-	pixelpart::refreshEffectProperties(effect);
-}
-void PixelpartEffect2D::set_input_float4(String name, Vector4 value) {
-	pixelpart::EffectInputCollection::iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return;
-	}
-
-	inputIt->second.value = pixelpart::VariantValue::Float4(fromGd(value));
-
-	pixelpart::refreshEffectProperties(effect);
-}
-bool PixelpartEffect2D::get_input_bool(String name) const {
-	pixelpart::EffectInputCollection::const_iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return false;
-	}
-
-	return inputIt->second.value.toBool();
-}
-int PixelpartEffect2D::get_input_int(String name) const {
-	pixelpart::EffectInputCollection::const_iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return 0;
-	}
-
-	return toGd(inputIt->second.value.toInt());
-}
-float PixelpartEffect2D::get_input_float(String name) const {
-	pixelpart::EffectInputCollection::const_iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return 0.0f;
-	}
-
-	return toGd(inputIt->second.value.toFloat());
-}
-Vector2 PixelpartEffect2D::get_input_float2(String name) const {
-	pixelpart::EffectInputCollection::const_iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return Vector2(0.0f, 0.0f);
-	}
-
-	return toGd(inputIt->second.value.toFloat2());
-}
-Vector3 PixelpartEffect2D::get_input_float3(String name) const {
-	pixelpart::EffectInputCollection::const_iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return Vector3(0.0f, 0.0f, 0.0f);
-	}
-
-	return toGd(inputIt->second.value.toFloat3());
-}
-Vector4 PixelpartEffect2D::get_input_float4(String name) const {
-	pixelpart::EffectInputCollection::const_iterator inputIt = findInput(name);
-	if(inputIt == effect.inputs.end()) {
-		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
-		return Vector4(0.0f, 0.0f, 0.0f, 0.0f);
-	}
-
-	return toGd(inputIt->second.value.toFloat4());
-}
-
-void PixelpartEffect2D::spawn_particles(String particleTypeName, int count) {
-	if(particleEngine && count > 0) {
-		Ref<PixelpartParticleType> particleType = find_particle_type(particleTypeName);
-
-		if(particleType.is_valid()) {
-			particleEngine->spawnParticles(static_cast<pixelpart::id_t>(particleType->get_id()), static_cast<uint32_t>(count));
-		}
-		else {
-			UtilityFunctions::push_warning("Could not find particle type \"", particleTypeName, "\"");
-		}
-	}
-}
-
-float PixelpartEffect2D::get_import_scale() const {
-	if(!effectResource.is_valid()) {
-		return 1.0f;
-	}
-
-	return effectResource->get_scale();
-}
-
 void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> effectRes) {
 	RenderingServer* rs = RenderingServer::get_singleton();
+
+	inputValues.clear();
 
 	particleEmitters.clear();
 	particleTypes.clear();
@@ -377,6 +190,11 @@ void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> effectRes) {
 #endif
 
 	try {
+		for(const auto& inputEntry : effect.inputs) {
+			StringName inputName = StringName(inputEntry.second.name.c_str());
+			inputValues[inputName] = toGd(inputEntry.second.value);
+		}
+
 		for(const auto& resource : effect.resources.images) {
 			PackedByteArray imageData;
 			imageData.resize(static_cast<int64_t>(resource.second.data.size()));
@@ -439,6 +257,178 @@ void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> effectRes) {
 }
 Ref<PixelpartEffectResource> PixelpartEffect2D::get_effect() const {
 	return effectResource;
+}
+
+void PixelpartEffect2D::play(bool p) {
+	playing = p;
+}
+void PixelpartEffect2D::pause() {
+	playing = false;
+}
+void PixelpartEffect2D::restart() {
+	particleEngine->restart(true);
+}
+void PixelpartEffect2D::reset() {
+	particleEngine->restart(false);
+}
+bool PixelpartEffect2D::is_playing() const {
+	return playing;
+}
+float PixelpartEffect2D::get_time() const {
+	return static_cast<float>(particleEngine->getTime());
+}
+
+void PixelpartEffect2D::set_loop(bool l) {
+	loop = l;
+}
+bool PixelpartEffect2D::get_loop() const {
+	return loop;
+}
+
+void PixelpartEffect2D::set_loop_time(float l) {
+	loopTime = std::max(l, 0.0f);
+}
+float PixelpartEffect2D::get_loop_time() const {
+	return loopTime;
+}
+
+void PixelpartEffect2D::set_speed(float s) {
+	speed = std::max(s, 0.0f);
+}
+float PixelpartEffect2D::get_speed() const {
+	return speed;
+}
+
+void PixelpartEffect2D::set_frame_rate(float r) {
+	timeStep = 1.0f / std::min(std::max(r, 1.0f), 100.0f);
+}
+float PixelpartEffect2D::get_frame_rate() const {
+	return 1.0f / timeStep;
+}
+
+void PixelpartEffect2D::set_inputs(Dictionary in) {
+	inputValues = in;
+	apply_input_values();
+}
+Dictionary PixelpartEffect2D::get_inputs() const {
+	return inputValues;
+}
+
+void PixelpartEffect2D::set_flip_h(bool flip) {
+	flipH = flip;
+}
+void PixelpartEffect2D::set_flip_v(bool flip) {
+	flipV = flip;
+}
+bool PixelpartEffect2D::get_flip_h() const {
+	return flipH;
+}
+bool PixelpartEffect2D::get_flip_v() const {
+	return flipV;
+}
+
+void PixelpartEffect2D::set_input_bool(String name, bool value) {
+	set_input(name, pixelpart::VariantValue::Bool(value));
+}
+void PixelpartEffect2D::set_input_int(String name, int value) {
+	set_input(name, pixelpart::VariantValue::Int(fromGd(value)));
+}
+void PixelpartEffect2D::set_input_float(String name, float value) {
+	set_input(name, pixelpart::VariantValue::Float(fromGd(value)));
+}
+void PixelpartEffect2D::set_input_float2(String name, Vector2 value) {
+	set_input(name, pixelpart::VariantValue::Float2(fromGd(value)));
+}
+void PixelpartEffect2D::set_input_float3(String name, Vector3 value) {
+	set_input(name, pixelpart::VariantValue::Float3(fromGd(value)));
+}
+void PixelpartEffect2D::set_input_float4(String name, Vector4 value) {
+	set_input(name, pixelpart::VariantValue::Float4(fromGd(value)));
+}
+bool PixelpartEffect2D::get_input_bool(String name) const {
+	pixelpart::VariantValue value = get_input(name);
+	if(value.type == pixelpart::VariantValue::type_null) {
+		return false;
+	}
+
+	return value.toBool();
+}
+int PixelpartEffect2D::get_input_int(String name) const {
+	pixelpart::VariantValue value = get_input(name);
+	if(value.type == pixelpart::VariantValue::type_null) {
+		return 0;
+	}
+
+	return toGd(value.toInt());
+}
+float PixelpartEffect2D::get_input_float(String name) const {
+	pixelpart::VariantValue value = get_input(name);
+	if(value.type == pixelpart::VariantValue::type_null) {
+		return 0.0f;
+	}
+
+	return toGd(value.toFloat());
+}
+Vector2 PixelpartEffect2D::get_input_float2(String name) const {
+	pixelpart::VariantValue value = get_input(name);
+	if(value.type == pixelpart::VariantValue::type_null) {
+		return Vector2(0.0f, 0.0f);
+	}
+
+	return toGd(value.toFloat2());
+}
+Vector3 PixelpartEffect2D::get_input_float3(String name) const {
+	pixelpart::VariantValue value = get_input(name);
+	if(value.type == pixelpart::VariantValue::type_null) {
+		return Vector3(0.0f, 0.0f, 0.0f);
+	}
+
+	return toGd(value.toFloat3());
+}
+Vector4 PixelpartEffect2D::get_input_float4(String name) const {
+	pixelpart::VariantValue value = get_input(name);
+	if(value.type == pixelpart::VariantValue::type_null) {
+		return Vector4(0.0f, 0.0f, 0.0f, 0.0f);
+	}
+
+	return toGd(value.toFloat4());
+}
+int PixelpartEffect2D::get_input_type(String name) const {
+	pixelpart::VariantValue value = get_input(name);
+	if(value.type == pixelpart::VariantValue::type_null) {
+		return -1;
+	}
+
+	return static_cast<int>(value.type);
+}
+TypedArray<String> PixelpartEffect2D::get_input_names() const {
+	TypedArray<String> names;
+	for(const std::pair<pixelpart::id_t, pixelpart::EffectInput>& entry : effect.inputs) {
+		names.append(String(entry.second.name.c_str()));
+	}
+
+	return names;
+}
+
+void PixelpartEffect2D::spawn_particles(String particleTypeName, int count) {
+	if(particleEngine && count > 0) {
+		Ref<PixelpartParticleType> particleType = find_particle_type(particleTypeName);
+
+		if(particleType.is_valid()) {
+			particleEngine->spawnParticles(static_cast<pixelpart::id_t>(particleType->get_id()), static_cast<uint32_t>(count));
+		}
+		else {
+			UtilityFunctions::push_warning("Could not find particle type \"", particleTypeName, "\"");
+		}
+	}
+}
+
+float PixelpartEffect2D::get_import_scale() const {
+	if(!effectResource.is_valid()) {
+		return 1.0f;
+	}
+
+	return effectResource->get_scale();
 }
 
 Ref<PixelpartParticleEmitter> PixelpartEffect2D::find_particle_emitter(String name) const {
@@ -570,18 +560,50 @@ Ref<PixelpartCollider> PixelpartEffect2D::get_collider_at_index(int index) const
 	return Ref<PixelpartCollider>();
 }
 
-pixelpart::EffectInputCollection::iterator PixelpartEffect2D::findInput(String name) {
-	std::string inputName = std::string(name.utf8().get_data());
+void PixelpartEffect2D::apply_input_values() {
+	for(auto& inputEntry : effect.inputs) {
+		StringName inputName = StringName(inputEntry.second.name.c_str());
+		if(!inputValues.has(inputName)) {
+			continue;
+		}
 
-	return std::find_if(effect.inputs.begin(), effect.inputs.end(), [&inputName](const std::pair<pixelpart::id_t, pixelpart::EffectInput>& entry) {
-		return entry.second.name == inputName;
-	});
+		inputEntry.second.value = fromGd(inputValues.get(inputName, Variant()));
+	}
+
+	pixelpart::refreshEffectProperties(effect);
 }
-pixelpart::EffectInputCollection::const_iterator PixelpartEffect2D::findInput(String name) const {
-	std::string inputName = std::string(name.utf8().get_data());
 
-	return std::find_if(effect.inputs.begin(), effect.inputs.end(), [&inputName](const std::pair<pixelpart::id_t, pixelpart::EffectInput>& entry) {
-		return entry.second.name == inputName;
-	});
+void PixelpartEffect2D::set_input(String name, const pixelpart::VariantValue& value) {
+	std::string inputName = std::string(name.utf8().get_data());
+	pixelpart::EffectInputCollection::iterator inputIt = std::find_if(
+		effect.inputs.begin(), effect.inputs.end(),
+		[&inputName](const std::pair<pixelpart::id_t, pixelpart::EffectInput>& entry) {
+			return entry.second.name == inputName;
+		});
+
+	if(inputIt == effect.inputs.end()) {
+		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
+		return;
+	}
+
+	inputIt->second.value = value;
+	inputValues[name] = toGd(value);
+
+	pixelpart::refreshEffectProperties(effect);
+}
+pixelpart::VariantValue PixelpartEffect2D::get_input(String name) const {
+	std::string inputName = std::string(name.utf8().get_data());
+	pixelpart::EffectInputCollection::const_iterator inputIt = std::find_if(
+		effect.inputs.begin(), effect.inputs.end(),
+		[&inputName](const std::pair<pixelpart::id_t, pixelpart::EffectInput>& entry) {
+			return entry.second.name == inputName;
+		});
+
+	if(inputIt == effect.inputs.end()) {
+		UtilityFunctions::push_warning("Unknown effect input \"", name, "\"");
+		return pixelpart::VariantValue();
+	}
+
+	return inputIt->second.value;
 }
 }

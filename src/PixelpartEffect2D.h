@@ -21,9 +21,14 @@ public:
 	PixelpartEffect2D();
 	~PixelpartEffect2D();
 
+	virtual void _enter_tree() override;
+
 	virtual void _process(double dt) override;
 
 	virtual void _draw() override;
+
+	void set_effect(Ref<PixelpartEffectResource> effectRes);
+	Ref<PixelpartEffectResource> get_effect() const;
 
 	void play(bool p);
 	void pause();
@@ -44,6 +49,9 @@ public:
 	void set_frame_rate(float r);
 	float get_frame_rate() const;
 
+	void set_inputs(Dictionary in);
+	Dictionary get_inputs() const;
+
 	void set_flip_h(bool flip);
 	void set_flip_v(bool flip);
 	bool get_flip_h() const;
@@ -61,13 +69,12 @@ public:
 	Vector2 get_input_float2(String name) const;
 	Vector3 get_input_float3(String name) const;
 	Vector4 get_input_float4(String name) const;
+	int get_input_type(String name) const;
+	TypedArray<String> get_input_names() const;
 
 	void spawn_particles(String particleTypeName, int count);
 
 	float get_import_scale() const;
-
-	void set_effect(Ref<PixelpartEffectResource> effectRes);
-	Ref<PixelpartEffectResource> get_effect() const;
 
 	Ref<PixelpartParticleEmitter> find_particle_emitter(String name) const;
 	Ref<PixelpartParticleType> find_particle_type(String name) const;
@@ -83,8 +90,10 @@ public:
 	Ref<PixelpartCollider> get_collider_at_index(int index) const;
 
 private:
-	pixelpart::EffectInputCollection::iterator findInput(String name);
-	pixelpart::EffectInputCollection::const_iterator findInput(String name) const;
+	void apply_input_values();
+
+	void set_input(String name, const pixelpart::VariantValue& value);
+	pixelpart::VariantValue get_input(String name) const;
 
 	Ref<PixelpartEffectResource> effectResource;
 	pixelpart::Effect effect;
@@ -103,6 +112,8 @@ private:
 	float loopTime = 1.0f;
 	float speed = 1.0f;
 	float timeStep = 1.0f / 60.0f;
+
+	Dictionary inputValues;
 
 	bool flipH = false;
 	bool flipV = true;

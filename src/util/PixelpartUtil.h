@@ -1,7 +1,8 @@
 #ifndef PIXELPART_UTIL_H
 #define PIXELPART_UTIL_H
 
-#include "common/Types.h"
+#include "common/VariantValue.h"
+#include <godot_cpp/variant/variant.hpp>
 #include <godot_cpp/variant/vector2.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 #include <godot_cpp/variant/vector4.hpp>
@@ -14,6 +15,7 @@ Vector2 toGd(const pixelpart::vec2_t& v);
 Vector3 toGd(const pixelpart::vec3_t& v);
 Vector4 toGd(const pixelpart::vec4_t& v);
 Color toGdColor(const pixelpart::vec4_t& v);
+Variant toGd(const pixelpart::VariantValue& v);
 
 pixelpart::int_t fromGd(int v);
 pixelpart::float_t fromGd(float v);
@@ -21,6 +23,7 @@ pixelpart::vec2_t fromGd(const Vector2& v);
 pixelpart::vec3_t fromGd(const Vector3& v);
 pixelpart::vec4_t fromGd(const Vector4& v);
 pixelpart::vec4_t fromGd(const Color& v);
+pixelpart::VariantValue fromGd(const Variant& v);
 
 float packFloatsUnsigned(float a, float b, float sa, float sb);
 float packFloatsSigned(float a, float b, float sa, float sb);
