@@ -10,9 +10,9 @@ PixelpartEffect = "res://addons/pixelpart/pixelpart_node3d.svg"
 
 [libraries]
 
-linux.x86_64 = "res://addons/pixelpart/bin/libpixelpart.linux-64.so"
-linux.x86_32 = "res://addons/pixelpart/bin/libpixelpart.linux-32.so"
-windows.x86_64 = "res://addons/pixelpart/bin/libpixelpart.win-64.dll"
-windows.x86_32 = "res://addons/pixelpart/bin/libpixelpart.win-32.dll"
-macos = "res://addons/pixelpart/bin/libpixelpart.macos.dylib"
-web.wasm32 = "res://addons/pixelpart/bin/libpixelpart.wasm-32.wasm"
+linux.x86_64 = "res://addons/pixelpart/bin/libpixelpart.linux-x86_64.so"
+linux.x86_32 = "res://addons/pixelpart/bin/libpixelpart.linux-x86_32.so"
+windows.x86_64 = "res://addons/pixelpart/bin/libpixelpart.windows-x86_64.dll"
+windows.x86_32 = "res://addons/pixelpart/bin/libpixelpart.windows-x86_32.dll"
+macos = "res://addons/pixelpart/bin/libpixelpart.macos-universal.dylib"
+web.wasm32 = "res://addons/pixelpart/bin/libpixelpart.web-wasm32.wasm"

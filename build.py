@@ -1,25 +1,25 @@
 import sys
 import subprocess
 
-if "platform=windows" in sys.argv:
-    subprocess.run("scons platform=windows bits=32 target=release generate_bindings=true", shell = True)
-    subprocess.run("scons platform=windows bits=64 target=release generate_bindings=true", shell = True)
-
-elif "platform=linux" in sys.argv:
-    subprocess.run("scons platform=linux bits=32 target=release generate_bindings=true", shell = True)
-    subprocess.run("scons platform=linux bits=64 target=release generate_bindings=true", shell = True)
+if "platform=linux" in sys.argv:
+    subprocess.run("scons platform=linux arch=x86_32 target=template_release generate_bindings=true", shell = True)
+    subprocess.run("scons platform=linux arch=x86_64 target=template_release generate_bindings=true", shell = True)
 
 elif "platform=macos" in sys.argv:
-    subprocess.run("scons platform=macos bits=64 target=release generate_bindings=true", shell = True)
+    subprocess.run("scons platform=macos arch=universal target=template_release generate_bindings=true", shell = True)
+
+elif "platform=windows" in sys.argv:
+    subprocess.run("scons platform=windows arch=x86_32 target=template_release generate_bindings=true", shell = True)
+    subprocess.run("scons platform=windows arch=x86_64 target=template_release generate_bindings=true", shell = True)
 
 elif "platform=android" in sys.argv:
-    subprocess.run("scons platform=android android_arch=armv7 target=release generate_bindings=true", shell = True)
-    subprocess.run("scons platform=android android_arch=arm64v8 target=release generate_bindings=true", shell = True)
-    subprocess.run("scons platform=android android_arch=x86 target=release generate_bindings=true", shell = True)
-    subprocess.run("scons platform=android android_arch=x86_64 target=release generate_bindings=true", shell = True)
+    subprocess.run("scons platform=android arch=arm32 target=template_release generate_bindings=true", shell = True)
+    subprocess.run("scons platform=android arch=arm64 target=template_release generate_bindings=true", shell = True)
+    subprocess.run("scons platform=android arch=x86_32 target=template_release generate_bindings=true", shell = True)
+    subprocess.run("scons platform=android arch=x86_64 target=template_release generate_bindings=true", shell = True)
 
 elif "platform=ios" in sys.argv:
-    subprocess.run("scons platform=ios ios_arch=arm64 target=release generate_bindings=true", shell = True)
+    subprocess.run("scons platform=ios arch=universal target=template_release generate_bindings=true", shell = True)
 
 elif "platform=web" in sys.argv:
-    subprocess.run("scons platform=web bits=32 target=release generate_bindings=true", shell = True)
+    subprocess.run("scons platform=web arch=wasm32 target=template_release generate_bindings=true", shell = True)
