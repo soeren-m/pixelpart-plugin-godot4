@@ -174,6 +174,7 @@ void PixelpartParticleMesh3D::draw(Node3D* parentNode,
 	RenderingServer* rs = RenderingServer::get_singleton();
 	rs->instance_set_scenario(instanceRID, parentNode->get_world_3d()->get_scenario());
 	rs->instance_set_transform(instanceRID, parentNode->get_global_transform());
+	rs->instance_set_pivot_data(instanceRID, static_cast<double>(particleType.layer) * 0.01, false);
 
 	switch(particleType.renderer) {
 		case pixelpart::ParticleRendererType::sprite:
