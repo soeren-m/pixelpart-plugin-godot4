@@ -1,7 +1,8 @@
 enum InterpolationType {
 	OFF = 0,
 	LINEAR = 1,
-	SPLINE = 2
+	SPLINE = 2,
+	BEZIER = 3
 }
 
 enum BlendMode {
@@ -65,12 +66,4 @@ enum AlignmentMode {
 	MOTION = 2,
 	EMISSION = 3,
 	EMITTER = 4
-}
-
-enum ForceType {
-	ATTRACTION_FIELD = 0,
-	ACCELERATION_FIELD = 1,
-	VECTOR_FIELD = 2,
-	NOISE_FIELD = 3,
-	DRAG_FIELD = 4
 }

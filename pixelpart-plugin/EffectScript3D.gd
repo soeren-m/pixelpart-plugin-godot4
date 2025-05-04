@@ -1,14 +1,23 @@
 extends Node3D
 
-const Pixelpart = preload("res://addons/pixelpart/src/PixelpartCommon.gd")
+const ParticleTypeUtil = preload("res://ParticleTypeUtil.gd")
+const NodeUtil = preload("res://NodeUtil.gd")
 
 func _ready():
-	# Get particle type by name
-	var particleType = $SampleEffect.find_particle_type("Particle")
-	if particleType == null:
-		return
+	# Print information about particle types
+	var particle_type = $SampleEffect.get_particle_type_at_index(0)
+	var particle_type_index = 0
+	while particle_type:
+		ParticleTypeUtil.print_info(particle_type)
 
-	# Get particle emitter by name
-	var particleEmitter = $SampleEffect.find_particle_emitter("Emitter")
-	if particleEmitter == null:
-		return
+		particle_type_index += 1
+		particle_type = $SampleEffect.get_particle_type_at_index(particle_type_index)
+
+	# Print information about effect nodes
+	var node = $SampleEffect.get_node_at_index(0)
+	var node_index = 0
+	while node:
+		NodeUtil.print_info(node)
+
+		node_index += 1
+		node = $SampleEffect.get_node_at_index(node_index)

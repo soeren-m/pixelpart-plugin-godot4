@@ -1,16 +1,20 @@
-#ifndef PIXELPART_SHADER_GENERATOR_H
-#define PIXELPART_SHADER_GENERATOR_H
+#ifndef PIXELPART_SHADER_PROVIDER_H
+#define PIXELPART_SHADER_PROVIDER_H
 
-#include <effect/ParticleRendererType.h>
-#include <effect/BlendMode.h>
-#include <effect/LightingMode.h>
-#include <shadergraph/ShaderGraph.h>
 #include <godot_cpp/classes/shader.hpp>
 #include <godot_cpp/classes/base_material3d.hpp>
 #include <godot_cpp/classes/canvas_item_material.hpp>
+#include <pixelpart-runtime/common/Id.h>
+#include <pixelpart-runtime/effect/ParticleRendererType.h>
+#include <pixelpart-runtime/effect/BlendMode.h>
+#include <pixelpart-runtime/effect/LightingMode.h>
+#include <pixelpart-runtime/shadergraph/ShaderGraph.h>
+#include <string>
+#include <vector>
+#include <unordered_map>
 
 namespace godot {
-class PixelpartShaderGenerator {
+class PixelpartShaderProvider {
 public:
 	struct ShaderMetadata {
 		static std::unordered_map<std::string, pixelpart::id_t> builtInMaterialParameterIds;
@@ -23,15 +27,12 @@ public:
 
 	static const std::string uniformPrefix;
 
-	PixelpartShaderGenerator();
+	PixelpartShaderProvider();
 
 	Ref<Shader> get_builtin_canvas_item_shader(const std::string& shaderId);
 	Ref<Shader> get_builtin_spatial_shader(const std::string& shaderId);
 	ShaderMetadata get_builtin_canvas_item_shader_metadata(const std::string& shaderId);
 	ShaderMetadata get_builtin_spatial_shader_metadata(const std::string& shaderId);
-
-	bool has_builtin_canvas_item_shader(const std::string& shaderId);
-	bool has_builtin_spatial_shader(const std::string& shaderId);
 
 	Ref<Shader> get_custom_canvas_item_shader(
 		const std::string& mainShaderCode,

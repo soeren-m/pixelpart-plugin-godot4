@@ -1,10 +1,10 @@
-#include "PixelpartShaderGenerator.h"
+#include "PixelpartShaderProvider.h"
 #include "../util/PixelpartUtil.h"
-#include <common/StringUtil.h>
 #include <godot_cpp/classes/rendering_server.hpp>
+#include <pixelpart-runtime/common/StringUtil.h>
 
 namespace godot {
-std::unordered_map<std::string, pixelpart::id_t> PixelpartShaderGenerator::ShaderMetadata::builtInMaterialParameterIds = std::unordered_map<std::string, pixelpart::id_t> {
+std::unordered_map<std::string, pixelpart::id_t> PixelpartShaderProvider::ShaderMetadata::builtInMaterialParameterIds = std::unordered_map<std::string, pixelpart::id_t> {
 	{ "MainTexture", 0 },
 	{ "ColorBlendMode", 10 },
 	{ "Emission", 20 },
@@ -23,15 +23,15 @@ std::unordered_map<std::string, pixelpart::id_t> PixelpartShaderGenerator::Shade
 	{ "DistanceFadeTransition", 43 }
 };
 
-PixelpartShaderGenerator::ShaderMetadata::ShaderMetadata(std::vector<std::string> parameterList) {
+PixelpartShaderProvider::ShaderMetadata::ShaderMetadata(std::vector<std::string> parameterList) {
 	for(const std::string& name : parameterList) {
 		parameterNames[builtInMaterialParameterIds.at(name)] = name;
 	}
 }
 
-const std::string PixelpartShaderGenerator::uniformPrefix = "u_";
+const std::string PixelpartShaderProvider::uniformPrefix = "u_";
 
-PixelpartShaderGenerator::PixelpartShaderGenerator() {
+PixelpartShaderProvider::PixelpartShaderProvider() {
 	std::vector<std::string> spriteUnlitParameterNames = std::vector<std::string>{
 		"MainTexture",
 		"Emission",
@@ -202,27 +202,28 @@ PixelpartShaderGenerator::PixelpartShaderGenerator() {
 	};
 }
 
-Ref<Shader> PixelpartShaderGenerator::get_builtin_canvas_item_shader(const std::string& shaderId) {
+Ref<Shader> PixelpartShaderProvider::get_builtin_canvas_item_shader(const std::string& shaderId) {
+	if(builtInCanvasItemShaders.count(shaderId) == 0) {
+		return Ref<Shader>();
+	}
+
 	return builtInCanvasItemShaders.at(shaderId).shader;
 }
-Ref<Shader> PixelpartShaderGenerator::get_builtin_spatial_shader(const std::string& shaderId) {
+Ref<Shader> PixelpartShaderProvider::get_builtin_spatial_shader(const std::string& shaderId) {
+	if(builtInSpatialShaders.count(shaderId) == 0) {
+		return Ref<Shader>();
+	}
+
 	return builtInSpatialShaders.at(shaderId).shader;
 }
-PixelpartShaderGenerator::ShaderMetadata PixelpartShaderGenerator::get_builtin_canvas_item_shader_metadata(const std::string& shaderId) {
+PixelpartShaderProvider::ShaderMetadata PixelpartShaderProvider::get_builtin_canvas_item_shader_metadata(const std::string& shaderId) {
 	return builtInCanvasItemShaders.at(shaderId).metadata;
 }
-PixelpartShaderGenerator::ShaderMetadata PixelpartShaderGenerator::get_builtin_spatial_shader_metadata(const std::string& shaderId) {
+PixelpartShaderProvider::ShaderMetadata PixelpartShaderProvider::get_builtin_spatial_shader_metadata(const std::string& shaderId) {
 	return builtInSpatialShaders.at(shaderId).metadata;
 }
 
-bool PixelpartShaderGenerator::has_builtin_canvas_item_shader(const std::string& shaderId) {
-	return builtInCanvasItemShaders.count(shaderId) != 0u;
-}
-bool PixelpartShaderGenerator::has_builtin_spatial_shader(const std::string& shaderId) {
-	return builtInSpatialShaders.count(shaderId) != 0u;
-}
-
-Ref<Shader> PixelpartShaderGenerator::get_custom_canvas_item_shader(
+Ref<Shader> PixelpartShaderProvider::get_custom_canvas_item_shader(
 	const std::string& mainShaderCode,
 	const std::string& parameterShaderCode,
 	pixelpart::ParticleRendererType renderer,
@@ -230,7 +231,7 @@ Ref<Shader> PixelpartShaderGenerator::get_custom_canvas_item_shader(
 	pixelpart::LightingMode lightingMode) {
 	return get_canvas_item_shader(canvasItemShaderTemplate, mainShaderCode, parameterShaderCode, blendMode, lightingMode);
 }
-Ref<Shader> PixelpartShaderGenerator::get_custom_spatial_shader(
+Ref<Shader> PixelpartShaderProvider::get_custom_spatial_shader(
 	const std::string& mainShaderCode,
 	const std::string& parameterShaderCode,
 	pixelpart::ParticleRendererType renderer,
@@ -246,7 +247,7 @@ Ref<Shader> PixelpartShaderGenerator::get_custom_spatial_shader(
 	}
 }
 
-Ref<Shader> PixelpartShaderGenerator::get_canvas_item_shader(const std::string& shaderTemplate,
+Ref<Shader> PixelpartShaderProvider::get_canvas_item_shader(const std::string& shaderTemplate,
 	const std::string& mainShaderCode,
 	const std::string& parameterShaderCode,
 	pixelpart::BlendMode blendMode,
@@ -277,7 +278,7 @@ Ref<Shader> PixelpartShaderGenerator::get_canvas_item_shader(const std::string& 
 
 	return get_shader(shaderTemplate, mainShaderCode, parameterShaderCode, outputCode, renderMode);
 }
-Ref<Shader> PixelpartShaderGenerator::get_spatial_shader(const std::string& shaderTemplate,
+Ref<Shader> PixelpartShaderProvider::get_spatial_shader(const std::string& shaderTemplate,
 	const std::string& mainShaderCode,
 	const std::string& parameterShaderCode,
 	pixelpart::BlendMode blendMode,
@@ -323,7 +324,7 @@ Ref<Shader> PixelpartShaderGenerator::get_spatial_shader(const std::string& shad
 
 	return get_shader(shaderTemplate, mainShaderCode, parameterShaderCode, outputCode, renderMode);
 }
-Ref<Shader> PixelpartShaderGenerator::get_shader(const std::string& shaderTemplate,
+Ref<Shader> PixelpartShaderProvider::get_shader(const std::string& shaderTemplate,
 	const std::string& mainShaderCode,
 	const std::string& parameterShaderCode,
 	const std::string& outputCode,
@@ -347,36 +348,36 @@ Ref<Shader> PixelpartShaderGenerator::get_shader(const std::string& shaderTempla
 	return shader;
 }
 
-const std::string PixelpartShaderGenerator::shaderCommonCode = std::string(
+const std::string PixelpartShaderProvider::shaderCommonCode = std::string(
 	#include "../shaders/PixelpartShaderCommon.glsl"
 );
 
-const std::string PixelpartShaderGenerator::spriteCanvasItemShader = std::string(
+const std::string PixelpartShaderProvider::spriteCanvasItemShader = std::string(
 	#include "../shaders/PixelpartSpriteCanvasItemShader.glsl"
 );
-const std::string PixelpartShaderGenerator::trailCanvasItemShader = std::string(
+const std::string PixelpartShaderProvider::trailCanvasItemShader = std::string(
 	#include "../shaders/PixelpartTrailCanvasItemShader.glsl"
 );
-const std::string PixelpartShaderGenerator::spriteSpatialShader = std::string(
+const std::string PixelpartShaderProvider::spriteSpatialShader = std::string(
 	#include "../shaders/PixelpartSpriteSpatialShader.glsl"
 );
-const std::string PixelpartShaderGenerator::trailSpatialShader = std::string(
+const std::string PixelpartShaderProvider::trailSpatialShader = std::string(
 	#include "../shaders/PixelpartTrailSpatialShader.glsl"
 );
-const std::string PixelpartShaderGenerator::meshSpatialShader = std::string(
+const std::string PixelpartShaderProvider::meshSpatialShader = std::string(
 	#include "../shaders/PixelpartMeshSpatialShader.glsl"
 );
 
-const std::string PixelpartShaderGenerator::canvasItemShaderTemplate = std::string(
+const std::string PixelpartShaderProvider::canvasItemShaderTemplate = std::string(
 	#include "../shaders/PixelpartCanvasItemShaderTemplate.glsl"
 );
-const std::string PixelpartShaderGenerator::spriteSpatialShaderTemplate = std::string(
+const std::string PixelpartShaderProvider::spriteSpatialShaderTemplate = std::string(
 	#include "../shaders/PixelpartSpriteSpatialShaderTemplate.glsl"
 );
-const std::string PixelpartShaderGenerator::trailSpatialShaderTemplate = std::string(
+const std::string PixelpartShaderProvider::trailSpatialShaderTemplate = std::string(
 	#include "../shaders/PixelpartTrailSpatialShaderTemplate.glsl"
 );
-const std::string PixelpartShaderGenerator::meshSpatialShaderTemplate = std::string(
+const std::string PixelpartShaderProvider::meshSpatialShaderTemplate = std::string(
 	#include "../shaders/PixelpartMeshSpatialShaderTemplate.glsl"
 );
 }

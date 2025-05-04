@@ -3,12 +3,6 @@
 #include <godot_cpp/core/class_db.hpp>
 
 namespace godot {
-void PixelpartStaticPropertyFloat::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get"), &PixelpartStaticPropertyFloat::get);
-	ClassDB::bind_method(D_METHOD("set_value", "value"), &PixelpartStaticPropertyFloat::set_value);
-	ClassDB::bind_method(D_METHOD("get_value"), &PixelpartStaticPropertyFloat::get_value);
-}
-
 PixelpartStaticPropertyFloat::PixelpartStaticPropertyFloat() {
 
 }
@@ -17,24 +11,37 @@ void PixelpartStaticPropertyFloat::init(pixelpart::StaticProperty<pixelpart::flo
 	property = prop;
 }
 
-float PixelpartStaticPropertyFloat::get() const {
+float PixelpartStaticPropertyFloat::value() const {
 	if(property) {
-		return toGd(property->get());
+		return pxpt_to_gd(property->value());
 	}
 
 	return 0.0f;
 }
 
-void PixelpartStaticPropertyFloat::set_value(float value) {
+void PixelpartStaticPropertyFloat::set_base_value(float value) {
 	if(property) {
-		property->setValue(fromGd(value));
+		property->baseValue(gd_to_pxpt(value));
 	}
 }
-float PixelpartStaticPropertyFloat::get_value() const {
+float PixelpartStaticPropertyFloat::get_base_value() const {
 	if(property) {
-		return toGd(property->getValue());
+		return pxpt_to_gd(property->baseValue());
 	}
 
 	return 0.0f;
+}
+
+void PixelpartStaticPropertyFloat::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("value"), &PixelpartStaticPropertyFloat::value);
+	ClassDB::bind_method(D_METHOD("set_base_value", "value"), &PixelpartStaticPropertyFloat::set_base_value);
+	ClassDB::bind_method(D_METHOD("get_base_value"), &PixelpartStaticPropertyFloat::get_base_value);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "base_value"), "set_base_value", "get_base_value");
+
+	// Deprecated
+	ClassDB::bind_method(D_METHOD("get"), &PixelpartStaticPropertyFloat::value);
+	ClassDB::bind_method(D_METHOD("set_value", "value"), &PixelpartStaticPropertyFloat::set_base_value);
+	ClassDB::bind_method(D_METHOD("get_value"), &PixelpartStaticPropertyFloat::get_base_value);
 }
 }

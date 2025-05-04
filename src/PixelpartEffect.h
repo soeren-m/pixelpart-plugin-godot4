@@ -2,26 +2,25 @@
 #define PIXELPART_EFFECT_H
 
 #include "PixelpartEffectResource.h"
-#include "PixelpartParticleEmitter.h"
-#include "PixelpartParticleType.h"
-#include "PixelpartForceField.h"
-#include "PixelpartCollider.h"
-#include "rendering/PixelpartParticleMesh3D.h"
-#include <engine/ParticleEngine.h>
+#include "PixelpartEffectRuntime.h"
+#include "rendering/PixelpartGraphicsResourceProvider.h"
+#include "rendering/PixelpartParticleRenderer3D.h"
+#include "particletype/PixelpartParticleType.h"
+#include "node/PixelpartParticleEmitter.h"
+#include "node/PixelpartForceField.h"
+#include "node/PixelpartCollider.h"
+#include <pixelpart-runtime/effect/ParticleRuntimeId.h>
 #include <godot_cpp/core/binder_common.hpp>
-#include <godot_cpp/variant/transform3d.hpp>
-#include <godot_cpp/classes/mesh_instance3d.hpp>
-#include <godot_cpp/classes/image_texture.hpp>
+#include <memory>
+#include <unordered_map>
 
 namespace godot {
 class PixelpartEffect : public Node3D {
 	GDCLASS(PixelpartEffect, Node3D)
 
 public:
-	static void _bind_methods();
-
 	PixelpartEffect();
-	~PixelpartEffect();
+	virtual ~PixelpartEffect();
 
 	virtual void _enter_tree() override;
 	virtual void _exit_tree() override;
@@ -30,29 +29,31 @@ public:
 
 	void draw();
 
-	void set_effect(Ref<PixelpartEffectResource> effectRes);
+	void set_effect(Ref<PixelpartEffectResource> resource);
 	Ref<PixelpartEffectResource> get_effect() const;
 
-	void play(bool p);
+	float get_import_scale() const;
+
+	void play(bool state);
 	void pause();
 	void restart();
 	void reset();
 	bool is_playing() const;
 	float get_time() const;
 
-	void set_loop(bool l);
+	void set_loop(bool mode);
 	bool get_loop() const;
 
-	void set_loop_time(float l);
+	void set_loop_time(float time);
 	float get_loop_time() const;
 
-	void set_speed(float s);
+	void set_speed(float sp);
 	float get_speed() const;
 
-	void set_frame_rate(float r);
+	void set_frame_rate(float rate);
 	float get_frame_rate() const;
 
-	void set_inputs(Dictionary in);
+	void set_inputs(Dictionary inputs);
 	Dictionary get_inputs() const;
 
 	void set_input_bool(String name, bool value);
@@ -70,52 +71,38 @@ public:
 	int get_input_type(String name) const;
 	TypedArray<String> get_input_names() const;
 
-	void spawn_particles(int particleTypeId, int count);
+	void activate_trigger(String name);
+	bool is_trigger_activated(String name) const;
 
-	float get_import_scale() const;
+	void spawn_particles(String particleEmitterName, String particleTypeName, int count);
+
+	Ref<PixelpartNode> find_node(String name) const;
+	Ref<PixelpartNode> get_node(int id) const;
+	Ref<PixelpartNode> get_node_at_index(int index) const;
+
+	Ref<PixelpartParticleType> find_particle_type(String name) const;
+	Ref<PixelpartParticleType> get_particle_type(int id) const;
+	Ref<PixelpartParticleType> get_particle_type_at_index(int index) const;
 
 	Ref<PixelpartParticleEmitter> find_particle_emitter(String name) const;
-	Ref<PixelpartParticleType> find_particle_type(String name) const;
 	Ref<PixelpartForceField> find_force_field(String name) const;
 	Ref<PixelpartCollider> find_collider(String name) const;
 	Ref<PixelpartParticleEmitter> get_particle_emitter(int id) const;
-	Ref<PixelpartParticleType> get_particle_type(int id) const;
 	Ref<PixelpartForceField> get_force_field(int id) const;
 	Ref<PixelpartCollider> get_collider(int id) const;
 	Ref<PixelpartParticleEmitter> get_particle_emitter_at_index(int index) const;
-	Ref<PixelpartParticleType> get_particle_type_at_index(int index) const;
 	Ref<PixelpartForceField> get_force_field_at_index(int index) const;
 	Ref<PixelpartCollider> get_collider_at_index(int index) const;
 
+protected:
+	static void _bind_methods();
+
 private:
-	void apply_input_values();
-
-	void set_input(String name, const pixelpart::VariantValue& value);
-	pixelpart::VariantValue get_input(String name) const;
-
 	Ref<PixelpartEffectResource> effectResource;
-	pixelpart::Effect effect;
+	PixelpartEffectRuntime effectRuntime;
 
-	std::unordered_map<std::string, Ref<PixelpartParticleEmitter>> particleEmitters;
-	std::unordered_map<std::string, Ref<PixelpartParticleType>> particleTypes;
-	std::unordered_map<std::string, Ref<PixelpartForceField>> forceFields;
-	std::unordered_map<std::string, Ref<PixelpartCollider>> colliders;
-
-	std::unique_ptr<pixelpart::ParticleEngine> particleEngine;
-	uint32_t particleCapacity = 10000u;
-	float simulationTime = 0.0f;
-
-	bool playing = true;
-	bool loop = false;
-	float loopTime = 1.0f;
-	float speed = 1.0f;
-	float timeStep = 1.0f / 60.0f;
-
-	Dictionary inputValues;
-
-	std::vector<std::unique_ptr<PixelpartParticleMesh3D>> particleMeshes;
-
-	PixelpartGraphicsResourceStore graphicsResources;
+	PixelpartGraphicsResourceProvider graphicsResourceProvider;
+	std::unordered_map<pixelpart::ParticleRuntimeId, std::unique_ptr<PixelpartParticleRenderer3D>> particleRenderers;
 };
 }
 

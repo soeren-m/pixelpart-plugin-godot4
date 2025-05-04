@@ -1,6 +1,8 @@
 #include "PixelpartSystem.h"
 #include "shaders/PixelpartShaderLanguage.h"
-#include <computegraph/ComputeGraph.h>
+#include <pixelpart-runtime/computegraph/ComputeGraph.h>
+#include <pixelpart-runtime/shadergraph/ShaderGraph.h>
+#include <pixelpart-runtime/json/json.hpp>
 
 namespace godot {
 PixelpartSystem* PixelpartSystem::instance = nullptr;
@@ -18,7 +20,7 @@ PixelpartSystem::PixelpartSystem() {
 		PixelpartShaderLanguage_json + PixelpartShaderLanguage_json_size);
 	pixelpart::ShaderGraph::graphLanguage = modelJson;
 
-#ifndef __EMSCRIPTEN__
+#ifdef PIXELPART_RUNTIME_MULTITHREADING
 	threadPool = std::shared_ptr<pixelpart::ThreadPool>(new pixelpart::ThreadPool(std::thread::hardware_concurrency()));
 #endif
 }
@@ -26,13 +28,13 @@ PixelpartSystem::~PixelpartSystem() {
 	instance = nullptr;
 }
 
-#ifndef __EMSCRIPTEN__
+#ifdef PIXELPART_RUNTIME_MULTITHREADING
 std::shared_ptr<pixelpart::ThreadPool> PixelpartSystem::get_thread_pool() {
 	return threadPool;
 }
 #endif
 
-PixelpartShaderGenerator& PixelpartSystem::get_shader_generator() {
-	return shaderGenerator;
+PixelpartShaderProvider& PixelpartSystem::get_shader_provider() {
+	return shaderProvider;
 }
 }

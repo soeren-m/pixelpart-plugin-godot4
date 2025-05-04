@@ -1,42 +1,36 @@
 #ifndef PIXELPART_UTIL_H
 #define PIXELPART_UTIL_H
 
-#include "common/VariantValue.h"
 #include <godot_cpp/variant/variant.hpp>
 #include <godot_cpp/variant/vector2.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 #include <godot_cpp/variant/vector4.hpp>
 #include <godot_cpp/variant/color.hpp>
+#include <pixelpart-runtime/common/Types.h>
+#include <pixelpart-runtime/common/Math.h>
+#include <pixelpart-runtime/common/VariantValue.h>
 
 namespace godot {
-int toGd(pixelpart::int_t v);
-float toGd(pixelpart::float_t v);
-Vector2 toGd(const pixelpart::vec2_t& v);
-Vector3 toGd(const pixelpart::vec3_t& v);
-Vector4 toGd(const pixelpart::vec4_t& v);
-Color toGdColor(const pixelpart::vec4_t& v);
-Variant toGd(const pixelpart::VariantValue& v);
+int pxpt_to_gd(pixelpart::int_t v);
+float pxpt_to_gd(pixelpart::float_t v);
+Vector2 pxpt_to_gd(const pixelpart::float2_t& v);
+Vector3 pxpt_to_gd(const pixelpart::float3_t& v);
+Vector4 pxpt_to_gd(const pixelpart::float4_t& v);
+Color pxpt_to_gd_color(const pixelpart::float4_t& v);
+Variant pxpt_to_gd(const pixelpart::VariantValue& v);
 
-pixelpart::int_t fromGd(int v);
-pixelpart::float_t fromGd(float v);
-pixelpart::vec2_t fromGd(const Vector2& v);
-pixelpart::vec3_t fromGd(const Vector3& v);
-pixelpart::vec4_t fromGd(const Vector4& v);
-pixelpart::vec4_t fromGd(const Color& v);
-pixelpart::VariantValue fromGd(const Variant& v);
+pixelpart::int_t gd_to_pxpt(int v);
+pixelpart::float_t gd_to_pxpt(float v);
+pixelpart::float2_t gd_to_pxpt(const Vector2& v);
+pixelpart::float3_t gd_to_pxpt(const Vector3& v);
+pixelpart::float4_t gd_to_pxpt(const Vector4& v);
+pixelpart::float4_t gd_to_pxpt(const Color& v);
+pixelpart::VariantValue gd_to_pxpt(const Variant& v);
 
-float packFloatsUnsigned(float a, float b, float sa, float sb);
-float packFloatsSigned(float a, float b, float sa, float sb);
-float packFloatsSignedUnsigned(float a, float b, float sa, float sb);
-float packUIntFloat(unsigned int a, float b, float sb);
-
-template <typename T>
-std::vector<T> concat(const std::vector<T>& v1, const std::vector<T>& v2) {
-	std::vector<T> result = v1;
-	result.insert(result.end(), v2.begin(), v2.end());
-
-	return result;
-}
+float pack_floats_unsigned(float a, float b, float sa, float sb);
+float pack_floats_signed(float a, float b, float sa, float sb);
+float pack_floats_signed_unsigned(float a, float b, float sa, float sb);
+float pack_uint_float(unsigned int a, float b, float sb);
 }
 
 #endif
