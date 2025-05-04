@@ -72,12 +72,12 @@ void PixelpartEffectRuntime::advance(double dt) {
 		return;
 	}
 
-	dt = static_cast<float>(glm::clamp(dt, 0.0, 1.0));
-	simulationTime += dt * speed;
+	dt = std::min(std::max(dt, 0.0), 1.0);
+	simulationTime += static_cast<float>(dt) * speed;
 
-	while(simulationTime > timeStep) {
-		simulationTime -= timeStep;
-		effectEngine->advance(timeStep);
+	while(simulationTime > timeStep * speed) {
+		simulationTime -= timeStep * speed;
+		effectEngine->advance(timeStep * speed);
 
 		if(loop && effectEngine->runtimeContext().time() > loopTime) {
 			effectEngine->restart(false);
@@ -124,7 +124,7 @@ float PixelpartEffectRuntime::get_speed() const {
 }
 
 void PixelpartEffectRuntime::set_frame_rate(float rate) {
-	timeStep = 1.0f / glm::clamp(rate, 1.0f, 100.0f);
+	timeStep = 1.0f / std::min(std::max(rate, 1.0f), 100.0f);
 }
 float PixelpartEffectRuntime::get_frame_rate() const {
 	return 1.0f / timeStep;
