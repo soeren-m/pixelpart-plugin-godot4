@@ -22,6 +22,7 @@ public:
 	const pixelpart::Effect& get_effect() const;
 	const pixelpart::EffectEngine* get_effect_engine() const;
 
+	void start();
 	void advance(double dt);
 
 	void play(bool mode);
@@ -35,6 +36,9 @@ public:
 	void set_loop_time(float time);
 	float get_loop_time() const;
 
+	void set_warmup_time(float time);
+	float get_warmup_time() const;
+
 	void set_speed(float sp);
 	float get_speed() const;
 
@@ -42,7 +46,6 @@ public:
 	float get_frame_rate() const;
 
 	void set_inputs(Dictionary inputs);
-	void apply_inputs();
 	Dictionary get_inputs() const;
 
 	void set_input(String name, const pixelpart::VariantValue& value);
@@ -63,11 +66,14 @@ public:
 	Ref<PixelpartParticleType> get_particle_type_at_index(int index) const;
 
 private:
+	void apply_inputs();
+
 	pixelpart::Effect effect;
 
 	bool playing = true;
 	bool loop = false;
 	float loopTime = 1.0f;
+	float warmupTime = 0.0f;
 	float speed = 1.0f;
 	float timeStep = 1.0f / 60.0f;
 	Dictionary inputValues;

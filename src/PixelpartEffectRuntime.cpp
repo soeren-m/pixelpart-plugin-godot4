@@ -67,6 +67,19 @@ const pixelpart::EffectEngine* PixelpartEffectRuntime::get_effect_engine() const
 	return effectEngine.get();
 }
 
+void PixelpartEffectRuntime::start() {
+	if(!effectEngine) {
+		return;
+	}
+
+	apply_inputs();
+
+	simulationTime = warmupTime;
+	while(simulationTime > timeStep) {
+		simulationTime -= timeStep;
+		effectEngine->advance(timeStep);
+	}
+}
 void PixelpartEffectRuntime::advance(double dt) {
 	if(!effectEngine || !playing) {
 		return;
@@ -116,6 +129,13 @@ float PixelpartEffectRuntime::get_loop_time() const {
 	return loopTime;
 }
 
+void PixelpartEffectRuntime::set_warmup_time(float time) {
+	warmupTime = std::max(time, 0.0f);
+}
+float PixelpartEffectRuntime::get_warmup_time() const {
+	return warmupTime;
+}
+
 void PixelpartEffectRuntime::set_speed(float sp) {
 	speed = std::max(sp, 0.0f);
 }
@@ -133,18 +153,6 @@ float PixelpartEffectRuntime::get_frame_rate() const {
 void PixelpartEffectRuntime::set_inputs(Dictionary inputs) {
 	inputValues = inputs;
 	apply_inputs();
-}
-void PixelpartEffectRuntime::apply_inputs() {
-	for(auto& inputEntry : effect.inputs()) {
-		StringName inputName = StringName(inputEntry.second.name().c_str());
-		if(!inputValues.has(inputName)) {
-			continue;
-		}
-
-		inputEntry.second.value(gd_to_pxpt(inputValues.get(inputName, Variant())));
-	}
-
-	effect.applyInputs();
 }
 Dictionary PixelpartEffectRuntime::get_inputs() const {
 	return inputValues;
@@ -320,5 +328,18 @@ Ref<PixelpartParticleType> PixelpartEffectRuntime::get_particle_type_at_index(in
 	}
 
 	return particleTypeRefs.at(name);
+}
+
+void PixelpartEffectRuntime::apply_inputs() {
+	for(auto& inputEntry : effect.inputs()) {
+		StringName inputName = StringName(inputEntry.second.name().c_str());
+		if(!inputValues.has(inputName)) {
+			continue;
+		}
+
+		inputEntry.second.value(gd_to_pxpt(inputValues.get(inputName, Variant())));
+	}
+
+	effect.applyInputs();
 }
 }

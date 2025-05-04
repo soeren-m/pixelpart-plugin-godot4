@@ -20,7 +20,7 @@ void PixelpartEffect2D::_enter_tree() {
 		return;
 	}
 
-	effectRuntime.apply_inputs();
+	effectRuntime.start();
 }
 
 void PixelpartEffect2D::_process(double dt) {
@@ -152,6 +152,13 @@ void PixelpartEffect2D::set_loop_time(float time) {
 }
 float PixelpartEffect2D::get_loop_time() const {
 	return effectRuntime.get_loop_time();
+}
+
+void PixelpartEffect2D::set_warmup_time(float time) {
+	effectRuntime.set_warmup_time(time);
+}
+float PixelpartEffect2D::get_warmup_time() const {
+	return effectRuntime.get_warmup_time();
 }
 
 void PixelpartEffect2D::set_speed(float sp) {
@@ -304,6 +311,8 @@ void PixelpartEffect2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_loop"), &PixelpartEffect2D::get_loop);
 	ClassDB::bind_method(D_METHOD("set_loop_time", "time"), &PixelpartEffect2D::set_loop_time);
 	ClassDB::bind_method(D_METHOD("get_loop_time"), &PixelpartEffect2D::get_loop_time);
+	ClassDB::bind_method(D_METHOD("set_warmup_time", "time"), &PixelpartEffect2D::set_warmup_time);
+	ClassDB::bind_method(D_METHOD("get_warmup_time"), &PixelpartEffect2D::get_warmup_time);
 	ClassDB::bind_method(D_METHOD("set_speed", "sp"), &PixelpartEffect2D::set_speed);
 	ClassDB::bind_method(D_METHOD("get_speed"), &PixelpartEffect2D::get_speed);
 	ClassDB::bind_method(D_METHOD("set_frame_rate", "rate"), &PixelpartEffect2D::set_frame_rate);
@@ -344,6 +353,7 @@ void PixelpartEffect2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "play", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "get_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_time", PROPERTY_HINT_RANGE, "0.0,100.0,0.01,or_greater"), "set_loop_time", "get_loop_time");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "warmup_time", PROPERTY_HINT_RANGE, "0.0,10.0,0.01,or_greater"), "set_warmup_time", "get_warmup_time");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed", PROPERTY_HINT_RANGE, "0.0,10.0,0.01,or_greater,exp"), "set_speed", "get_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frame_rate", PROPERTY_HINT_RANGE, "1.0,100.0,1.0"), "set_frame_rate", "get_frame_rate");
 

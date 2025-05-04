@@ -46,6 +46,9 @@ public:
 	void set_loop_time(float time);
 	float get_loop_time() const;
 
+	void set_warmup_time(float time);
+	float get_warmup_time() const;
+
 	void set_speed(float sp);
 	float get_speed() const;
 
