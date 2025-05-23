@@ -301,7 +301,7 @@ void PixelpartParticleRenderer3D::add_particle_sprites(Node3D* parentNode,
 				break;
 			}
 			case pixelpart::AlignmentMode::emitter: {
-				pixelpart::mat3_t lookAtMatrix = rotation_3d(particleEmitter.orientation().at(alpha));
+				pixelpart::mat3_t lookAtMatrix = rotation_3d(particleEmitter.rotation().at(alpha));
 				position[0] = particleRenderData.globalPosition[p] + lookAtMatrix * position[0];
 				position[1] = particleRenderData.globalPosition[p] + lookAtMatrix * position[1];
 				position[2] = particleRenderData.globalPosition[p] + lookAtMatrix * position[2];
@@ -778,7 +778,7 @@ void PixelpartParticleRenderer3D::add_particle_meshes(Node3D* parentNode,
 
 	pixelpart::float_t alpha = particleEmitter.life(runtimeContext);
 	pixelpart::float3_t emitterPosition = particleEmitter.position().at(alpha);
-	pixelpart::mat4_t emitterOrientationMatrix = pixelpart::mat4_t(rotation_3d(particleEmitter.orientation().at(alpha)));
+	pixelpart::mat4_t emitterRotationMatrix = pixelpart::mat4_t(rotation_3d(particleEmitter.rotation().at(alpha)));
 
 	instanceDataArray.resize(particleCount * 20);
 	float* instanceData = instanceDataArray.ptrw();
@@ -795,7 +795,7 @@ void PixelpartParticleRenderer3D::add_particle_meshes(Node3D* parentNode,
 				alignmentMatrix = pixelpart::mat4_t(look_at(emitterPosition - particleRenderData.globalPosition[p]));
 				break;
 			case pixelpart::AlignmentMode::emitter:
-				alignmentMatrix = emitterOrientationMatrix;
+				alignmentMatrix = emitterRotationMatrix;
 				break;
 			default:
 				break;

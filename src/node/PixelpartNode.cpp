@@ -93,25 +93,25 @@ Ref<PixelpartAnimatedPropertyFloat3> PixelpartNode::get_position() const {
 
 	return property;
 }
-Ref<PixelpartAnimatedPropertyFloat3> PixelpartNode::get_orientation() const {
+Ref<PixelpartAnimatedPropertyFloat3> PixelpartNode::get_rotation() const {
 	if(!node) {
 		return Ref<PixelpartAnimatedPropertyFloat3>();
 	}
 
 	Ref<PixelpartAnimatedPropertyFloat3> property;
 	property.instantiate();
-	property->init(&node->orientation());
+	property->init(&node->rotation());
 
 	return property;
 }
-Ref<PixelpartAnimatedPropertyFloat3> PixelpartNode::get_size() const {
+Ref<PixelpartAnimatedPropertyFloat3> PixelpartNode::get_scale() const {
 	if(!node) {
 		return Ref<PixelpartAnimatedPropertyFloat3>();
 	}
 
 	Ref<PixelpartAnimatedPropertyFloat3> property;
 	property.instantiate();
-	property->init(&node->size());
+	property->init(&node->scale());
 
 	return property;
 }
@@ -129,8 +129,8 @@ void PixelpartNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_active"), &PixelpartNode::is_active);
 	ClassDB::bind_method(D_METHOD("get_local_time"), &PixelpartNode::get_local_time);
 	ClassDB::bind_method(D_METHOD("get_position"), &PixelpartNode::get_position);
-    ClassDB::bind_method(D_METHOD("get_orientation"), &PixelpartNode::get_orientation);
-	ClassDB::bind_method(D_METHOD("get_size"), &PixelpartNode::get_size);
+    ClassDB::bind_method(D_METHOD("get_rotation"), &PixelpartNode::get_rotation);
+	ClassDB::bind_method(D_METHOD("get_scale"), &PixelpartNode::get_scale);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime_start"), "set_lifetime_start", "get_lifetime_start");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime_duration"), "set_lifetime_duration", "get_lifetime_duration");

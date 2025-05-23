@@ -210,7 +210,7 @@ void PixelpartParticleRenderer2D::add_particle_sprites(
 			}
 			case pixelpart::AlignmentMode::emitter: {
 				pixelpart::mat3_t rotationMatrix = rotation_3d(particles.rotation[p]);
-				pixelpart::mat3_t alignmentMatrix = rotation_3d(particleEmitter.orientation().at(alpha));
+				pixelpart::mat3_t alignmentMatrix = rotation_3d(particleEmitter.rotation().at(alpha));
 				worldPosition[0] = particles.globalPosition[p] + alignmentMatrix * (rotationMatrix * (pixelpart::float3_t(-0.5, -0.5, 0.0) * particles.size[p] - particleType.pivot().value() * particles.size[p]) + particleType.pivot().value() * particles.size[p]);
 				worldPosition[1] = particles.globalPosition[p] + alignmentMatrix * (rotationMatrix * (pixelpart::float3_t(-0.5, +0.5, 0.0) * particles.size[p] - particleType.pivot().value() * particles.size[p]) + particleType.pivot().value() * particles.size[p]);
 				worldPosition[2] = particles.globalPosition[p] + alignmentMatrix * (rotationMatrix * (pixelpart::float3_t(+0.5, +0.5, 0.0) * particles.size[p] - particleType.pivot().value() * particles.size[p]) + particleType.pivot().value() * particles.size[p]);

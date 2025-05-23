@@ -31,8 +31,8 @@ public:
 	float get_local_time() const;
 
 	Ref<PixelpartAnimatedPropertyFloat3> get_position() const;
-    Ref<PixelpartAnimatedPropertyFloat3> get_orientation() const;
-	Ref<PixelpartAnimatedPropertyFloat3> get_size() const;
+    Ref<PixelpartAnimatedPropertyFloat3> get_rotation() const;
+	Ref<PixelpartAnimatedPropertyFloat3> get_scale() const;
 
 protected:
 	static void _bind_methods();
