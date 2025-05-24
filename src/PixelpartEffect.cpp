@@ -22,6 +22,7 @@ void PixelpartEffect::_enter_tree() {
 		return;
 	}
 
+	update_transform();
 	effectRuntime.start();
 
 	RenderingServer::get_singleton()->connect("frame_pre_draw", Callable(this, "draw"));
@@ -39,6 +40,7 @@ void PixelpartEffect::_process(double dt) {
 		return;
 	}
 
+	update_transform();
 	effectRuntime.advance(dt);
 }
 
@@ -63,7 +65,7 @@ void PixelpartEffect::draw() {
 			return pt1.layer() < pt2.layer();
 		});
 
-	pixelpart::float_t scale = static_cast<pixelpart::float_t>(get_import_scale());
+	pixelpart::float_t effectScale = static_cast<pixelpart::float_t>(get_import_scale());
 
 	for(const pixelpart::ParticleRuntimeId& runtimeId : sortedParticleRuntimeInstances) {
 		if(particleRenderers.count(runtimeId) == 0) {
@@ -79,7 +81,7 @@ void PixelpartEffect::draw() {
 			particleCollection->readPtr(),
 			effectEngine->particleCount(runtimeId.emitterId, runtimeId.typeId),
 			effectEngine->runtimeContext(),
-			scale);
+			effectScale);
 	}
 }
 
@@ -287,6 +289,30 @@ Ref<PixelpartForceField> PixelpartEffect::get_force_field_at_index(int index) co
 }
 Ref<PixelpartCollider> PixelpartEffect::get_collider_at_index(int index) const {
 	return get_node_at_index(index);
+}
+
+void PixelpartEffect::update_transform() {
+	pixelpart::Transform transform = pixelpart::Transform(pixelpart::mat4_t(
+		pixelpart::float4_t(gd_to_pxpt(get_global_transform().get_basis()[0]), 0.0),
+		pixelpart::float4_t(gd_to_pxpt(get_global_transform().get_basis()[1]), 0.0),
+		pixelpart::float4_t(gd_to_pxpt(get_global_transform().get_basis()[2]), 0.0),
+		pixelpart::float4_t(gd_to_pxpt(get_global_transform().get_origin()), 1.0)));
+
+	for(const std::unique_ptr<pixelpart::Node>& node : effectRuntime.get_effect().sceneGraph().nodes()) {
+		if(node->parentId()) {
+			continue;
+		}
+
+		node->position().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
+			transform.position() / static_cast<pixelpart::float_t>(get_import_scale())
+		} });
+		node->rotation().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
+			transform.rotation()
+		} });
+		node->scale().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
+			transform.scale()
+		} });
+	}
 }
 
 void PixelpartEffect::_bind_methods() {

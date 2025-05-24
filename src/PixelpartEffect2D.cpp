@@ -2,6 +2,7 @@
 #include "PixelpartSystem.h"
 #include "util/PixelpartUtil.h"
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/core/math.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <vector>
@@ -20,6 +21,7 @@ void PixelpartEffect2D::_enter_tree() {
 		return;
 	}
 
+	update_transform();
 	effectRuntime.start();
 }
 
@@ -28,6 +30,7 @@ void PixelpartEffect2D::_process(double dt) {
 		return;
 	}
 
+	update_transform();
 	effectRuntime.advance(dt);
 
 	queue_redraw();
@@ -54,7 +57,7 @@ void PixelpartEffect2D::_draw() {
 			return pt1.layer() < pt2.layer();
 		});
 
-	pixelpart::float2_t scale = pixelpart::float2_t(
+	pixelpart::float2_t effectScale = pixelpart::float2_t(
 		flipH ? -1.0 : +1.0,
 		flipV ? -1.0 : +1.0) * static_cast<pixelpart::float_t>(get_import_scale());
 
@@ -72,7 +75,7 @@ void PixelpartEffect2D::_draw() {
 			particleCollection->readPtr(),
 			effectEngine->particleCount(runtimeId.emitterId, runtimeId.typeId),
 			effectEngine->runtimeContext(),
-			scale);
+			effectScale);
 	}
 }
 
@@ -295,6 +298,32 @@ Ref<PixelpartForceField> PixelpartEffect2D::get_force_field_at_index(int index) 
 }
 Ref<PixelpartCollider> PixelpartEffect2D::get_collider_at_index(int index) const {
 	return get_node_at_index(index);
+}
+
+void PixelpartEffect2D::update_transform() {
+	pixelpart::float2_t globalPosition = gd_to_pxpt(get_global_transform().get_origin());
+	pixelpart::float_t globalRotation = gd_to_pxpt(get_global_transform().get_rotation()) / Math_PI * 180.0;
+	pixelpart::float2_t globalScale = gd_to_pxpt(get_global_transform().get_scale());
+
+	pixelpart::float2_t effectScale = pixelpart::float2_t(
+		flipH ? -1.0 : +1.0,
+		flipV ? -1.0 : +1.0) * static_cast<pixelpart::float_t>(get_import_scale());
+
+	for(const std::unique_ptr<pixelpart::Node>& node : effectRuntime.get_effect().sceneGraph().nodes()) {
+		if(node->parentId()) {
+			continue;
+		}
+
+		node->position().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
+			pixelpart::float3_t(globalPosition.x / effectScale.x, globalPosition.y / effectScale.y, 0.0)
+		} });
+		node->rotation().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
+			pixelpart::float3_t(globalRotation, 0.0, 0.0)
+		} });
+		node->scale().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
+			pixelpart::float3_t(globalScale.x, globalScale.y, 1.0)
+		} });
+	}
 }
 
 void PixelpartEffect2D::_bind_methods() {

@@ -11,6 +11,7 @@
 #include "node/PixelpartCollider.h"
 #include <pixelpart-runtime/effect/ParticleRuntimeId.h>
 #include <godot_cpp/core/binder_common.hpp>
+#include <godot_cpp/classes/node2d.hpp>
 #include <memory>
 #include <unordered_map>
 
@@ -105,6 +106,8 @@ protected:
 	static void _bind_methods();
 
 private:
+	void update_transform();
+
 	Ref<PixelpartEffectResource> effectResource;
 	PixelpartEffectRuntime effectRuntime;
 

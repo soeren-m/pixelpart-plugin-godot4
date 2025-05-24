@@ -133,7 +133,8 @@ void PixelpartParticleRenderer2D::draw(Node2D* parentNode,
 	rs->material_set_param(materialRID, "u_ObjectTime", static_cast<float>(particleEmitter.timeSinceStart(runtimeContext)));
 
 	rs->canvas_item_set_parent(canvasItemRID, parentNode->get_canvas_item());
-	rs->canvas_item_set_transform(canvasItemRID, Transform2D());
+	rs->canvas_item_set_transform(canvasItemRID, parentNode->get_global_transform().affine_inverse());
+	rs->canvas_item_set_visibility_layer(canvasItemRID, parentNode->get_visibility_layer());
 
 	switch(particleType.renderer()) {
 		case pixelpart::ParticleRendererType::sprite:
