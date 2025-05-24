@@ -78,16 +78,7 @@ pixelpart::VariantValue gd_to_pxpt(const Variant& v) {
 	}
 }
 
-float pack_floats_unsigned(float a, float b, float sa, float sb) {
-	return std::floor(a * sa) + b * sb;
-}
-float pack_floats_signed(float a, float b, float sa, float sb) {
-	return std::floor(a * sa) + sa + b / sb;
-}
-float pack_floats_signed_unsigned(float a, float b, float sa, float sb) {
-	return std::floor(a * sa) + sa + b * sb;
-}
-float pack_uint_float(unsigned int a, float b, float sb) {
-	return static_cast<float>(a) + b * sb;
+float pack_uint_float(unsigned int a, float b, float s) {
+	return static_cast<float>(a) + b * s;
 }
 }

@@ -54,13 +54,17 @@ PixelpartParticleRenderer2D::PixelpartParticleRenderer2D(PixelpartGraphicsResour
 		UtilityFunctions::push_warning("Could not create particle material");
 	}
 
+	meshRID = rs->mesh_create();
+
 	canvasItemRID = rs->canvas_item_create();
 	rs->canvas_item_set_material(canvasItemRID, materialRID);
+	rs->canvas_item_add_mesh(canvasItemRID, meshRID);
 }
 PixelpartParticleRenderer2D::~PixelpartParticleRenderer2D() {
 	RenderingServer* rs = RenderingServer::get_singleton();
 
 	rs->free_rid(materialRID);
+	rs->free_rid(meshRID);
 	rs->free_rid(canvasItemRID);
 }
 
@@ -71,7 +75,7 @@ void PixelpartParticleRenderer2D::draw(Node2D* parentNode,
 	const pixelpart::ParticleType& particleType = effect.particleTypes().at(particleTypeId);
 
 	RenderingServer* rs = RenderingServer::get_singleton();
-	rs->canvas_item_clear(canvasItemRID);
+	rs->mesh_clear(meshRID);
 
 	if(!parentNode->is_visible() || !particleType.visible()) {
 		return;
@@ -159,9 +163,6 @@ void PixelpartParticleRenderer2D::add_particle_sprites(
 	const pixelpart::ParticleType& particleType,
 	pixelpart::ParticleCollection::ReadPtr particles, uint32_t particleCount,
 	const pixelpart::RuntimeContext& runtimeContext, pixelpart::float2_t scale) {
-	const float packFactorA = 1000.0;
-	const float packFactorB = 0.5;
-
 	if(particleCount == 0) {
 		return;
 	}
@@ -169,9 +170,10 @@ void PixelpartParticleRenderer2D::add_particle_sprites(
 	pixelpart::float_t alpha = particleEmitter.life(runtimeContext);
 
 	indexArray.resize(particleCount * 6);
-	positionArray.resize(particleCount * 4);
-	textureCoordArray.resize(particleCount * 4);
+	vertexArray.resize(particleCount * 4);
+	uvArray.resize(particleCount * 4);
 	colorArray.resize(particleCount * 4);
+	custom0Array.resize(particleCount * 4 * 4);
 
 	int32_t* indices = indexArray.ptrw();
 	for(int32_t p = 0; p < static_cast<int32_t>(particleCount); p++) {
@@ -183,7 +185,7 @@ void PixelpartParticleRenderer2D::add_particle_sprites(
 		indices[p * 6 + 5] = p * 4 + 3;
 	}
 
-	Vector2* positions = positionArray.ptrw();
+	Vector2* positions = vertexArray.ptrw();
 	for(uint32_t p = 0; p < particleCount; p++) {
 		pixelpart::float3_t worldPosition[4];
 
@@ -234,49 +236,60 @@ void PixelpartParticleRenderer2D::add_particle_sprites(
 		positions[p * 4 + 3] = pxpt_to_gd(pixelpart::float2_t(worldPosition[3]) * scale);
 	}
 
-	float* textureCoords = reinterpret_cast<float*>(textureCoordArray.ptrw());
+	float* uvs = reinterpret_cast<float*>(uvArray.ptrw());
 	for(uint32_t p = 0; p < particleCount; p++) {
-		textureCoords[p * 4 * 2 + 0] = pack_floats_unsigned(pxpt_to_gd(particles.life[p]), 0.0f, packFactorA, packFactorB);
-		textureCoords[p * 4 * 2 + 1] = pack_uint_float(particles.id[p], 0.0f, packFactorB);
-		textureCoords[p * 4 * 2 + 2] = pack_floats_unsigned(pxpt_to_gd(particles.life[p]), 0.0f, packFactorA, packFactorB);
-		textureCoords[p * 4 * 2 + 3] = pack_uint_float(particles.id[p], 1.0f, packFactorB);
-		textureCoords[p * 4 * 2 + 4] = pack_floats_unsigned(pxpt_to_gd(particles.life[p]), 1.0f, packFactorA, packFactorB);
-		textureCoords[p * 4 * 2 + 5] = pack_uint_float(particles.id[p], 1.0f, packFactorB);
-		textureCoords[p * 4 * 2 + 6] = pack_floats_unsigned(pxpt_to_gd(particles.life[p]), 1.0f, packFactorA, packFactorB);
-		textureCoords[p * 4 * 2 + 7] = pack_uint_float(particles.id[p], 0.0f, packFactorB);
+		uvs[p * 4 * 2 + 0] = 0.0f;
+		uvs[p * 4 * 2 + 1] = 0.0f;
+		uvs[p * 4 * 2 + 2] = 0.0f;
+		uvs[p * 4 * 2 + 3] = 1.0f;
+		uvs[p * 4 * 2 + 4] = 1.0f;
+		uvs[p * 4 * 2 + 5] = 1.0f;
+		uvs[p * 4 * 2 + 6] = 1.0f;
+		uvs[p * 4 * 2 + 7] = 0.0f;
 	}
 
-	float* colors = reinterpret_cast<float*>(colorArray.ptrw());
+	Color* colors = colorArray.ptrw();
 	for(uint32_t p = 0; p < particleCount; p++) {
-		float x = pack_floats_signed_unsigned(pxpt_to_gd(particles.velocity[p].x), pxpt_to_gd(particles.color[p].r), packFactorA, packFactorB);
-		float y = pack_floats_signed_unsigned(pxpt_to_gd(particles.velocity[p].y), pxpt_to_gd(particles.color[p].g), packFactorA, packFactorB);
-		float z = pack_floats_signed_unsigned(pxpt_to_gd(particles.velocity[p].z), pxpt_to_gd(particles.color[p].b), packFactorA, packFactorB);
-		float w = pack_floats_signed_unsigned(0.0f, pxpt_to_gd(particles.color[p].a), packFactorA, packFactorB);
-
-		colors[p * 4 * 4 + 0] = x;
-		colors[p * 4 * 4 + 1] = y;
-		colors[p * 4 * 4 + 2] = z;
-		colors[p * 4 * 4 + 3] = w;
-		colors[p * 4 * 4 + 4] = x;
-		colors[p * 4 * 4 + 5] = y;
-		colors[p * 4 * 4 + 6] = z;
-		colors[p * 4 * 4 + 7] = w;
-		colors[p * 4 * 4 + 8] = x;
-		colors[p * 4 * 4 + 9] = y;
-		colors[p * 4 * 4 + 10] = z;
-		colors[p * 4 * 4 + 11] = w;
-		colors[p * 4 * 4 + 12] = x;
-		colors[p * 4 * 4 + 13] = y;
-		colors[p * 4 * 4 + 14] = z;
-		colors[p * 4 * 4 + 15] = w;
+		colors[p * 4 + 0] = pxpt_to_gd_color(particles.color[p]);
+		colors[p * 4 + 1] = pxpt_to_gd_color(particles.color[p]);
+		colors[p * 4 + 2] = pxpt_to_gd_color(particles.color[p]);
+		colors[p * 4 + 3] = pxpt_to_gd_color(particles.color[p]);
 	}
+
+	float* custom0 = custom0Array.ptrw();
+	for(uint32_t p = 0; p < particleCount; p++) {
+		custom0[p * 4 * 4 + 0] = static_cast<float>(particles.velocity[p].x);
+		custom0[p * 4 * 4 + 1] = static_cast<float>(particles.velocity[p].y);
+		custom0[p * 4 * 4 + 2] = static_cast<float>(particles.life[p]);
+		custom0[p * 4 * 4 + 3] = static_cast<float>(particles.id[p]);
+		custom0[p * 4 * 4 + 4] = static_cast<float>(particles.velocity[p].x);
+		custom0[p * 4 * 4 + 5] = static_cast<float>(particles.velocity[p].y);
+		custom0[p * 4 * 4 + 6] = static_cast<float>(particles.life[p]);
+		custom0[p * 4 * 4 + 7] = static_cast<float>(particles.id[p]);
+		custom0[p * 4 * 4 + 8] = static_cast<float>(particles.velocity[p].x);
+		custom0[p * 4 * 4 + 9] = static_cast<float>(particles.velocity[p].y);
+		custom0[p * 4 * 4 + 10] = static_cast<float>(particles.life[p]);
+		custom0[p * 4 * 4 + 11] = static_cast<float>(particles.id[p]);
+		custom0[p * 4 * 4 + 12] = static_cast<float>(particles.velocity[p].x);
+		custom0[p * 4 * 4 + 13] = static_cast<float>(particles.velocity[p].y);
+		custom0[p * 4 * 4 + 14] = static_cast<float>(particles.life[p]);
+		custom0[p * 4 * 4 + 15] = static_cast<float>(particles.id[p]);
+	}
+
+	Array arrays;
+	arrays.resize(Mesh::ARRAY_MAX);
+	arrays[Mesh::ARRAY_VERTEX] = vertexArray;
+	arrays[Mesh::ARRAY_COLOR] = colorArray;
+	arrays[Mesh::ARRAY_TEX_UV] = uvArray;
+	arrays[Mesh::ARRAY_CUSTOM0] = custom0Array;
+	arrays[Mesh::ARRAY_INDEX] = indexArray;
 
 	RenderingServer* rs = RenderingServer::get_singleton();
-	rs->canvas_item_add_triangle_array(canvasItemRID,
-		indexArray,
-		positionArray,
-		colorArray,
-		textureCoordArray);
+
+	rs->mesh_add_surface_from_arrays(meshRID, RenderingServer::PRIMITIVE_TRIANGLES, arrays, Array(), Dictionary(),
+		Mesh::ARRAY_FORMAT_VERTEX | Mesh::ARRAY_FORMAT_COLOR | Mesh::ARRAY_FORMAT_TEX_UV |
+		Mesh::ARRAY_FORMAT_CUSTOM0 | Mesh::ARRAY_FORMAT_INDEX |
+		(Mesh::ARRAY_CUSTOM_RGBA_FLOAT << Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT));
 }
 
 void PixelpartParticleRenderer2D::add_particle_trails(
@@ -285,9 +298,6 @@ void PixelpartParticleRenderer2D::add_particle_trails(
 	pixelpart::ParticleCollection::ReadPtr particles, uint32_t particleCount,
 	const pixelpart::RuntimeContext& runtimeContext, pixelpart::float2_t scale) {
 	const pixelpart::float_t epsilon = 0.000001;
-	const float packFactorA = 1000.0;
-	const float packFactorB = 0.5;
-
 	if(particleCount < 2) {
 		return;
 	}
@@ -459,9 +469,10 @@ void PixelpartParticleRenderer2D::add_particle_trails(
 
 		int32_t trailSegmentCount = static_cast<int32_t>(trail.position.size()) - 1;
 		trail.indexArray.resize(trailSegmentCount * 12);
-		trail.positionArray.resize(trailSegmentCount * 5);
-		trail.textureCoordArray.resize(trailSegmentCount * 5);
+		trail.vertexArray.resize(trailSegmentCount * 5);
+		trail.uvArray.resize(trailSegmentCount * 5);
 		trail.colorArray.resize(trailSegmentCount * 5);
+		trail.custom0Array.resize(trailSegmentCount * 5 * 4);
 
 		int32_t* indices = trail.indexArray.ptrw();
 		for(int32_t p = 0; p < trailSegmentCount; p++) {
@@ -479,7 +490,7 @@ void PixelpartParticleRenderer2D::add_particle_trails(
 			indices[p * 12 + 11] = p * 5 + 4;
 		}
 
-		float* positions = reinterpret_cast<float*>(trail.positionArray.ptrw());
+		float* positions = reinterpret_cast<float*>(trail.vertexArray.ptrw());
 		for(int32_t p = 0; p < trailSegmentCount; p++) {
 			pixelpart::float3_t startToEdge = trail.direction[p] * std::max(trail.size[p].x, trail.size[p].y) * 0.5;
 			pixelpart::float3_t endToEdge = trail.direction[p + 1] * std::max(trail.size[p + 1].x, trail.size[p + 1].y) * 0.5;
@@ -504,124 +515,114 @@ void PixelpartParticleRenderer2D::add_particle_trails(
 			positions[p * 5 * 2 + 9] = pxpt_to_gd(vertexPositions[4].y * scale.y);
 		}
 
-		float* textureCoords = reinterpret_cast<float*>(trail.textureCoordArray.ptrw());
+		float* uvs = reinterpret_cast<float*>(trail.uvArray.ptrw());
 		switch(particleType.trailRendererSettings().textureRotation) {
 			case pixelpart::ParticleTrailRendererSettings::TextureRotation::left:
 				for(int32_t p = 0; p < trailSegmentCount; p++) {
-					textureCoords[p * 5 * 2 + 0] = pxpt_to_gd(trail.index[p] * particleType.trailRendererSettings().textureUVFactor);
-					textureCoords[p * 5 * 2 + 1] = 1.0f;
-					textureCoords[p * 5 * 2 + 2] = pxpt_to_gd(trail.index[p] * particleType.trailRendererSettings().textureUVFactor);
-					textureCoords[p * 5 * 2 + 3] = 0.0f;
-					textureCoords[p * 5 * 2 + 4] = pxpt_to_gd(trail.index[p + 1] * particleType.trailRendererSettings().textureUVFactor);
-					textureCoords[p * 5 * 2 + 5] = 1.0f;
-					textureCoords[p * 5 * 2 + 6] = pxpt_to_gd(trail.index[p + 1] * particleType.trailRendererSettings().textureUVFactor);
-					textureCoords[p * 5 * 2 + 7] = 0.0f;
-					textureCoords[p * 5 * 2 + 8] = pxpt_to_gd((trail.index[p] + trail.index[p + 1]) * 0.5 * particleType.trailRendererSettings().textureUVFactor);
-					textureCoords[p * 5 * 2 + 9] = 0.5f;
+					uvs[p * 5 * 2 + 0] = pxpt_to_gd(trail.index[p] * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 1] = 1.0f;
+					uvs[p * 5 * 2 + 2] = pxpt_to_gd(trail.index[p] * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 3] = 0.0f;
+					uvs[p * 5 * 2 + 4] = pxpt_to_gd(trail.index[p + 1] * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 5] = 1.0f;
+					uvs[p * 5 * 2 + 6] = pxpt_to_gd(trail.index[p + 1] * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 7] = 0.0f;
+					uvs[p * 5 * 2 + 8] = pxpt_to_gd((trail.index[p] + trail.index[p + 1]) * 0.5 * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 9] = 0.5f;
 				}
 				break;
 
 			case pixelpart::ParticleTrailRendererSettings::TextureRotation::down:
 				for(int32_t p = 0; p < trailSegmentCount; p++) {
-					textureCoords[p * 5 * 2 + 0] = 1.0f;
-					textureCoords[p * 5 * 2 + 1] = 1.0f - pxpt_to_gd(trail.index[p] * particleType.trailRendererSettings().textureUVFactor);
-					textureCoords[p * 5 * 2 + 2] = 0.0f;
-					textureCoords[p * 5 * 2 + 3] = 1.0f - pxpt_to_gd(trail.index[p] * particleType.trailRendererSettings().textureUVFactor);
-					textureCoords[p * 5 * 2 + 4] = 1.0f;
-					textureCoords[p * 5 * 2 + 5] = 1.0f - pxpt_to_gd(trail.index[p + 1] * particleType.trailRendererSettings().textureUVFactor);
-					textureCoords[p * 5 * 2 + 6] = 0.0f;
-					textureCoords[p * 5 * 2 + 7] = 1.0f - pxpt_to_gd(trail.index[p + 1] * particleType.trailRendererSettings().textureUVFactor);
-					textureCoords[p * 5 * 2 + 8] = 0.5f;
-					textureCoords[p * 5 * 2 + 9] = 1.0f - pxpt_to_gd((trail.index[p] + trail.index[p + 1]) * 0.5 * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 0] = 1.0f;
+					uvs[p * 5 * 2 + 1] = 1.0f - pxpt_to_gd(trail.index[p] * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 2] = 0.0f;
+					uvs[p * 5 * 2 + 3] = 1.0f - pxpt_to_gd(trail.index[p] * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 4] = 1.0f;
+					uvs[p * 5 * 2 + 5] = 1.0f - pxpt_to_gd(trail.index[p + 1] * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 6] = 0.0f;
+					uvs[p * 5 * 2 + 7] = 1.0f - pxpt_to_gd(trail.index[p + 1] * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 8] = 0.5f;
+					uvs[p * 5 * 2 + 9] = 1.0f - pxpt_to_gd((trail.index[p] + trail.index[p + 1]) * 0.5 * particleType.trailRendererSettings().textureUVFactor);
 				}
 				break;
 
 			case pixelpart::ParticleTrailRendererSettings::TextureRotation::right:
 				for(int32_t p = 0; p < trailSegmentCount; p++) {
-					textureCoords[p * 5 * 2 + 0] = 1.0f - pxpt_to_gd(trail.index[p] * particleType.trailRendererSettings().textureUVFactor);
-					textureCoords[p * 5 * 2 + 1] = 0.0f;
-					textureCoords[p * 5 * 2 + 2] = 1.0f - pxpt_to_gd(trail.index[p] * particleType.trailRendererSettings().textureUVFactor);
-					textureCoords[p * 5 * 2 + 3] = 1.0f;
-					textureCoords[p * 5 * 2 + 4] = 1.0f - pxpt_to_gd(trail.index[p + 1] * particleType.trailRendererSettings().textureUVFactor);
-					textureCoords[p * 5 * 2 + 5] = 0.0f;
-					textureCoords[p * 5 * 2 + 6] = 1.0f - pxpt_to_gd(trail.index[p + 1] * particleType.trailRendererSettings().textureUVFactor);
-					textureCoords[p * 5 * 2 + 7] = 1.0f;
-					textureCoords[p * 5 * 2 + 8] = 1.0f - pxpt_to_gd((trail.index[p] + trail.index[p + 1]) * 0.5 * particleType.trailRendererSettings().textureUVFactor);
-					textureCoords[p * 5 * 2 + 9] = 0.5f;
+					uvs[p * 5 * 2 + 0] = 1.0f - pxpt_to_gd(trail.index[p] * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 1] = 0.0f;
+					uvs[p * 5 * 2 + 2] = 1.0f - pxpt_to_gd(trail.index[p] * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 3] = 1.0f;
+					uvs[p * 5 * 2 + 4] = 1.0f - pxpt_to_gd(trail.index[p + 1] * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 5] = 0.0f;
+					uvs[p * 5 * 2 + 6] = 1.0f - pxpt_to_gd(trail.index[p + 1] * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 7] = 1.0f;
+					uvs[p * 5 * 2 + 8] = 1.0f - pxpt_to_gd((trail.index[p] + trail.index[p + 1]) * 0.5 * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 9] = 0.5f;
 				}
 				break;
 
 			default:
 				for(int32_t p = 0; p < trailSegmentCount; p++) {
-					textureCoords[p * 5 * 2 + 0] = 0.0f;
-					textureCoords[p * 5 * 2 + 1] = pxpt_to_gd(trail.index[p] * particleType.trailRendererSettings().textureUVFactor);
-					textureCoords[p * 5 * 2 + 2] = 1.0f;
-					textureCoords[p * 5 * 2 + 3] = pxpt_to_gd(trail.index[p] * particleType.trailRendererSettings().textureUVFactor);
-					textureCoords[p * 5 * 2 + 4] = 0.0f;
-					textureCoords[p * 5 * 2 + 5] = pxpt_to_gd(trail.index[p + 1] * particleType.trailRendererSettings().textureUVFactor);
-					textureCoords[p * 5 * 2 + 6] = 1.0f;
-					textureCoords[p * 5 * 2 + 7] = pxpt_to_gd(trail.index[p + 1] * particleType.trailRendererSettings().textureUVFactor);
-					textureCoords[p * 5 * 2 + 8] = 0.5f;
-					textureCoords[p * 5 * 2 + 9] = pxpt_to_gd((trail.index[p] + trail.index[p + 1]) * 0.5 * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 0] = 0.0f;
+					uvs[p * 5 * 2 + 1] = pxpt_to_gd(trail.index[p] * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 2] = 1.0f;
+					uvs[p * 5 * 2 + 3] = pxpt_to_gd(trail.index[p] * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 4] = 0.0f;
+					uvs[p * 5 * 2 + 5] = pxpt_to_gd(trail.index[p + 1] * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 6] = 1.0f;
+					uvs[p * 5 * 2 + 7] = pxpt_to_gd(trail.index[p + 1] * particleType.trailRendererSettings().textureUVFactor);
+					uvs[p * 5 * 2 + 8] = 0.5f;
+					uvs[p * 5 * 2 + 9] = pxpt_to_gd((trail.index[p] + trail.index[p + 1]) * 0.5 * particleType.trailRendererSettings().textureUVFactor);
 				}
 				break;
 		}
 
-		for(int32_t p = 0; p < trailSegmentCount; p++) {
-			textureCoords[p * 5 * 2 + 0] = pack_floats_unsigned(pxpt_to_gd(particles.life[p]), textureCoords[p * 5 * 2 + 0], packFactorA, packFactorB);
-			textureCoords[p * 5 * 2 + 1] = pack_uint_float(entry.first, textureCoords[p * 5 * 2 + 1], packFactorB);
-			textureCoords[p * 5 * 2 + 2] = pack_floats_unsigned(pxpt_to_gd(particles.life[p]), textureCoords[p * 5 * 2 + 2], packFactorA, packFactorB);
-			textureCoords[p * 5 * 2 + 3] = pack_uint_float(entry.first, textureCoords[p * 5 * 2 + 3], packFactorB);
-			textureCoords[p * 5 * 2 + 4] = pack_floats_unsigned(pxpt_to_gd(particles.life[p + 1]), textureCoords[p * 5 * 2 + 4], packFactorA, packFactorB);
-			textureCoords[p * 5 * 2 + 5] = pack_uint_float(entry.first, textureCoords[p * 5 * 2 + 5], packFactorB);
-			textureCoords[p * 5 * 2 + 6] = pack_floats_unsigned(pxpt_to_gd(particles.life[p + 1]), textureCoords[p * 5 * 2 + 6], packFactorA, packFactorB);
-			textureCoords[p * 5 * 2 + 7] = pack_uint_float(entry.first, textureCoords[p * 5 * 2 + 7], packFactorB);
-			textureCoords[p * 5 * 2 + 8] = pack_floats_unsigned(pxpt_to_gd(particles.life[p] + particles.life[p + 1]) * 0.5, textureCoords[p * 5 * 2 + 8], packFactorA, packFactorB);
-			textureCoords[p * 5 * 2 + 9] = pack_uint_float(entry.first, textureCoords[p * 5 * 2 + 9], packFactorB);
+		Color* colors = trail.colorArray.ptrw();
+		for(uint32_t p = 0; p < trailSegmentCount; p++) {
+			colors[p * 5 + 0] = pxpt_to_gd_color(trail.color[p]);
+			colors[p * 5 + 1] = pxpt_to_gd_color(trail.color[p]);
+			colors[p * 5 + 2] = pxpt_to_gd_color(trail.color[p + 1]);
+			colors[p * 5 + 3] = pxpt_to_gd_color(trail.color[p + 1]);
+			colors[p * 5 + 4] = pxpt_to_gd_color((trail.color[p] + trail.color[p + 1]) * 0.5);
 		}
 
-		float* colors = reinterpret_cast<float*>(trail.colorArray.ptrw());
-		for(int32_t p = 0; p < trailSegmentCount; p++) {
-			float x1 = pack_floats_signed_unsigned(pxpt_to_gd(trail.velocity[p].x), pxpt_to_gd(trail.color[p].r), packFactorA, packFactorB);
-			float y1 = pack_floats_signed_unsigned(pxpt_to_gd(trail.velocity[p].y), pxpt_to_gd(trail.color[p].g), packFactorA, packFactorB);
-			float z1 = pack_floats_signed_unsigned(pxpt_to_gd(trail.velocity[p].z), pxpt_to_gd(trail.color[p].b), packFactorA, packFactorB);
-			float w1 = pack_floats_signed_unsigned(0.0f, pxpt_to_gd(trail.color[p].a), packFactorA, packFactorB);
-			float x2 = pack_floats_signed_unsigned(pxpt_to_gd(trail.velocity[p + 1].x), pxpt_to_gd(trail.color[p + 1].r), packFactorA, packFactorB);
-			float y2 = pack_floats_signed_unsigned(pxpt_to_gd(trail.velocity[p + 1].y), pxpt_to_gd(trail.color[p + 1].g), packFactorA, packFactorB);
-			float z2 = pack_floats_signed_unsigned(pxpt_to_gd(trail.velocity[p + 1].z), pxpt_to_gd(trail.color[p + 1].b), packFactorA, packFactorB);
-			float w2 = pack_floats_signed_unsigned(0.0f, pxpt_to_gd(trail.color[p + 1].a), packFactorA, packFactorB);
-			float x3 = pack_floats_signed_unsigned(pxpt_to_gd(trail.velocity[p].x + trail.velocity[p + 1].x) * 0.5, pxpt_to_gd(trail.color[p].r + trail.color[p + 1].r) * 0.5, packFactorA, packFactorB);
-			float y3 = pack_floats_signed_unsigned(pxpt_to_gd(trail.velocity[p].y + trail.velocity[p + 1].y) * 0.5, pxpt_to_gd(trail.color[p].g + trail.color[p + 1].g) * 0.5, packFactorA, packFactorB);
-			float z3 = pack_floats_signed_unsigned(pxpt_to_gd(trail.velocity[p].z + trail.velocity[p + 1].z) * 0.5, pxpt_to_gd(trail.color[p].b + trail.color[p + 1].b) * 0.5, packFactorA, packFactorB);
-			float w3 = pack_floats_signed_unsigned(0.0f, pxpt_to_gd(trail.color[p].a + trail.color[p + 1].a) * 0.5, packFactorA, packFactorB);
-
-			colors[p * 5 * 4 + 0] = x1;
-			colors[p * 5 * 4 + 1] = y1;
-			colors[p * 5 * 4 + 2] = z1;
-			colors[p * 5 * 4 + 3] = w1;
-			colors[p * 5 * 4 + 4] = x1;
-			colors[p * 5 * 4 + 5] = y1;
-			colors[p * 5 * 4 + 6] = z1;
-			colors[p * 5 * 4 + 7] = w1;
-			colors[p * 5 * 4 + 8] = x2;
-			colors[p * 5 * 4 + 9] = y2;
-			colors[p * 5 * 4 + 10] = z2;
-			colors[p * 5 * 4 + 11] = w2;
-			colors[p * 5 * 4 + 12] = x2;
-			colors[p * 5 * 4 + 13] = y2;
-			colors[p * 5 * 4 + 14] = z2;
-			colors[p * 5 * 4 + 15] = w2;
-			colors[p * 5 * 4 + 16] = x3;
-			colors[p * 5 * 4 + 17] = y3;
-			colors[p * 5 * 4 + 18] = z3;
-			colors[p * 5 * 4 + 19] = w3;
+		float* custom0 = trail.custom0Array.ptrw();
+		for(uint32_t p = 0; p < trailSegmentCount; p++) {
+			custom0[p * 5 * 4 + 0] = static_cast<float>(trail.velocity[p].x);
+			custom0[p * 5 * 4 + 1] = static_cast<float>(trail.velocity[p].y);
+			custom0[p * 5 * 4 + 2] = static_cast<float>(trail.life[p]);
+			custom0[p * 5 * 4 + 3] = static_cast<float>(entry.first);
+			custom0[p * 5 * 4 + 4] = static_cast<float>(trail.velocity[p].x);
+			custom0[p * 5 * 4 + 5] = static_cast<float>(trail.velocity[p].y);
+			custom0[p * 5 * 4 + 6] = static_cast<float>(trail.life[p]);
+			custom0[p * 5 * 4 + 7] = static_cast<float>(entry.first);
+			custom0[p * 5 * 4 + 8] = static_cast<float>(trail.velocity[p + 1].x);
+			custom0[p * 5 * 4 + 9] = static_cast<float>(trail.velocity[p + 1].y);
+			custom0[p * 5 * 4 + 10] = static_cast<float>(trail.life[p + 1]);
+			custom0[p * 5 * 4 + 11] = static_cast<float>(entry.first);
+			custom0[p * 5 * 4 + 12] = static_cast<float>(trail.velocity[p + 1].x);
+			custom0[p * 5 * 4 + 13] = static_cast<float>(trail.velocity[p + 1].y);
+			custom0[p * 5 * 4 + 14] = static_cast<float>(trail.life[p + 1]);
+			custom0[p * 5 * 4 + 15] = static_cast<float>(entry.first);
+			custom0[p * 5 * 4 + 16] = static_cast<float>(trail.velocity[p].x + trail.velocity[p + 1].x) * 0.5f;
+			custom0[p * 5 * 4 + 17] = static_cast<float>(trail.velocity[p].y + trail.velocity[p + 1].y) * 0.5f;
+			custom0[p * 5 * 4 + 18] = static_cast<float>(trail.life[p] + trail.life[p + 1]) * 0.5f;
+			custom0[p * 5 * 4 + 19] = static_cast<float>(entry.first);
 		}
 
-		rs->canvas_item_add_triangle_array(canvasItemRID,
-			trail.indexArray,
-			trail.positionArray,
-			trail.colorArray,
-			trail.textureCoordArray);
+		Array arrays;
+		arrays.resize(Mesh::ARRAY_MAX);
+		arrays[Mesh::ARRAY_VERTEX] = trail.vertexArray;
+		arrays[Mesh::ARRAY_COLOR] = trail.colorArray;
+		arrays[Mesh::ARRAY_TEX_UV] = trail.uvArray;
+		arrays[Mesh::ARRAY_CUSTOM0] = trail.custom0Array;
+		arrays[Mesh::ARRAY_INDEX] = trail.indexArray;
+
+		rs->mesh_add_surface_from_arrays(meshRID, RenderingServer::PRIMITIVE_TRIANGLES, arrays, Array(), Dictionary(),
+			Mesh::ARRAY_FORMAT_VERTEX | Mesh::ARRAY_FORMAT_COLOR | Mesh::ARRAY_FORMAT_TEX_UV |
+			Mesh::ARRAY_FORMAT_CUSTOM0 | Mesh::ARRAY_FORMAT_INDEX |
+			(Mesh::ARRAY_CUSTOM_RGBA_FLOAT << Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT));
 	}
 }
 

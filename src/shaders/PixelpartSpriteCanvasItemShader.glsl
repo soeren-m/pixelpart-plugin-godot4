@@ -34,11 +34,9 @@ varying float OBJECT_ID;
 {common}
 
 void vertex() {
-	VELOCITY = pixelpart_unpack_velocity_canvasitem(COLOR);
-	LIFE = pixelpart_unpack_life_canvasitem(UV);
-	OBJECT_ID = pixelpart_unpack_id_canvasitem(UV);
-	UV = pixelpart_unpack_uv_canvasitem(UV);
-	COLOR = pixelpart_unpack_color_canvasitem(COLOR);
+	VELOCITY = vec3(CUSTOM0.x, CUSTOM0.y, 0.0);
+	LIFE = CUSTOM0.z;
+	OBJECT_ID = CUSTOM0.w;
 }
 
 void fragment() {

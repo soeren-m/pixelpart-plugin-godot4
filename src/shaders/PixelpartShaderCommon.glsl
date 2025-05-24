@@ -121,27 +121,10 @@ float pixelpart_distance_fade(float vertexDepth, float transitionSize) {
 	return smoothstep(0.0, transitionSize, -vertexDepth);
 }
 
-const float PACK_FACTOR_A = 1000.0;
-const float PACK_FACTOR_B = 2.0;
-
-vec3 pixelpart_unpack_velocity_canvasitem(vec4 color) {
-	return (floor(color.rgb) - vec3(PACK_FACTOR_A)) / vec3(PACK_FACTOR_A);
-}
-float pixelpart_unpack_life_canvasitem(vec2 uv) {
-	return floor(uv.x) / PACK_FACTOR_A;
-}
-float pixelpart_unpack_id_canvasitem(vec2 uv) {
-	return floor(uv.y);
-}
-vec2 pixelpart_unpack_uv_canvasitem(vec2 uv) {
-	return fract(uv) * vec2(PACK_FACTOR_B);
-}
-vec4 pixelpart_unpack_color_canvasitem(vec4 color) {
-	return fract(color) * vec4(PACK_FACTOR_B);
-}
+const float PACK_FACTOR = 2.0;
 
 float pixelpart_unpack_life_spatialinstance(vec4 custom) {
-	return fract(custom.w) * PACK_FACTOR_B;
+	return fract(custom.w) * PACK_FACTOR;
 }
 float pixelpart_unpack_id_spatialinstance(vec4 custom) {
 	return floor(custom.w);

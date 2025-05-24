@@ -761,7 +761,7 @@ void PixelpartParticleRenderer3D::add_particle_meshes(Node3D* parentNode,
 	const pixelpart::ParticleType& particleType,
 	pixelpart::ParticleCollection::ReadPtr particles, uint32_t particleCount,
 	const pixelpart::RuntimeContext& runtimeContext, pixelpart::float_t scale) {
-	const float packFactorB = 0.5;
+	const float packFactor = 0.5;
 
 	if(particleCount == 0) {
 		return;
@@ -833,7 +833,7 @@ void PixelpartParticleRenderer3D::add_particle_meshes(Node3D* parentNode,
 		instanceData[p * 20 + 16] = pxpt_to_gd(particleRenderData.velocity[p].x);
 		instanceData[p * 20 + 17] = pxpt_to_gd(particleRenderData.velocity[p].y);
 		instanceData[p * 20 + 18] = pxpt_to_gd(particleRenderData.velocity[p].z);
-		instanceData[p * 20 + 19] = pack_uint_float(particleRenderData.id[p], pxpt_to_gd(particleRenderData.life[p]), packFactorB);
+		instanceData[p * 20 + 19] = pack_uint_float(particleRenderData.id[p], pxpt_to_gd(particleRenderData.life[p]), packFactor);
 	}
 
 	multiMesh->set_visible_instance_count(-1);

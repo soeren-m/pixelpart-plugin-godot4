@@ -4,6 +4,7 @@
 #include "PixelpartGraphicsResourceProvider.h"
 #include "PixelpartShaderProvider.h"
 #include <godot_cpp/classes/node3d.hpp>
+#include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/classes/multi_mesh.hpp>
 #include <godot_cpp/classes/shader.hpp>
 #include <godot_cpp/classes/shader_material.hpp>

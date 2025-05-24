@@ -46,9 +46,10 @@ private:
 		std::vector<pixelpart::float_t> index;
 
 		PackedInt32Array indexArray;
-		PackedVector2Array positionArray;
-		PackedVector2Array textureCoordArray;
+		PackedVector2Array vertexArray;
+		PackedVector2Array uvArray;
 		PackedColorArray colorArray;
+		PackedFloat32Array custom0Array;
 	};
 
 	void add_particle_sprites(
@@ -89,10 +90,12 @@ private:
 	std::unordered_map<pixelpart::id_t, std::string> shaderParameterNames;
 	std::unordered_map<std::string, std::string> textureResourceIds;
 
+	RID meshRID;
 	PackedInt32Array indexArray;
-	PackedVector2Array positionArray;
-	PackedVector2Array textureCoordArray;
+	PackedVector2Array vertexArray;
+	PackedVector2Array uvArray;
 	PackedColorArray colorArray;
+	PackedFloat32Array custom0Array;
 
 	std::unordered_map<uint32_t, ParticleTrailData> trails;
 };

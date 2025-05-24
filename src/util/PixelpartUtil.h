@@ -27,10 +27,7 @@ pixelpart::float4_t gd_to_pxpt(const Vector4& v);
 pixelpart::float4_t gd_to_pxpt(const Color& v);
 pixelpart::VariantValue gd_to_pxpt(const Variant& v);
 
-float pack_floats_unsigned(float a, float b, float sa, float sb);
-float pack_floats_signed(float a, float b, float sa, float sb);
-float pack_floats_signed_unsigned(float a, float b, float sa, float sb);
-float pack_uint_float(unsigned int a, float b, float sb);
+float pack_uint_float(unsigned int a, float b, float s);
 }
 
 #endif
