@@ -1,8 +1,5 @@
 extends Node3D
 
-const ParticleTypeUtil = preload("res://ParticleTypeUtil.gd")
-const NodeUtil = preload("res://NodeUtil.gd")
-
 func _ready():
 	# Print information about particle types
 	var particle_type = $SampleEffect.get_particle_type_at_index(0)

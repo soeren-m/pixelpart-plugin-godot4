@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://ck7m2fuu4mk3q"]
 
 [ext_resource type="Script" path="res://EffectScript3D.gd" id="1_dsdr7"]
-[ext_resource type="PixelpartEffectResource" uid="uid://dpokerdn7vbyl" path="res://effects/Sprite3d.ppfx" id="2_hgpbb"]
+[ext_resource type="PixelpartEffectResource" uid="uid://dpokerdn7vbyl" path="res://effects/Sprite3d.ppfx" id="2_6mxbi"]
 
 [sub_resource type="Sky" id="Sky_asj0q"]
 
@@ -14,15 +14,10 @@ ambient_light_energy = 0.1
 [sub_resource type="PlaneMesh" id="PlaneMesh_dksc4"]
 
 [node name="Main3D" type="Node3D"]
-script = ExtResource("1_dsdr7")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(0.766044, -0.166366, 0.620885, 0, 0.965926, 0.258819, -0.642788, -0.198267, 0.739942, 3.5, 3, 4)
 environment = SubResource("Environment_r6ga3")
-
-[node name="SampleEffect" type="PixelpartEffect" parent="."]
-effect = ExtResource("2_hgpbb")
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 1, -1)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
@@ -37,3 +32,9 @@ light_color = Color(1, 0.498039, 0, 1)
 light_energy = 2.0
 omni_range = 10.0
 omni_attenuation = 0.5
+
+[node name="Effect" type="Node3D" parent="."]
+script = ExtResource("1_dsdr7")
+
+[node name="SampleEffect" type="PixelpartEffect" parent="Effect"]
+effect = ExtResource("2_6mxbi")

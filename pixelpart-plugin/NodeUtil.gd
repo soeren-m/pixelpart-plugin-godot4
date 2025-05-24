@@ -19,21 +19,21 @@ static func print_info(node: PixelpartNode):
 	var point_light := node as PixelpartPointLightSource
 	var spot_light := node as PixelpartSpotLightSource
 
-	var type_string = "Node"
-	if group_node: type_string = "GroupNode"
-	elif emitter: type_string = "ParticleEmitter"
-	elif attraction_field: type_string = "AttractionField"
-	elif acceleration_field: type_string = "AccelerationField"
-	elif vector_field: type_string = "VectorField"
-	elif noise_field: type_string = "NoiseField"
-	elif drag_field: type_string = "DragField"
-	elif line_collider: type_string = "LineCollider"
-	elif plane_collider: type_string = "PlaneCollider"
-	elif dir_light: type_string = "DirectionalLightSource"
-	elif point_light: type_string = "PointLightSource"
-	elif spot_light: type_string = "SpotLightSource"
+	var typestr = "Node"
+	if group_node: typestr = "GroupNode"
+	elif emitter: typestr = "ParticleEmitter"
+	elif attraction_field: typestr = "AttractionField"
+	elif acceleration_field: typestr = "AccelerationField"
+	elif vector_field: typestr = "VectorField"
+	elif noise_field: typestr = "NoiseField"
+	elif drag_field: typestr = "DragField"
+	elif line_collider: typestr = "LineCollider"
+	elif plane_collider: typestr = "PlaneCollider"
+	elif dir_light: typestr = "DirectionalLightSource"
+	elif point_light: typestr = "PointLightSource"
+	elif spot_light: typestr = "SpotLightSource"
 
 	print("Node \"", node.get_name(), "\":",
 		" id=", node.get_id(),
 		" parent_id=", node.get_parent_id(),
-		" type=", type_string)
+		" type=", typestr)

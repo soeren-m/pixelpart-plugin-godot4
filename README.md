@@ -1,6 +1,6 @@
 # Pixelpart for Godot 4
 
-This repository contains the official Pixelpart plugin for Godot 4.1+. The plugin allows you to play Pixelpart effects directly within the Godot engine, eliminating the need to export effects as sprite sheets or video files beforehand.
+This repository contains the official Pixelpart plugin for Godot 4.3+. The plugin allows you to play Pixelpart effects directly within the Godot engine, eliminating the need to export effects as sprite sheets or video files beforehand.
 
 ## Installation
 

@@ -340,7 +340,8 @@ Ref<Shader> PixelpartShaderProvider::get_shader(const std::string& shaderTemplat
 		return shaders.at(shaderSource);
 	}
 
-	Ref<Shader> shader = new Shader();
+	Ref<Shader> shader;
+	shader.instantiate();
 	shader->set_code(String(shaderSource.c_str()));
 
 	shaders[shaderSource] = shader;

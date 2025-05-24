@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://bt7ogxf0ux7r6"]
 
 [ext_resource type="Script" path="res://EffectScript2D.gd" id="1_udfml"]
-[ext_resource type="PixelpartEffectResource" uid="uid://de1e7uaah4pxr" path="res://effects/Sprite2d.ppfx" id="2_7exj8"]
+[ext_resource type="PixelpartEffectResource" uid="uid://de1e7uaah4pxr" path="res://effects/Sprite2d.ppfx" id="2_r70cw"]
 
 [sub_resource type="Gradient" id="Gradient_572vs"]
 colors = PackedColorArray(0, 0, 0, 0, 1, 1, 1, 1)
@@ -12,11 +12,6 @@ fill_from = Vector2(0.534188, 0)
 fill_to = Vector2(0.517094, 1)
 
 [node name="Main" type="Node2D"]
-script = ExtResource("1_udfml")
-
-[node name="SampleEffect" type="PixelpartEffect2D" parent="."]
-effect = ExtResource("2_7exj8")
-position = Vector2(400, 400)
 
 [node name="PointLight2D" type="PointLight2D" parent="."]
 position = Vector2(400, 400)
@@ -25,3 +20,10 @@ blend_mode = 2
 texture = SubResource("GradientTexture2D_drids")
 texture_scale = 10.0
 height = 50.0
+
+[node name="Effect" type="Node2D" parent="."]
+position = Vector2(400, 400)
+script = ExtResource("1_udfml")
+
+[node name="SampleEffect" type="PixelpartEffect2D" parent="Effect"]
+effect = ExtResource("2_r70cw")
