@@ -301,13 +301,13 @@ Ref<PixelpartCollider> PixelpartEffect2D::get_collider_at_index(int index) const
 }
 
 void PixelpartEffect2D::update_transform() {
-	pixelpart::float2_t globalPosition = gd_to_pxpt(get_global_transform().get_origin());
-	pixelpart::float_t globalRotation = gd_to_pxpt(get_global_transform().get_rotation()) / Math_PI * 180.0;
-	pixelpart::float2_t globalScale = gd_to_pxpt(get_global_transform().get_scale());
-
 	pixelpart::float2_t effectScale = pixelpart::float2_t(
 		flipH ? -1.0 : +1.0,
 		flipV ? -1.0 : +1.0) * static_cast<pixelpart::float_t>(get_import_scale());
+
+	pixelpart::float2_t globalPosition = gd_to_pxpt(get_global_transform().get_origin()) / effectScale;
+	pixelpart::float_t globalRotation = gd_to_pxpt(get_global_transform().get_rotation()) / Math_PI * 180.0;
+	pixelpart::float2_t globalScale = gd_to_pxpt(get_global_transform().get_scale()) / effectScale;
 
 	for(const std::unique_ptr<pixelpart::Node>& node : effectRuntime.get_effect().sceneGraph().nodes()) {
 		if(node->parentId()) {
@@ -315,13 +315,13 @@ void PixelpartEffect2D::update_transform() {
 		}
 
 		node->position().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
-			pixelpart::float3_t(globalPosition.x / effectScale.x, globalPosition.y / effectScale.y, 0.0)
+			pixelpart::float3_t(globalPosition, 0.0)
 		} });
 		node->rotation().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
 			pixelpart::float3_t(globalRotation, 0.0, 0.0)
 		} });
 		node->scale().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
-			pixelpart::float3_t(globalScale.x, globalScale.y, 1.0)
+			pixelpart::float3_t(globalScale, 1.0)
 		} });
 	}
 }

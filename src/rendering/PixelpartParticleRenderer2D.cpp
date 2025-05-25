@@ -490,7 +490,7 @@ void PixelpartParticleRenderer2D::add_particle_trails(
 			indices[p * 12 + 11] = p * 5 + 4;
 		}
 
-		float* positions = reinterpret_cast<float*>(trail.vertexArray.ptrw());
+		Vector2* positions = trail.vertexArray.ptrw();
 		for(int32_t p = 0; p < trailSegmentCount; p++) {
 			pixelpart::float3_t startToEdge = trail.direction[p] * std::max(trail.size[p].x, trail.size[p].y) * 0.5;
 			pixelpart::float3_t endToEdge = trail.direction[p + 1] * std::max(trail.size[p + 1].x, trail.size[p + 1].y) * 0.5;
@@ -503,16 +503,11 @@ void PixelpartParticleRenderer2D::add_particle_trails(
 				(trail.position[p] + trail.position[p + 1]) * 0.5
 			};
 
-			positions[p * 5 * 2 + 0] = pxpt_to_gd(vertexPositions[0].x * scale.x);
-			positions[p * 5 * 2 + 1] = pxpt_to_gd(vertexPositions[0].y * scale.y);
-			positions[p * 5 * 2 + 2] = pxpt_to_gd(vertexPositions[1].x * scale.x);
-			positions[p * 5 * 2 + 3] = pxpt_to_gd(vertexPositions[1].y * scale.y);
-			positions[p * 5 * 2 + 4] = pxpt_to_gd(vertexPositions[2].x * scale.x);
-			positions[p * 5 * 2 + 5] = pxpt_to_gd(vertexPositions[2].y * scale.y);
-			positions[p * 5 * 2 + 6] = pxpt_to_gd(vertexPositions[3].x * scale.x);
-			positions[p * 5 * 2 + 7] = pxpt_to_gd(vertexPositions[3].y * scale.y);
-			positions[p * 5 * 2 + 8] = pxpt_to_gd(vertexPositions[4].x * scale.x);
-			positions[p * 5 * 2 + 9] = pxpt_to_gd(vertexPositions[4].y * scale.y);
+			positions[p * 5 + 0] = pxpt_to_gd(pixelpart::float2_t(vertexPositions[0]) * scale);
+			positions[p * 5 + 1] = pxpt_to_gd(pixelpart::float2_t(vertexPositions[1]) * scale);
+			positions[p * 5 + 2] = pxpt_to_gd(pixelpart::float2_t(vertexPositions[2]) * scale);
+			positions[p * 5 + 3] = pxpt_to_gd(pixelpart::float2_t(vertexPositions[3]) * scale);
+			positions[p * 5 + 4] = pxpt_to_gd(pixelpart::float2_t(vertexPositions[4]) * scale);
 		}
 
 		float* uvs = reinterpret_cast<float*>(trail.uvArray.ptrw());

@@ -310,7 +310,7 @@ void PixelpartEffect::update_transform() {
 			transform.rotation()
 		} });
 		node->scale().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
-			transform.scale()
+			transform.scale() / static_cast<pixelpart::float_t>(get_import_scale())
 		} });
 	}
 }
