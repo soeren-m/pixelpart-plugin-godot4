@@ -11,13 +11,13 @@
 #include "node/PixelpartCollider.h"
 #include <pixelpart-runtime/effect/ParticleRuntimeId.h>
 #include <godot_cpp/core/binder_common.hpp>
-#include <godot_cpp/classes/node3d.hpp>
+#include <godot_cpp/classes/visual_instance3d.hpp>
 #include <memory>
 #include <unordered_map>
 
 namespace godot {
-class PixelpartEffect : public Node3D {
-	GDCLASS(PixelpartEffect, Node3D)
+class PixelpartEffect : public VisualInstance3D {
+	GDCLASS(PixelpartEffect, VisualInstance3D)
 
 public:
 	PixelpartEffect();

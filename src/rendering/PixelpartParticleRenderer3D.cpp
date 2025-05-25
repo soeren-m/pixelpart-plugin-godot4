@@ -101,7 +101,7 @@ PixelpartParticleRenderer3D::~PixelpartParticleRenderer3D() {
 	rs->free_rid(instanceRID);
 }
 
-void PixelpartParticleRenderer3D::draw(Node3D* parentNode,
+void PixelpartParticleRenderer3D::draw(VisualInstance3D* parentNode,
 	pixelpart::ParticleCollection::ReadPtr particles, uint32_t particleCount,
 	const pixelpart::RuntimeContext& runtimeContext, pixelpart::float_t scale) {
 	const pixelpart::ParticleEmitter& particleEmitter = effect.sceneGraph().at<pixelpart::ParticleEmitter>(particleEmitterId);
@@ -180,7 +180,10 @@ void PixelpartParticleRenderer3D::draw(Node3D* parentNode,
 
 	RenderingServer* rs = RenderingServer::get_singleton();
 	rs->instance_set_scenario(instanceRID, parentNode->get_world_3d()->get_scenario());
-	rs->instance_set_pivot_data(instanceRID, static_cast<double>(particleType.layer()) * 0.01, false);
+	rs->instance_set_layer_mask(instanceRID, parentNode->get_layer_mask());
+	rs->instance_set_pivot_data(instanceRID,
+		parentNode->get_sorting_offset() + static_cast<double>(particleType.layer()) * 0.01,
+		parentNode->is_sorting_use_aabb_center());
 
 	switch(particleType.renderer()) {
 		case pixelpart::ParticleRendererType::sprite:
@@ -217,7 +220,7 @@ void PixelpartParticleRenderer3D::draw(Node3D* parentNode,
 	}
 }
 
-void PixelpartParticleRenderer3D::add_particle_sprites(Node3D* parentNode,
+void PixelpartParticleRenderer3D::add_particle_sprites(VisualInstance3D* parentNode,
 	const pixelpart::ParticleEmitter& particleEmitter,
 	const pixelpart::ParticleType& particleType,
 	pixelpart::ParticleCollection::ReadPtr particles, uint32_t particleCount,
@@ -396,7 +399,7 @@ void PixelpartParticleRenderer3D::add_particle_sprites(Node3D* parentNode,
 		(Mesh::ARRAY_CUSTOM_RGBA_FLOAT << Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT));
 }
 
-void PixelpartParticleRenderer3D::add_particle_trails(Node3D* parentNode,
+void PixelpartParticleRenderer3D::add_particle_trails(VisualInstance3D* parentNode,
 	const pixelpart::ParticleEmitter& particleEmitter,
 	const pixelpart::ParticleType& particleType,
 	pixelpart::ParticleCollection::ReadPtr particles, uint32_t particleCount,
@@ -756,7 +759,7 @@ void PixelpartParticleRenderer3D::add_particle_trails(Node3D* parentNode,
 		(Mesh::ARRAY_CUSTOM_RGBA_FLOAT << Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT));
 }
 
-void PixelpartParticleRenderer3D::add_particle_meshes(Node3D* parentNode,
+void PixelpartParticleRenderer3D::add_particle_meshes(VisualInstance3D* parentNode,
 	const pixelpart::ParticleEmitter& particleEmitter,
 	const pixelpart::ParticleType& particleType,
 	pixelpart::ParticleCollection::ReadPtr particles, uint32_t particleCount,
@@ -844,7 +847,7 @@ void PixelpartParticleRenderer3D::add_particle_meshes(Node3D* parentNode,
 pixelpart::ParticleCollection::ReadPtr PixelpartParticleRenderer3D::sort_particles(
 	pixelpart::ParticleCollection::ReadPtr particles, uint32_t particleCount,
 	pixelpart::ParticleSortCriterion sortCriterion,
-	Node3D* parentNode, Camera3D* camera) {
+	VisualInstance3D* parentNode, Camera3D* camera) {
 	if(sortCriterion == pixelpart::ParticleSortCriterion::none || particleCount <= 1) {
 		return particles;
 	}

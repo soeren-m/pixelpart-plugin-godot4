@@ -3,7 +3,7 @@
 
 #include "PixelpartGraphicsResourceProvider.h"
 #include "PixelpartShaderProvider.h"
-#include <godot_cpp/classes/node3d.hpp>
+#include <godot_cpp/classes/visual_instance3d.hpp>
 #include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/classes/multi_mesh.hpp>
 #include <godot_cpp/classes/shader.hpp>
@@ -31,7 +31,7 @@ public:
 
 	PixelpartParticleRenderer3D& operator=(const PixelpartParticleRenderer3D&) = delete;
 
-	void draw(Node3D* parentNode,
+	void draw(VisualInstance3D* parentNode,
 		pixelpart::ParticleCollection::ReadPtr particles, uint32_t particleCount,
 		const pixelpart::RuntimeContext& runtimeContext, pixelpart::float_t scale);
 
@@ -50,17 +50,17 @@ private:
 		std::vector<pixelpart::float_t> index;
 	};
 
-	void add_particle_sprites(Node3D* parentNode,
+	void add_particle_sprites(VisualInstance3D* parentNode,
 		const pixelpart::ParticleEmitter& particleEmitter,
 		const pixelpart::ParticleType& particleType,
 		pixelpart::ParticleCollection::ReadPtr particles, uint32_t particleCount,
 		const pixelpart::RuntimeContext& runtimeContext, pixelpart::float_t scale);
-	void add_particle_trails(Node3D* parentNode,
+	void add_particle_trails(VisualInstance3D* parentNode,
 		const pixelpart::ParticleEmitter& particleEmitter,
 		const pixelpart::ParticleType& particleType,
 		pixelpart::ParticleCollection::ReadPtr particles, uint32_t particleCount,
 		const pixelpart::RuntimeContext& runtimeContext, pixelpart::float_t scale);
-	void add_particle_meshes(Node3D* parentNode,
+	void add_particle_meshes(VisualInstance3D* parentNode,
 		const pixelpart::ParticleEmitter& particleEmitter,
 		const pixelpart::ParticleType& particleType,
 		pixelpart::ParticleCollection::ReadPtr particles, uint32_t particleCount,
@@ -69,7 +69,7 @@ private:
 	pixelpart::ParticleCollection::ReadPtr sort_particles(
 		pixelpart::ParticleCollection::ReadPtr particles, uint32_t particleCount,
 		pixelpart::ParticleSortCriterion sortCriterion,
-		Node3D* parentNode, Camera3D* camera);
+		VisualInstance3D* parentNode, Camera3D* camera);
 
 	static pixelpart::mat3_t rotation_3d(const pixelpart::float3_t& angle);
 	static pixelpart::mat3_t look_at(const pixelpart::float3_t& direction);

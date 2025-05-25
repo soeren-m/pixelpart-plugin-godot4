@@ -10,7 +10,7 @@
 #include <algorithm>
 
 namespace godot {
-PixelpartEffect::PixelpartEffect() : Node3D() {
+PixelpartEffect::PixelpartEffect() : VisualInstance3D() {
 
 }
 PixelpartEffect::~PixelpartEffect() {
