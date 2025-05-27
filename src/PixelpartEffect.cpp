@@ -292,11 +292,13 @@ Ref<PixelpartCollider> PixelpartEffect::get_collider_at_index(int index) const {
 }
 
 void PixelpartEffect::update_transform() {
+	Basis basis = get_global_transform().get_basis().transposed();
+	Vector3 origin = get_global_transform().get_origin();
 	pixelpart::Transform transform = pixelpart::Transform(pixelpart::mat4_t(
-		pixelpart::float4_t(gd_to_pxpt(get_global_transform().get_basis()[0]), 0.0),
-		pixelpart::float4_t(gd_to_pxpt(get_global_transform().get_basis()[1]), 0.0),
-		pixelpart::float4_t(gd_to_pxpt(get_global_transform().get_basis()[2]), 0.0),
-		pixelpart::float4_t(gd_to_pxpt(get_global_transform().get_origin()), 1.0)));
+		pixelpart::float4_t(gd_to_pxpt(basis[0]), 0.0),
+		pixelpart::float4_t(gd_to_pxpt(basis[1]), 0.0),
+		pixelpart::float4_t(gd_to_pxpt(basis[2]), 0.0),
+		pixelpart::float4_t(gd_to_pxpt(origin), 1.0)));
 
 	for(const std::unique_ptr<pixelpart::Node>& node : effectRuntime.get_effect().sceneGraph().nodes()) {
 		if(node->parentId()) {
