@@ -57,9 +57,9 @@ void PixelpartEffect2D::_draw() {
 			return pt1.layer() < pt2.layer();
 		});
 
-	pixelpart::float2_t effectScale = pixelpart::float2_t(
+	pixelpart::float2_t scale = pixelpart::float2_t(
 		flipH ? -1.0 : +1.0,
-		flipV ? -1.0 : +1.0) * static_cast<pixelpart::float_t>(get_import_scale());
+		flipV ? -1.0 : +1.0) * static_cast<pixelpart::float_t>(effectScale);
 
 	for(const pixelpart::ParticleRuntimeId& runtimeId : sortedParticleRuntimeInstances) {
 		if(particleRenderers.count(runtimeId) == 0) {
@@ -75,7 +75,7 @@ void PixelpartEffect2D::_draw() {
 			particleCollection->readPtr(),
 			effectEngine->particleCount(runtimeId.emitterId, runtimeId.typeId),
 			effectEngine->runtimeContext(),
-			effectScale);
+			scale);
 	}
 }
 
@@ -118,10 +118,6 @@ void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> resource) {
 }
 Ref<PixelpartEffectResource> PixelpartEffect2D::get_effect() const {
 	return effectResource;
-}
-
-float PixelpartEffect2D::get_import_scale() const {
-	return effectResource.is_valid() ? effectResource->get_scale() : 1.0f;
 }
 
 void PixelpartEffect2D::play(bool state) {
@@ -176,6 +172,13 @@ void PixelpartEffect2D::set_frame_rate(float rate) {
 }
 float PixelpartEffect2D::get_frame_rate() const {
 	return effectRuntime.get_frame_rate();
+}
+
+void PixelpartEffect2D::set_effect_scale(float scale) {
+	effectScale = scale;
+}
+float PixelpartEffect2D::get_effect_scale() const {
+	return effectScale;
 }
 
 void PixelpartEffect2D::set_flip_h(bool flip) {
@@ -301,13 +304,13 @@ Ref<PixelpartCollider> PixelpartEffect2D::get_collider_at_index(int index) const
 }
 
 void PixelpartEffect2D::update_transform() {
-	pixelpart::float2_t effectScale = pixelpart::float2_t(
+	pixelpart::float2_t scale = pixelpart::float2_t(
 		flipH ? -1.0 : +1.0,
-		flipV ? -1.0 : +1.0) * static_cast<pixelpart::float_t>(get_import_scale());
+		flipV ? -1.0 : +1.0) * static_cast<pixelpart::float_t>(effectScale);
 
-	pixelpart::float2_t globalPosition = gd_to_pxpt(get_global_transform().get_origin()) / effectScale;
+	pixelpart::float2_t globalPosition = gd_to_pxpt(get_global_transform().get_origin()) / scale;
 	pixelpart::float_t globalRotation = gd_to_pxpt(get_global_transform().get_rotation()) / Math_PI * 180.0;
-	pixelpart::float2_t globalScale = gd_to_pxpt(get_global_transform().get_scale()) / effectScale;
+	pixelpart::float2_t globalScale = gd_to_pxpt(get_global_transform().get_scale()) / scale;
 
 	for(const std::unique_ptr<pixelpart::Node>& node : effectRuntime.get_effect().sceneGraph().nodes()) {
 		if(node->parentId()) {
@@ -329,7 +332,6 @@ void PixelpartEffect2D::update_transform() {
 void PixelpartEffect2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_effect", "resource"), &PixelpartEffect2D::set_effect);
 	ClassDB::bind_method(D_METHOD("get_effect"), &PixelpartEffect2D::get_effect);
-	ClassDB::bind_method(D_METHOD("get_import_scale"), &PixelpartEffect2D::get_import_scale);
 	ClassDB::bind_method(D_METHOD("play", "state"), &PixelpartEffect2D::play);
 	ClassDB::bind_method(D_METHOD("pause"), &PixelpartEffect2D::pause);
 	ClassDB::bind_method(D_METHOD("restart"), &PixelpartEffect2D::restart);
@@ -346,6 +348,8 @@ void PixelpartEffect2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_speed"), &PixelpartEffect2D::get_speed);
 	ClassDB::bind_method(D_METHOD("set_frame_rate", "rate"), &PixelpartEffect2D::set_frame_rate);
 	ClassDB::bind_method(D_METHOD("get_frame_rate"), &PixelpartEffect2D::get_frame_rate);
+	ClassDB::bind_method(D_METHOD("set_effect_scale", "scale"), &PixelpartEffect2D::set_effect_scale);
+	ClassDB::bind_method(D_METHOD("get_effect_scale"), &PixelpartEffect2D::get_effect_scale);
 	ClassDB::bind_method(D_METHOD("set_flip_h", "flip"), &PixelpartEffect2D::set_flip_h);
 	ClassDB::bind_method(D_METHOD("set_flip_v", "flip"), &PixelpartEffect2D::set_flip_v);
 	ClassDB::bind_method(D_METHOD("get_flip_h"), &PixelpartEffect2D::get_flip_h);
@@ -390,6 +394,7 @@ void PixelpartEffect2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "inputs"), "set_inputs", "get_inputs");
 
 	ADD_GROUP("Rendering", "");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "effect_scale", PROPERTY_HINT_RANGE, "0.0,1000.0,0.1,or_greater,exp"), "set_effect_scale", "get_effect_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "get_flip_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "get_flip_v");
 

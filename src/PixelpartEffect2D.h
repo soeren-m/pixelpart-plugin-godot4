@@ -32,8 +32,6 @@ public:
 	void set_effect(Ref<PixelpartEffectResource> resource);
 	Ref<PixelpartEffectResource> get_effect() const;
 
-	float get_import_scale() const;
-
 	void play(bool state);
 	void pause();
 	void restart();
@@ -55,6 +53,9 @@ public:
 
 	void set_frame_rate(float rate);
 	float get_frame_rate() const;
+
+	void set_effect_scale(float scale);
+	float get_effect_scale() const;
 
 	void set_flip_h(bool flip);
 	void set_flip_v(bool flip);
@@ -111,6 +112,7 @@ private:
 	Ref<PixelpartEffectResource> effectResource;
 	PixelpartEffectRuntime effectRuntime;
 
+	float effectScale = 100.0f;
 	bool flipH = false;
 	bool flipV = true;
 

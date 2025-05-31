@@ -65,8 +65,6 @@ void PixelpartEffect::draw() {
 			return pt1.layer() < pt2.layer();
 		});
 
-	pixelpart::float_t effectScale = static_cast<pixelpart::float_t>(get_import_scale());
-
 	for(const pixelpart::ParticleRuntimeId& runtimeId : sortedParticleRuntimeInstances) {
 		if(particleRenderers.count(runtimeId) == 0) {
 			continue;
@@ -81,7 +79,7 @@ void PixelpartEffect::draw() {
 			particleCollection->readPtr(),
 			effectEngine->particleCount(runtimeId.emitterId, runtimeId.typeId),
 			effectEngine->runtimeContext(),
-			effectScale);
+			static_cast<pixelpart::float_t>(effectScale));
 	}
 }
 
@@ -122,10 +120,6 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> resource) {
 }
 Ref<PixelpartEffectResource> PixelpartEffect::get_effect() const {
 	return effectResource;
-}
-
-float PixelpartEffect::get_import_scale() const {
-	return effectResource.is_valid() ? effectResource->get_scale() : 1.0f;
 }
 
 void PixelpartEffect::play(bool state) {
@@ -180,6 +174,13 @@ void PixelpartEffect::set_frame_rate(float rate) {
 }
 float PixelpartEffect::get_frame_rate() const {
 	return effectRuntime.get_frame_rate();
+}
+
+void PixelpartEffect::set_effect_scale(float scale) {
+	effectScale = scale;
+}
+float PixelpartEffect::get_effect_scale() const {
+	return effectScale;
 }
 
 void PixelpartEffect::set_inputs(Dictionary inputs) {
@@ -306,13 +307,13 @@ void PixelpartEffect::update_transform() {
 		}
 
 		node->position().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
-			transform.position() / static_cast<pixelpart::float_t>(get_import_scale())
+			transform.position() / static_cast<pixelpart::float_t>(effectScale)
 		} });
 		node->rotation().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
 			transform.rotation()
 		} });
 		node->scale().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
-			transform.scale() / static_cast<pixelpart::float_t>(get_import_scale())
+			transform.scale() / static_cast<pixelpart::float_t>(effectScale)
 		} });
 	}
 }
@@ -337,6 +338,8 @@ void PixelpartEffect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_speed"), &PixelpartEffect::get_speed);
 	ClassDB::bind_method(D_METHOD("set_frame_rate", "rate"), &PixelpartEffect::set_frame_rate);
 	ClassDB::bind_method(D_METHOD("get_frame_rate"), &PixelpartEffect::get_frame_rate);
+	ClassDB::bind_method(D_METHOD("set_effect_scale", "scale"), &PixelpartEffect::set_effect_scale);
+	ClassDB::bind_method(D_METHOD("get_effect_scale"), &PixelpartEffect::get_effect_scale);
 	ClassDB::bind_method(D_METHOD("set_inputs", "inputs"), &PixelpartEffect::set_inputs);
 	ClassDB::bind_method(D_METHOD("get_inputs"), &PixelpartEffect::get_inputs);
 	ClassDB::bind_method(D_METHOD("set_input_bool", "name", "value"), &PixelpartEffect::set_input_bool);
@@ -356,7 +359,6 @@ void PixelpartEffect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("activate_trigger", "name"), &PixelpartEffect::activate_trigger);
 	ClassDB::bind_method(D_METHOD("is_trigger_activated", "name"), &PixelpartEffect::is_trigger_activated);
 	ClassDB::bind_method(D_METHOD("spawn_particles", "particleEmitterName", "particleTypeName", "count"), &PixelpartEffect::spawn_particles);
-	ClassDB::bind_method(D_METHOD("get_import_scale"), &PixelpartEffect::get_import_scale);
 	ClassDB::bind_method(D_METHOD("find_node", "name"), &PixelpartEffect::find_node);
 	ClassDB::bind_method(D_METHOD("get_node", "id"), &PixelpartEffect::get_node);
 	ClassDB::bind_method(D_METHOD("get_node_at_index", "index"), &PixelpartEffect::get_node_at_index);
@@ -376,6 +378,9 @@ void PixelpartEffect::_bind_methods() {
 
 	ADD_GROUP("Inputs", "");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "inputs"), "set_inputs", "get_inputs");
+
+	ADD_GROUP("Rendering", "");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "effect_scale", PROPERTY_HINT_RANGE, "0.0,1000.0,0.1,or_greater,exp"), "set_effect_scale", "get_effect_scale");
 
 	// Deprecated
 	ClassDB::bind_method(D_METHOD("find_particle_emitter", "name"), &PixelpartEffect::find_particle_emitter);

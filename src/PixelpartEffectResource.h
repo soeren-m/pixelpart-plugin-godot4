@@ -21,9 +21,6 @@ public:
 	void set_data(PackedByteArray bytes);
 	PackedByteArray get_data() const;
 
-	void set_scale(float s);
-	float get_scale() const;
-
 	const pixelpart::EffectAsset& get_asset() const;
 
 protected:
@@ -31,7 +28,6 @@ protected:
 
 private:
 	PackedByteArray data;
-	float scale = 1.0f;
 
 	pixelpart::EffectAsset effectAsset;
 	bool loaded = false;
