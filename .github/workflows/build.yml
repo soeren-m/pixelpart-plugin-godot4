@@ -28,42 +28,49 @@ jobs:
 
   package:
     name: Package plugin
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: [windows-build, linux-build, macos-build, web-build]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Download Windows artifacts
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4
         with:
           name: pixelpart-windows
+          path: artifacts
 
       - name: Download Linux artifacts
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4
         with:
           name: pixelpart-linux
+          path: artifacts
 
       - name: Download macOS artifacts
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4
         with:
           name: pixelpart-macos
+          path: artifacts
 
       - name: Download web artifacts
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4
         with:
           name: pixelpart-web
+          path: artifacts
+
+      - name: Display downloaded artifacts
+        run: ls -R artifacts
 
       - name: Copy binaries
         run: |
           mkdir ./pixelpart-plugin/addons/pixelpart/bin
-          cp -r pixelpart-windows/*.dll ./pixelpart-plugin/addons/pixelpart/bin/
-          cp -r pixelpart-linux/*.so ./pixelpart-plugin/addons/pixelpart/bin/
-          cp -r pixelpart-macos/*.dylib ./pixelpart-plugin/addons/pixelpart/bin/
-          cp -r pixelpart-web/*.wasm ./pixelpart-plugin/addons/pixelpart/bin/
+          cp -r artifacts/*.dll ./pixelpart-plugin/addons/pixelpart/bin/
+          cp -r artifacts/*.so ./pixelpart-plugin/addons/pixelpart/bin/
+          cp -r artifacts/*.dylib ./pixelpart-plugin/addons/pixelpart/bin/
+          cp -r artifacts/*.wasm ./pixelpart-plugin/addons/pixelpart/bin/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: pixelpart-plugin-godot4
           path: ./pixelpart-plugin/addons

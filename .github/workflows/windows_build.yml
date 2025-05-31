@@ -21,8 +21,7 @@ jobs:
         run: python build.py platform=windows
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pixelpart-windows
-          path: |
-            ./pixelpart-plugin/addons/pixelpart/bin
+          path: ./pixelpart-plugin/addons/pixelpart/bin
