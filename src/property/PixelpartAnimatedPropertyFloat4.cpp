@@ -115,6 +115,7 @@ void PixelpartAnimatedPropertyFloat4::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_keyframe_interpolation"), &PixelpartAnimatedPropertyFloat4::get_keyframe_interpolation);
 	ClassDB::bind_method(D_METHOD("enable_adaptive_cache"), &PixelpartAnimatedPropertyFloat4::enable_adaptive_cache);
 	ClassDB::bind_method(D_METHOD("enable_fixed_cache", "size"), &PixelpartAnimatedPropertyFloat4::enable_fixed_cache);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "keyframe_interpolation"), "set_keyframe_interpolation", "get_keyframe_interpolation");
 
 	// Deprecated
@@ -130,6 +131,7 @@ void PixelpartAnimatedPropertyFloat4::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_index", "position", "epsilon"), &PixelpartAnimatedPropertyFloat4::get_keyframe_index);
 	ClassDB::bind_method(D_METHOD("set_interpolation", "method"), &PixelpartAnimatedPropertyFloat4::set_keyframe_interpolation);
 	ClassDB::bind_method(D_METHOD("get_interpolation"), &PixelpartAnimatedPropertyFloat4::get_keyframe_interpolation);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "interpolation"), "set_keyframe_interpolation", "get_keyframe_interpolation");
 }
 }

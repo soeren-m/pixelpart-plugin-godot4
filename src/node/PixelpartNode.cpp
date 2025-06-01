@@ -129,7 +129,7 @@ void PixelpartNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_active"), &PixelpartNode::is_active);
 	ClassDB::bind_method(D_METHOD("get_local_time"), &PixelpartNode::get_local_time);
 	ClassDB::bind_method(D_METHOD("get_position"), &PixelpartNode::get_position);
-    ClassDB::bind_method(D_METHOD("get_rotation"), &PixelpartNode::get_rotation);
+	ClassDB::bind_method(D_METHOD("get_rotation"), &PixelpartNode::get_rotation);
 	ClassDB::bind_method(D_METHOD("get_scale"), &PixelpartNode::get_scale);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime_start"), "set_lifetime_start", "get_lifetime_start");

@@ -6,6 +6,11 @@
 #include <pixelpart-runtime/effect/DragField.h>
 
 namespace godot {
+/**
+ * @brief Force field that simulates drag.
+ *
+ * Drag fields slow down particles mimicking the effects of drag.
+ */
 class PixelpartDragField : public PixelpartForceField {
 	GDCLASS(PixelpartDragField, PixelpartForceField)
 
@@ -15,7 +20,18 @@ public:
 
 	virtual void init(pixelpart::Node* internalNode, pixelpart::EffectEngine* effectEnginePtr) override;
 
+	/**
+	 * @brief How strongly the drag force is influenced by the particle velocity.
+	 *
+	 * @return Velocity influence property
+	 */
 	Ref<PixelpartStaticPropertyFloat> get_velocity_influence() const;
+
+	/**
+	 * @brief How strongly the drag force is influenced by the particle size.
+	 *
+	 * @return Size influence property
+	 */
 	Ref<PixelpartStaticPropertyFloat> get_size_influence() const;
 
 protected:

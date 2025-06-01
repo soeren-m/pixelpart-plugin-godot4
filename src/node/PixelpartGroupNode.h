@@ -4,6 +4,12 @@
 #include "PixelpartNode.h"
 
 namespace godot {
+/**
+ * @brief Node that acts as a parent node for other nodes.
+ *
+ * Group nodes are nodes with no function other than containing other nodes
+ * like emitters and force fields.
+ */
 class PixelpartGroupNode : public PixelpartNode {
 	GDCLASS(PixelpartGroupNode, PixelpartNode)
 

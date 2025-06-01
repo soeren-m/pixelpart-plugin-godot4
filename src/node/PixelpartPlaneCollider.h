@@ -4,6 +4,10 @@
 #include "PixelpartCollider.h"
 
 namespace godot {
+/**
+ * @brief Collider consisting of a single line (2D) or plane (3D) particles collide with.
+ *
+ */
 class PixelpartPlaneCollider : public PixelpartCollider {
 	GDCLASS(PixelpartPlaneCollider, PixelpartCollider)
 

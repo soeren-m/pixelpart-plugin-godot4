@@ -1,6 +1,7 @@
 # Directories
 /bin/*
 /build/*
+/docs/html/*
 /.venv/*
 /.vscode/*
 

@@ -4,6 +4,10 @@
 #include "PixelpartLightSource.h"
 
 namespace godot {
+/**
+ * @brief Light source used to model light coming from a single point emitting light in all directions.
+ *
+ */
 class PixelpartPointLightSource : public PixelpartLightSource {
 	GDCLASS(PixelpartPointLightSource, PixelpartLightSource)
 
