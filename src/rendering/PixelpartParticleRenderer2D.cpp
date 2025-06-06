@@ -2,6 +2,7 @@
 #include "../util/PixelpartUtil.h"
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <pixelpart-runtime/common/Transform.h>
 #include <pixelpart-runtime/common/VariantParameter.h>
 #include <pixelpart-runtime/effect/MaterialResource.h>
 #include <pixelpart-runtime/shadergraph/ShaderGraph.h>
@@ -167,7 +168,9 @@ void PixelpartParticleRenderer2D::add_particle_sprites(
 		return;
 	}
 
-	pixelpart::float_t alpha = particleEmitter.life(runtimeContext);
+	pixelpart::Transform emitterTransform = effect.sceneGraph().globalTransform(particleEmitter.id(), runtimeContext);
+	pixelpart::float3_t emitterPosition = emitterTransform.position();
+	pixelpart::mat3_t emitterRotationMatrix = rotation_3d(emitterTransform.rotation());
 
 	indexArray.resize(particleCount * 6);
 	vertexArray.resize(particleCount * 4);
@@ -201,7 +204,7 @@ void PixelpartParticleRenderer2D::add_particle_sprites(
 				break;
 			}
 			case pixelpart::AlignmentMode::emission: {
-				pixelpart::float3_t emissionDirection = particleEmitter.position().at(alpha) - particles.globalPosition[p];
+				pixelpart::float3_t emissionDirection = emitterPosition - particles.globalPosition[p];
 				pixelpart::float_t angle = glm::degrees(glm::orientedAngle(pixelpart::float2_t(0.0, 1.0), (emissionDirection != pixelpart::float3_t(0.0))
 					? pixelpart::float2_t(glm::normalize(emissionDirection))
 					: pixelpart::float2_t(0.0, 1.0)));
@@ -213,11 +216,10 @@ void PixelpartParticleRenderer2D::add_particle_sprites(
 			}
 			case pixelpart::AlignmentMode::emitter: {
 				pixelpart::mat3_t rotationMatrix = rotation_3d(particles.rotation[p]);
-				pixelpart::mat3_t alignmentMatrix = rotation_3d(particleEmitter.rotation().at(alpha));
-				worldPosition[0] = particles.globalPosition[p] + alignmentMatrix * (rotationMatrix * (pixelpart::float3_t(-0.5, -0.5, 0.0) * particles.size[p] - particleType.pivot().value() * particles.size[p]) + particleType.pivot().value() * particles.size[p]);
-				worldPosition[1] = particles.globalPosition[p] + alignmentMatrix * (rotationMatrix * (pixelpart::float3_t(-0.5, +0.5, 0.0) * particles.size[p] - particleType.pivot().value() * particles.size[p]) + particleType.pivot().value() * particles.size[p]);
-				worldPosition[2] = particles.globalPosition[p] + alignmentMatrix * (rotationMatrix * (pixelpart::float3_t(+0.5, +0.5, 0.0) * particles.size[p] - particleType.pivot().value() * particles.size[p]) + particleType.pivot().value() * particles.size[p]);
-				worldPosition[3] = particles.globalPosition[p] + alignmentMatrix * (rotationMatrix * (pixelpart::float3_t(+0.5, -0.5, 0.0) * particles.size[p] - particleType.pivot().value() * particles.size[p]) + particleType.pivot().value() * particles.size[p]);
+				worldPosition[0] = particles.globalPosition[p] + emitterRotationMatrix * (rotationMatrix * (pixelpart::float3_t(-0.5, -0.5, 0.0) * particles.size[p] - particleType.pivot().value() * particles.size[p]) + particleType.pivot().value() * particles.size[p]);
+				worldPosition[1] = particles.globalPosition[p] + emitterRotationMatrix * (rotationMatrix * (pixelpart::float3_t(-0.5, +0.5, 0.0) * particles.size[p] - particleType.pivot().value() * particles.size[p]) + particleType.pivot().value() * particles.size[p]);
+				worldPosition[2] = particles.globalPosition[p] + emitterRotationMatrix * (rotationMatrix * (pixelpart::float3_t(+0.5, +0.5, 0.0) * particles.size[p] - particleType.pivot().value() * particles.size[p]) + particleType.pivot().value() * particles.size[p]);
+				worldPosition[3] = particles.globalPosition[p] + emitterRotationMatrix * (rotationMatrix * (pixelpart::float3_t(+0.5, -0.5, 0.0) * particles.size[p] - particleType.pivot().value() * particles.size[p]) + particleType.pivot().value() * particles.size[p]);
 				break;
 			}
 			default: {

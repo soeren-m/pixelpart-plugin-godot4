@@ -5,6 +5,7 @@
 #include <godot_cpp/classes/world3d.hpp>
 #include <godot_cpp/classes/viewport.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <pixelpart-runtime/common/Transform.h>
 #include <pixelpart-runtime/common/VariantParameter.h>
 #include <pixelpart-runtime/effect/MaterialResource.h>
 #include <pixelpart-runtime/shadergraph/ShaderGraph.h>
@@ -229,8 +230,6 @@ void PixelpartParticleRenderer3D::add_particle_sprites(VisualInstance3D* parentN
 		return;
 	}
 
-	pixelpart::float_t alpha = particleEmitter.life(runtimeContext);
-
 	Camera3D* camera = parentNode->get_viewport()->get_camera_3d();
 	if(!camera) {
 		return;
@@ -244,6 +243,10 @@ void PixelpartParticleRenderer3D::add_particle_sprites(VisualInstance3D* parentN
 	pixelpart::float3_t cameraPosition = gd_to_pxpt(camera->get_global_transform().origin - parentNode->get_global_position());
 	pixelpart::float3_t cameraRight = gd_to_pxpt(camera->get_global_transform().basis.get_column(0));
 	pixelpart::float3_t cameraUp = gd_to_pxpt(camera->get_global_transform().basis.get_column(1));
+
+	pixelpart::Transform emitterTransform = effect.sceneGraph().globalTransform(particleEmitter.id(), runtimeContext);
+	pixelpart::float3_t emitterPosition = emitterTransform.position();
+	pixelpart::mat3_t emitterRotationMatrix = rotation_3d(emitterTransform.rotation());
 
 	indexArray.resize(particleCount * 6);
 	vertexArray.resize(particleCount * 4);
@@ -294,7 +297,7 @@ void PixelpartParticleRenderer3D::add_particle_sprites(VisualInstance3D* parentN
 				break;
 			}
 			case pixelpart::AlignmentMode::emission: {
-				pixelpart::mat3_t lookAtMatrix = look_at(particleEmitter.position().at(alpha) - particleRenderData.globalPosition[p]);
+				pixelpart::mat3_t lookAtMatrix = look_at(emitterPosition - particleRenderData.globalPosition[p]);
 				position[0] = particleRenderData.globalPosition[p] + lookAtMatrix * position[0];
 				position[1] = particleRenderData.globalPosition[p] + lookAtMatrix * position[1];
 				position[2] = particleRenderData.globalPosition[p] + lookAtMatrix * position[2];
@@ -303,12 +306,11 @@ void PixelpartParticleRenderer3D::add_particle_sprites(VisualInstance3D* parentN
 				break;
 			}
 			case pixelpart::AlignmentMode::emitter: {
-				pixelpart::mat3_t lookAtMatrix = rotation_3d(particleEmitter.rotation().at(alpha));
-				position[0] = particleRenderData.globalPosition[p] + lookAtMatrix * position[0];
-				position[1] = particleRenderData.globalPosition[p] + lookAtMatrix * position[1];
-				position[2] = particleRenderData.globalPosition[p] + lookAtMatrix * position[2];
-				position[3] = particleRenderData.globalPosition[p] + lookAtMatrix * position[3];
-				normal = lookAtMatrix * normal;
+				position[0] = particleRenderData.globalPosition[p] + emitterRotationMatrix * position[0];
+				position[1] = particleRenderData.globalPosition[p] + emitterRotationMatrix * position[1];
+				position[2] = particleRenderData.globalPosition[p] + emitterRotationMatrix * position[2];
+				position[3] = particleRenderData.globalPosition[p] + emitterRotationMatrix * position[3];
+				normal = emitterRotationMatrix * normal;
 				break;
 			}
 			default: {
@@ -778,9 +780,9 @@ void PixelpartParticleRenderer3D::add_particle_meshes(VisualInstance3D* parentNo
 	pixelpart::ParticleCollection::ReadPtr particleRenderData =
 		sort_particles(particles, particleCount, particleType.meshRendererSettings().sortCriterion, parentNode, camera);
 
-	pixelpart::float_t alpha = particleEmitter.life(runtimeContext);
-	pixelpart::float3_t emitterPosition = particleEmitter.position().at(alpha);
-	pixelpart::mat4_t emitterRotationMatrix = pixelpart::mat4_t(rotation_3d(particleEmitter.rotation().at(alpha)));
+	pixelpart::Transform emitterTransform = effect.sceneGraph().globalTransform(particleEmitter.id(), runtimeContext);
+	pixelpart::float3_t emitterPosition = emitterTransform.position();
+	pixelpart::mat4_t emitterRotationMatrix = pixelpart::mat4_t(rotation_3d(emitterTransform.rotation()));
 
 	instanceDataArray.resize(particleCount * 20);
 	float* instanceData = instanceDataArray.ptrw();
