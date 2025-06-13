@@ -183,8 +183,7 @@ void PixelpartParticleRenderer3D::draw(VisualInstance3D* parentNode,
 	rs->instance_set_scenario(instanceRID, parentNode->get_world_3d()->get_scenario());
 	rs->instance_set_layer_mask(instanceRID, parentNode->get_layer_mask());
 	rs->instance_set_pivot_data(instanceRID,
-		parentNode->get_sorting_offset() + static_cast<double>(particleType.layer()) * 0.01,
-		parentNode->is_sorting_use_aabb_center());
+		parentNode->get_sorting_offset() + static_cast<double>(particleType.layer()) * 0.01, false);
 
 	switch(particleType.renderer()) {
 		case pixelpart::ParticleRendererType::sprite:
