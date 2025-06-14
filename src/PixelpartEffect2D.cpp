@@ -310,7 +310,7 @@ void PixelpartEffect2D::update_transform() {
 
 	pixelpart::float2_t globalPosition = gd_to_pxpt(get_global_transform().get_origin()) / scale;
 	pixelpart::float_t globalRotation = gd_to_pxpt(get_global_transform().get_rotation()) / Math_PI * 180.0;
-	pixelpart::float2_t globalScale = gd_to_pxpt(get_global_transform().get_scale()) / scale;
+	pixelpart::float2_t globalScale = gd_to_pxpt(get_global_transform().get_scale());
 
 	for(const std::unique_ptr<pixelpart::Node>& node : effectRuntime.get_effect().sceneGraph().nodes()) {
 		if(node->parentId()) {
