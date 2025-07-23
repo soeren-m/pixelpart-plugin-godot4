@@ -33,9 +33,14 @@ target_ext = env["SHLIBSUFFIX"]
 if env["platform"] == "ios":
     target_ext = ".a"
 
+# Additional identifier for web build
+additional_identifier = ""
+if env["platform"] == "web":
+    additional_identifier = ".threads" if env["threads"] else ".nothreads"
+
 # Target file path
-target_path = "pixelpart-plugin/addons/pixelpart/bin/libpixelpart.{}-{}{}".format(
-    env["platform"], env["arch"], target_ext)
+target_path = "pixelpart-plugin/addons/pixelpart/bin/libpixelpart.{}-{}{}{}".format(
+    env["platform"], env["arch"], additional_identifier, target_ext)
 
 # Disable multi-threading in web build
 if env["platform"] != "web":
