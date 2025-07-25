@@ -33,10 +33,12 @@ target_ext = env["SHLIBSUFFIX"]
 if env["platform"] == "ios":
     target_ext = ".a"
 
-# Additional identifier for web build
+# Additional identifier
 additional_identifier = ""
 if env["platform"] == "web":
     additional_identifier = ".threads" if env["threads"] else ".nothreads"
+elif env["platform"] == "ios":
+    additional_identifier = ".simulator" if env["ios_simulator"] else ""
 
 # Target file path
 target_path = "pixelpart-plugin/addons/pixelpart/bin/libpixelpart.{}-{}{}{}".format(

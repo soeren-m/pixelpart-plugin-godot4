@@ -22,6 +22,14 @@ jobs:
     name: macOS build
     uses: ./.github/workflows/macos_build.yml
 
+  ios-build:
+    name: iOS build
+    uses: ./.github/workflows/ios_build.yml
+
+  android-build:
+    name: Android build
+    uses: ./.github/workflows/android_build.yml
+
   web-build:
     name: Web build
     uses: ./.github/workflows/web_build.yml
@@ -29,7 +37,7 @@ jobs:
   package:
     name: Package plugin
     runs-on: ubuntu-22.04
-    needs: [windows-build, linux-build, macos-build, web-build]
+    needs: [windows-build, linux-build, macos-build, ios-build, android-build, web-build]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -52,6 +60,18 @@ jobs:
           name: pixelpart-macos
           path: artifacts
 
+      - name: Download iOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pixelpart-ios
+          path: artifacts
+
+      - name: Download Android artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pixelpart-android
+          path: artifacts
+
       - name: Download web artifacts
         uses: actions/download-artifact@v4
         with:
@@ -67,6 +87,7 @@ jobs:
           cp -r artifacts/*.dll ./pixelpart-plugin/addons/pixelpart/bin/
           cp -r artifacts/*.so ./pixelpart-plugin/addons/pixelpart/bin/
           cp -r artifacts/*.dylib ./pixelpart-plugin/addons/pixelpart/bin/
+          cp -r artifacts/*.xcframework ./pixelpart-plugin/addons/pixelpart/bin/
           cp -r artifacts/*.wasm ./pixelpart-plugin/addons/pixelpart/bin/
 
       - name: Upload artifact
