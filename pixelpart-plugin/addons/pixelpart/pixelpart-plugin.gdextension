@@ -10,10 +10,18 @@ PixelpartEffect = "res://addons/pixelpart/pixelpart_node3d.svg"
 
 [libraries]
 
-linux.x86_64 = "res://addons/pixelpart/bin/libpixelpart.linux-x86_64.so"
-linux.x86_32 = "res://addons/pixelpart/bin/libpixelpart.linux-x86_32.so"
 windows.x86_64 = "res://addons/pixelpart/bin/libpixelpart.windows-x86_64.dll"
 windows.x86_32 = "res://addons/pixelpart/bin/libpixelpart.windows-x86_32.dll"
+linux.x86_64 = "res://addons/pixelpart/bin/libpixelpart.linux-x86_64.so"
+linux.x86_32 = "res://addons/pixelpart/bin/libpixelpart.linux-x86_32.so"
 macos = "res://addons/pixelpart/bin/libpixelpart.macos-universal.dylib"
+ios = "res://addons/pixelpart/bin/libpixelpart.ios.xcframework"
+android.arm64 = "res://addons/pixelpart/bin/libpixelpart.android-arm64.so"
+android.arm32 = "res://addons/pixelpart/bin/libpixelpart.android-arm32.so"
+android.x86_64 = "res://addons/pixelpart/bin/libpixelpart.android-x86_64.so"
+android.x86_32 = "res://addons/pixelpart/bin/libpixelpart.android-x86_32.so"
 web.wasm32 = "res://addons/pixelpart/bin/libpixelpart.web-wasm32.threads.wasm"
 web.wasm32.nothreads = "res://addons/pixelpart/bin/libpixelpart.web-wasm32.nothreads.wasm"
+
+[dependencies]
+ios = {"res://addons/pixelpart/bin/libgodot-cpp.ios.xcframework": ""}
