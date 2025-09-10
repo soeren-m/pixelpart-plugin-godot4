@@ -16,7 +16,7 @@ PixelpartEffectRuntime::PixelpartEffectRuntime() {
 	ProjectSettings* settings = ProjectSettings::get_singleton();
 
 	if(settings->has_setting("pixelpart/particle_capacity")) {
-		particleCapacity = static_cast<uint32_t>(
+		particleCapacity = static_cast<std::uint32_t>(
 			std::max(static_cast<int>(settings->get_setting("pixelpart/particle_capacity")), 1));
 	}
 }
@@ -255,9 +255,9 @@ void PixelpartEffectRuntime::spawn_particles(String particleEmitterName, String 
 	}
 
 	effectEngine->spawnParticles(
-		pixelpart::id_t(static_cast<uint32_t>(particleEmitter->get_id())),
-		pixelpart::id_t(static_cast<uint32_t>(particleType->get_id())),
-		static_cast<uint32_t>(count));
+		pixelpart::id_t(static_cast<std::uint32_t>(particleEmitter->get_id())),
+		pixelpart::id_t(static_cast<std::uint32_t>(particleType->get_id())),
+		static_cast<std::uint32_t>(count));
 }
 
 Ref<PixelpartNode> PixelpartEffectRuntime::find_node(String name) const {
@@ -271,11 +271,11 @@ Ref<PixelpartNode> PixelpartEffectRuntime::find_node(String name) const {
 	return nodeRefs.at(nameStdString);
 }
 Ref<PixelpartNode> PixelpartEffectRuntime::get_node(int id) const {
-	if(id < 0 || !effect.sceneGraph().contains(pixelpart::id_t(static_cast<uint32_t>(id)))) {
+	if(id < 0 || !effect.sceneGraph().contains(pixelpart::id_t(static_cast<std::uint32_t>(id)))) {
 		return Ref<PixelpartNode>();
 	}
 
-	std::string name = effect.sceneGraph().at(pixelpart::id_t(static_cast<uint32_t>(id))).name();
+	std::string name = effect.sceneGraph().at(pixelpart::id_t(static_cast<std::uint32_t>(id))).name();
 	if(nodeRefs.count(name) == 0) {
 		return Ref<PixelpartNode>();
 	}
@@ -283,11 +283,11 @@ Ref<PixelpartNode> PixelpartEffectRuntime::get_node(int id) const {
 	return nodeRefs.at(name);
 }
 Ref<PixelpartNode> PixelpartEffectRuntime::get_node_at_index(int index) const {
-	if(index < 0 || !effect.sceneGraph().containsIndex(static_cast<uint32_t>(index))) {
+	if(index < 0 || !effect.sceneGraph().containsIndex(static_cast<std::uint32_t>(index))) {
 		return Ref<PixelpartNode>();
 	}
 
-	std::string name = effect.sceneGraph().atIndex(static_cast<uint32_t>(index)).name();
+	std::string name = effect.sceneGraph().atIndex(static_cast<std::uint32_t>(index)).name();
 	if(nodeRefs.count(name) == 0) {
 		return Ref<PixelpartNode>();
 	}
@@ -306,11 +306,11 @@ Ref<PixelpartParticleType> PixelpartEffectRuntime::find_particle_type(String nam
 	return particleTypeRefs.at(nameStdString);
 }
 Ref<PixelpartParticleType> PixelpartEffectRuntime::get_particle_type(int id) const {
-	if(id < 0 || !effect.particleTypes().contains(pixelpart::id_t(static_cast<uint32_t>(id)))) {
+	if(id < 0 || !effect.particleTypes().contains(pixelpart::id_t(static_cast<std::uint32_t>(id)))) {
 		return Ref<PixelpartParticleType>();
 	}
 
-	std::string name = effect.particleTypes().at(pixelpart::id_t(static_cast<uint32_t>(id))).name();
+	std::string name = effect.particleTypes().at(pixelpart::id_t(static_cast<std::uint32_t>(id))).name();
 	if(particleTypeRefs.count(name) == 0) {
 		return Ref<PixelpartParticleType>();
 	}
@@ -318,11 +318,11 @@ Ref<PixelpartParticleType> PixelpartEffectRuntime::get_particle_type(int id) con
 	return particleTypeRefs.at(name);
 }
 Ref<PixelpartParticleType> PixelpartEffectRuntime::get_particle_type_at_index(int index) const {
-	if(index < 0 || !effect.particleTypes().containsIndex(static_cast<uint32_t>(index))) {
+	if(index < 0 || !effect.particleTypes().containsIndex(static_cast<std::uint32_t>(index))) {
 		return Ref<PixelpartParticleType>();
 	}
 
-	std::string name = effect.particleTypes().atIndex(static_cast<uint32_t>(index)).name();
+	std::string name = effect.particleTypes().atIndex(static_cast<std::uint32_t>(index)).name();
 	if(particleTypeRefs.count(name) == 0) {
 		return Ref<PixelpartParticleType>();
 	}

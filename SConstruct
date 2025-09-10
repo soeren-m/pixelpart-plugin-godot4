@@ -22,10 +22,9 @@ add_sources(sources, "src/rendering", ".cpp")
 add_sources(sources, "src/util", ".cpp")
 add_sources(sources, "pixelpart-runtime/asset", ".cpp")
 add_sources(sources, "pixelpart-runtime/common", ".cpp")
-add_sources(sources, "pixelpart-runtime/computegraph", ".cpp")
 add_sources(sources, "pixelpart-runtime/effect", ".cpp")
 add_sources(sources, "pixelpart-runtime/engine", ".cpp")
-add_sources(sources, "pixelpart-runtime/shadergraph", ".cpp")
+add_sources(sources, "pixelpart-runtime/vertex", ".cpp")
 add_sources(sources, "pixelpart-runtime/zlib", ".c")
 
 # Target file extension
@@ -48,7 +47,7 @@ target_path = "pixelpart-plugin/addons/pixelpart/bin/libpixelpart.{}-{}{}{}".for
 if env["platform"] != "web":
     env.Append(CPPFLAGS=["-DPIXELPART_RUNTIME_MULTITHREADING"])
 
-# Fix for zlib
+# Zlib
 if env["platform"] != "windows":
     env.Append(CFLAGS=["-DHAVE_UNISTD_H"])
 

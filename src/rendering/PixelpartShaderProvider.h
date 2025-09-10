@@ -8,7 +8,7 @@
 #include <pixelpart-runtime/effect/ParticleRendererType.h>
 #include <pixelpart-runtime/effect/BlendMode.h>
 #include <pixelpart-runtime/effect/LightingMode.h>
-#include <pixelpart-runtime/shadergraph/ShaderGraph.h>
+#include <pixelpart-runtime/effect/ShaderGraph.h>
 #include <string>
 #include <vector>
 #include <unordered_map>

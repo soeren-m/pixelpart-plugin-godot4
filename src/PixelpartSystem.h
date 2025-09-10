@@ -3,6 +3,7 @@
 
 #include "rendering/PixelpartShaderProvider.h"
 #include <pixelpart-runtime/common/ThreadPool.h>
+#include <memory>
 
 namespace godot {
 class PixelpartSystem final {

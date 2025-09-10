@@ -56,9 +56,9 @@ void PixelpartAccelerationField::set_acceleration_grid_size(int x, int y, int z)
 	}
 
 	accelerationField->accelerationGrid(
-		static_cast<int32_t>(std::max(x, 1)),
-		static_cast<int32_t>(std::max(y, 1)),
-		static_cast<int32_t>(std::max(z, 1)));
+		static_cast<std::int32_t>(std::max(x, 1)),
+		static_cast<std::int32_t>(std::max(y, 1)),
+		static_cast<std::int32_t>(std::max(z, 1)));
 	accelerationField->randomizeAccelerationGrid(rng);
 }
 int PixelpartAccelerationField::get_acceleration_grid_size_x() const {

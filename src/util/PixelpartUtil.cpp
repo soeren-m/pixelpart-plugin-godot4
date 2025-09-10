@@ -62,7 +62,7 @@ pixelpart::VariantValue gd_to_pxpt(const Variant& v) {
 		case Variant::BOOL:
 			return pixelpart::VariantValue::Bool(static_cast<bool>(v));
 		case Variant::INT:
-			return pixelpart::VariantValue::Int(static_cast<int64_t>(v));
+			return pixelpart::VariantValue::Int(static_cast<std::int64_t>(v));
 		case Variant::FLOAT:
 			return pixelpart::VariantValue::Float(static_cast<double>(v));
 		case Variant::VECTOR2:
@@ -76,9 +76,5 @@ pixelpart::VariantValue gd_to_pxpt(const Variant& v) {
 		default:
 			return pixelpart::VariantValue();
 	}
-}
-
-float pack_uint_float(unsigned int a, float b, float s) {
-	return static_cast<float>(a) + b * s;
 }
 }

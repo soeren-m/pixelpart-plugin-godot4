@@ -47,13 +47,13 @@ void PixelpartGraphicsResourceProvider::load_texture(const std::string& name, co
 	}
 
 	PackedByteArray imageData;
-	imageData.resize(static_cast<int64_t>(imageResource.data().size()));
+	imageData.resize(static_cast<std::int64_t>(imageResource.data().size()));
 
 	std::memcpy(imageData.ptrw(), imageResource.data().data(), imageResource.data().size());
 
 	Ref<Image> image = Image::create_from_data(
-		static_cast<int32_t>(imageResource.width()),
-		static_cast<int32_t>(imageResource.height()),
+		static_cast<std::int32_t>(imageResource.width()),
+		static_cast<std::int32_t>(imageResource.height()),
 		false, imageFormat, imageData);
 
 	if(convertToLinear && imageResource.colorSpace() == pixelpart::ColorSpace::srgb) {
@@ -72,9 +72,9 @@ void PixelpartGraphicsResourceProvider::load_mesh(const std::string& name, const
 	normalArray.resize(meshResource.normals().size());
 	uvArray.resize(meshResource.textureCoords().size());
 
-	int32_t* indices = indexArray.ptrw();
+	std::int32_t* indices = indexArray.ptrw();
 	for(std::size_t index = 0; index < meshResource.faces().size(); index++) {
-		indices[index] = static_cast<int32_t>(meshResource.faces()[index]);
+		indices[index] = static_cast<std::int32_t>(meshResource.faces()[index]);
 	}
 
 	std::memcpy(vertexArray.ptrw(), meshResource.positions().data(), meshResource.positions().size() * sizeof(glm::vec3));

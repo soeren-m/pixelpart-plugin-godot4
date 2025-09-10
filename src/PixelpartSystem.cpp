@@ -1,7 +1,7 @@
 #include "PixelpartSystem.h"
 #include "shaders/PixelpartShaderLanguage.h"
-#include <pixelpart-runtime/computegraph/ComputeGraph.h>
-#include <pixelpart-runtime/shadergraph/ShaderGraph.h>
+#include <pixelpart-runtime/effect/ComputeGraph.h>
+#include <pixelpart-runtime/effect/ShaderGraph.h>
 #include <pixelpart-runtime/json/json.hpp>
 
 namespace godot {

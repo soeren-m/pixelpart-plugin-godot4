@@ -112,9 +112,9 @@ void PixelpartParticleEmitter::set_grid_size(int x, int y, int z) {
 	}
 
 	particleEmitter->gridSize(
-		static_cast<uint32_t>(x),
-		static_cast<uint32_t>(y),
-		static_cast<uint32_t>(z));
+		static_cast<std::uint32_t>(x),
+		static_cast<std::uint32_t>(y),
+		static_cast<std::uint32_t>(z));
 }
 int PixelpartParticleEmitter::get_grid_size_x() const {
 	return particleEmitter ? static_cast<int>(particleEmitter->gridSizeX()) : 0;

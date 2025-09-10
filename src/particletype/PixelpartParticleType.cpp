@@ -102,7 +102,7 @@ void PixelpartParticleType::set_layer(int layer) {
 		return;
 	}
 
-	particleType->layer(static_cast<uint32_t>(std::max(layer, 0)));
+	particleType->layer(static_cast<std::uint32_t>(std::max(layer, 0)));
 }
 int PixelpartParticleType::get_layer() const {
 	return particleType ? static_cast<int>(particleType->layer()) : 0;

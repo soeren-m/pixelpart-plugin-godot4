@@ -79,7 +79,7 @@ private:
 	Dictionary inputValues;
 
 	std::unique_ptr<pixelpart::EffectEngine> effectEngine;
-	uint32_t particleCapacity = 10000;
+	std::uint32_t particleCapacity = 10000;
 	float simulationTime = 0.0f;
 
 	std::unordered_map<std::string, Ref<PixelpartNode>> nodeRefs;
