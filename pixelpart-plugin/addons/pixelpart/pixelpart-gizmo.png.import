@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cafq0f3npkp1v"
-path.s3tc="res://.godot/imported/pixelpart_gizmo_icon.png-a87ac7fdb9abeedc656ac79e6a72edfa.s3tc.ctex"
+path.s3tc="res://.godot/imported/pixelpart-gizmo.png-a3231a9a05449ff07526150c969480ec.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://addons/pixelpart/pixelpart_gizmo_icon.png"
-dest_files=["res://.godot/imported/pixelpart_gizmo_icon.png-a87ac7fdb9abeedc656ac79e6a72edfa.s3tc.ctex"]
+source_file="res://addons/pixelpart/pixelpart-gizmo.png"
+dest_files=["res://.godot/imported/pixelpart-gizmo.png-a3231a9a05449ff07526150c969480ec.s3tc.ctex"]
 
 [params]
 
