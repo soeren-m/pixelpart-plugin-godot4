@@ -6,6 +6,15 @@
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/viewport.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <pixelpart-runtime/common/Types.h>
+#include <pixelpart-runtime/common/Math.h>
+#include <pixelpart-runtime/common/Transform.h>
+#include <pixelpart-runtime/common/Curve.h>
+#include <pixelpart-runtime/common/VariantValue.h>
+#include <pixelpart-runtime/effect/Effect.h>
+#include <pixelpart-runtime/effect/ParticleType.h>
+#include <pixelpart-runtime/engine/EffectEngine.h>
+#include <pixelpart-runtime/engine/ParticleCollection.h>
 #include <vector>
 #include <algorithm>
 
@@ -56,29 +65,30 @@ void PixelpartEffect::draw() {
 	const pixelpart::Effect& effect = effectRuntime.get_effect();
 	const pixelpart::EffectEngine* effectEngine = effectRuntime.get_effect_engine();
 
-	std::vector<pixelpart::ParticleRuntimeId> sortedParticleRuntimeInstances = effect.particleRuntimeIds();
-	std::sort(sortedParticleRuntimeInstances.begin(), sortedParticleRuntimeInstances.end(),
-		[this, &effect](const pixelpart::ParticleRuntimeId& p1, const pixelpart::ParticleRuntimeId& p2) {
+	std::vector<pixelpart::ParticleEmissionPair> emissionPairsSortedByLayer = effect.particleEmissionPairs();
+	std::sort(emissionPairsSortedByLayer.begin(), emissionPairsSortedByLayer.end(),
+		[this, &effect](const pixelpart::ParticleEmissionPair& p1, const pixelpart::ParticleEmissionPair& p2) {
 			const pixelpart::ParticleType& pt1 = effect.particleTypes().at(p1.typeId);
 			const pixelpart::ParticleType& pt2 = effect.particleTypes().at(p2.typeId);
 
 			return pt1.layer() < pt2.layer();
 		});
 
-	for(const pixelpart::ParticleRuntimeId& runtimeId : sortedParticleRuntimeInstances) {
-		if(particleRenderers.count(runtimeId) == 0) {
+	for(const pixelpart::ParticleEmissionPair& emissionPair : emissionPairsSortedByLayer) {
+		if(particleRenderers.count(emissionPair) == 0) {
 			continue;
 		}
 
-		const pixelpart::ParticleCollection* particleCollection = effectEngine->particles(runtimeId.emitterId, runtimeId.typeId);
+		const pixelpart::ParticleCollection* particleCollection =
+			effectEngine->state().particleCollection(emissionPair.emitterId, emissionPair.typeId);
 		if(!particleCollection) {
 			continue;
 		}
 
-		particleRenderers.at(runtimeId)->draw(this,
+		particleRenderers.at(emissionPair)->draw(this,
 			particleCollection->readPtr(),
-			effectEngine->particleCount(runtimeId.emitterId, runtimeId.typeId),
-			effectEngine->runtimeContext(),
+			particleCollection->count(),
+			effectEngine->context(),
 			static_cast<pixelpart::float_t>(effectScale));
 	}
 }
@@ -102,13 +112,13 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> resource) {
 	try {
 		graphicsResourceProvider.load(effectRuntime.get_effect());
 
-		for(const pixelpart::ParticleRuntimeId& runtimeId : effectRuntime.get_effect().particleRuntimeIds()) {
-			particleRenderers[runtimeId] = std::unique_ptr<PixelpartParticleRenderer3D>(new PixelpartParticleRenderer3D(
+		for(const pixelpart::ParticleEmissionPair& emissionPair : effectRuntime.get_effect().particleEmissionPairs()) {
+			particleRenderers[emissionPair] = std::unique_ptr<PixelpartParticleRenderer3D>(new PixelpartParticleRenderer3D(
 				graphicsResourceProvider,
 				PixelpartSystem::get_instance()->get_shader_provider(),
 				effectRuntime.get_effect(),
-				runtimeId.emitterId,
-				runtimeId.typeId));
+				emissionPair.emitterId,
+				emissionPair.typeId));
 		}
 	}
 	catch(const std::exception& e) {

@@ -9,19 +9,18 @@
 #include <godot_cpp/classes/shader.hpp>
 #include <godot_cpp/classes/shader_material.hpp>
 #include <godot_cpp/classes/camera3d.hpp>
+#include <pixelpart-runtime/common/Types.h>
 #include <pixelpart-runtime/common/Math.h>
 #include <pixelpart-runtime/common/Id.h>
 #include <pixelpart-runtime/effect/Effect.h>
-#include <pixelpart-runtime/effect/ParticleEmitter.h>
-#include <pixelpart-runtime/effect/ParticleType.h>
-#include <pixelpart-runtime/effect/RuntimeContext.h>
+#include <pixelpart-runtime/effect/EffectRuntimeContext.h>
 #include <pixelpart-runtime/engine/ParticleCollection.h>
 #include <pixelpart-runtime/vertex/ParticleVertexGenerator.h>
+#include <memory>
 #include <cstdint>
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <memory>
 
 namespace godot {
 class PixelpartParticleRenderer3D {
@@ -35,7 +34,7 @@ public:
 
 	void draw(VisualInstance3D* parentNode,
 		pixelpart::ParticleCollection::ReadPtr particles, std::uint32_t particleCount,
-		const pixelpart::RuntimeContext& runtimeContext, pixelpart::float_t scale);
+		const pixelpart::EffectRuntimeContext& runtimeContext, pixelpart::float_t scale);
 
 private:
 	static float pack_int_float(float a, float b, float s);

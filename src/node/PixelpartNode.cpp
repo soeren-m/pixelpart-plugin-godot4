@@ -72,14 +72,14 @@ bool PixelpartNode::is_active() const {
 		return false;
 	}
 
-	return node->active(effectEngine->runtimeContext());
+	return node->active(effectEngine->context());
 }
 float PixelpartNode::get_local_time() const {
 	if(!node || !effectEngine) {
 		return 0.0f;
 	}
 
-	return static_cast<float>(node->life(effectEngine->runtimeContext()));
+	return static_cast<float>(node->life(effectEngine->context()));
 }
 
 Ref<PixelpartAnimatedPropertyFloat3> PixelpartNode::get_position() const {

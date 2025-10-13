@@ -26,7 +26,7 @@ public:
 	void advance(double dt);
 
 	void play(bool mode);
-	void restart(bool reset);
+	void restart(bool clear);
 	bool is_playing() const;
 	float get_time() const;
 

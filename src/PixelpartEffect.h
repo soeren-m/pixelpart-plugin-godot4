@@ -9,7 +9,7 @@
 #include "node/PixelpartParticleEmitter.h"
 #include "node/PixelpartForceField.h"
 #include "node/PixelpartCollider.h"
-#include <pixelpart-runtime/effect/ParticleRuntimeId.h>
+#include <pixelpart-runtime/effect/ParticleEmissionPair.h>
 #include <godot_cpp/core/binder_common.hpp>
 #include <godot_cpp/classes/visual_instance3d.hpp>
 #include <memory>
@@ -539,7 +539,7 @@ private:
 	float effectScale = 1.0f;
 
 	PixelpartGraphicsResourceProvider graphicsResourceProvider;
-	std::unordered_map<pixelpart::ParticleRuntimeId, std::unique_ptr<PixelpartParticleRenderer3D>> particleRenderers;
+	std::unordered_map<pixelpart::ParticleEmissionPair, std::unique_ptr<PixelpartParticleRenderer3D>> particleRenderers;
 };
 }
 

@@ -7,6 +7,14 @@
 #include <pixelpart-runtime/common/VariantParameter.h>
 #include <pixelpart-runtime/effect/MaterialResource.h>
 #include <pixelpart-runtime/effect/ShaderGraph.h>
+#include <pixelpart-runtime/effect/ParticleEmitter.h>
+#include <pixelpart-runtime/effect/ParticleType.h>
+#include <pixelpart-runtime/effect/ParticleRendererType.h>
+#include <pixelpart-runtime/vertex/VertexFormat.h>
+#include <pixelpart-runtime/vertex/VertexAttribute.h>
+#include <pixelpart-runtime/vertex/VertexDataBufferDimensions.h>
+#include <pixelpart-runtime/vertex/VertexDataBufferCollection.h>
+#include <pixelpart-runtime/vertex/SceneContext.h>
 #include <cmath>
 #include <algorithm>
 
@@ -133,7 +141,7 @@ PixelpartParticleRenderer3D::~PixelpartParticleRenderer3D() {
 
 void PixelpartParticleRenderer3D::draw(VisualInstance3D* parentNode,
 	pixelpart::ParticleCollection::ReadPtr particles, std::uint32_t particleCount,
-	const pixelpart::RuntimeContext& runtimeContext, pixelpart::float_t scale) {
+	const pixelpart::EffectRuntimeContext& runtimeContext, pixelpart::float_t scale) {
 	const pixelpart::ParticleEmitter& particleEmitter = effect.sceneGraph().at<pixelpart::ParticleEmitter>(particleEmitterId);
 	const pixelpart::ParticleType& particleType = effect.particleTypes().at(particleTypeId);
 

@@ -7,8 +7,11 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <pixelpart-runtime/common/Math.h>
 #include <pixelpart-runtime/common/Id.h>
+#include <pixelpart-runtime/effect/EffectRuntimeContext.h>
 #include <pixelpart-runtime/engine/SingleThreadedEffectEngine.h>
 #include <pixelpart-runtime/engine/MultiThreadedEffectEngine.h>
+#include <pixelpart-runtime/engine/DefaultParticleGenerator.h>
+#include <pixelpart-runtime/engine/DefaultParticleModifier.h>
 #include <algorithm>
 
 namespace godot {
@@ -28,11 +31,16 @@ void PixelpartEffectRuntime::set_effect(const pixelpart::Effect& eff) {
 	effect.applyInputs();
 
 #ifdef PIXELPART_RUNTIME_MULTITHREADING
-	effectEngine = std::unique_ptr<pixelpart::MultiThreadedEffectEngine>(
-		new pixelpart::MultiThreadedEffectEngine(effect, particleCapacity, PixelpartSystem::get_instance()->get_thread_pool()));
+	effectEngine = std::make_unique<pixelpart::MultiThreadedEffectEngine>(effect,
+		std::make_shared<pixelpart::DefaultParticleGenerator>(),
+		std::make_shared<pixelpart::DefaultParticleModifier>(),
+		PixelpartSystem::get_instance()->get_thread_pool(),
+		particleCapacity);
 #else
-	effectEngine = std::unique_ptr<pixelpart::SingleThreadedEffectEngine>(
-		new pixelpart::SingleThreadedEffectEngine(effect, particleCapacity));
+	effectEngine = std::make_unique<pixelpart::SingleThreadedEffectEngine>(effect,
+		std::make_shared<pixelpart::DefaultParticleGenerator>(),
+		std::make_shared<pixelpart::DefaultParticleModifier>(),
+		particleCapacity);
 #endif
 
 	for(const auto& node : effect.sceneGraph()) {
@@ -85,15 +93,16 @@ void PixelpartEffectRuntime::advance(double dt) {
 		return;
 	}
 
-	dt = std::min(std::max(dt, 0.0), 1.0);
+	dt = std::clamp(dt, 0.0, 1.0);
 	simulationTime += static_cast<float>(dt) * speed;
 
 	while(simulationTime > timeStep * speed) {
 		simulationTime -= timeStep * speed;
 		effectEngine->advance(timeStep * speed);
 
-		if(loop && effectEngine->runtimeContext().time() > loopTime) {
-			effectEngine->restart(false);
+		if(loop && effectEngine->context().time() > loopTime) {
+			effectEngine->clearParticles();
+			effectEngine->restart();
 		}
 	}
 }
@@ -101,18 +110,22 @@ void PixelpartEffectRuntime::advance(double dt) {
 void PixelpartEffectRuntime::play(bool mode) {
 	playing = mode;
 }
-void PixelpartEffectRuntime::restart(bool reset) {
+void PixelpartEffectRuntime::restart(bool clear) {
 	if(!effectEngine) {
 		return;
 	}
 
-	effectEngine->restart(reset);
+	if(clear) {
+		effectEngine->clearParticles();
+	}
+
+	effectEngine->restart();
 }
 bool PixelpartEffectRuntime::is_playing() const {
 	return playing;
 }
 float PixelpartEffectRuntime::get_time() const {
-	return effectEngine ? static_cast<float>(effectEngine->runtimeContext().time()) : 0.0f;
+	return effectEngine ? static_cast<float>(effectEngine->context().time()) : 0.0f;
 }
 
 void PixelpartEffectRuntime::set_loop(bool mode) {
@@ -234,7 +247,7 @@ bool PixelpartEffectRuntime::is_trigger_activated(String name) const {
 		return false;
 	}
 
-	return effectEngine->runtimeContext().triggerActivated(triggerIt->first);
+	return effectEngine->context().triggerActivated(triggerIt->first);
 }
 
 void PixelpartEffectRuntime::spawn_particles(String particleEmitterName, String particleTypeName, int count) {
@@ -254,10 +267,10 @@ void PixelpartEffectRuntime::spawn_particles(String particleEmitterName, String 
 		return;
 	}
 
-	effectEngine->spawnParticles(
+	effectEngine->generateParticles(static_cast<std::uint32_t>(count),
 		pixelpart::id_t(static_cast<std::uint32_t>(particleEmitter->get_id())),
 		pixelpart::id_t(static_cast<std::uint32_t>(particleType->get_id())),
-		static_cast<std::uint32_t>(count));
+		pixelpart::EffectRuntimeContext());
 }
 
 Ref<PixelpartNode> PixelpartEffectRuntime::find_node(String name) const {
