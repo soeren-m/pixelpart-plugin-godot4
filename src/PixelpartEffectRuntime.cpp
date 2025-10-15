@@ -124,6 +124,30 @@ void PixelpartEffectRuntime::restart(bool clear) {
 bool PixelpartEffectRuntime::is_playing() const {
 	return playing;
 }
+bool PixelpartEffectRuntime::is_finished() const {
+	if(!effectEngine || loop) {
+		return false;
+	}
+
+	for(const auto* particleEmitter : effect.sceneGraph().nodesWithType<pixelpart::ParticleEmitter>()) {
+		if(!particleEmitter->primary()) {
+			continue;
+		}
+
+		if(particleEmitter->active(effectEngine->context()) || particleEmitter->repeat() ||
+			effectEngine->context().time() < particleEmitter->start() + particleEmitter->duration()) {
+			return false;
+		}
+	}
+
+	for(const auto& [emissionPair, particleCollection] : effectEngine->state().particleCollections()) {
+		if(particleCollection.count() > 0) {
+			return false;
+		}
+	}
+
+	return true;
+}
 float PixelpartEffectRuntime::get_time() const {
 	return effectEngine ? static_cast<float>(effectEngine->context().time()) : 0.0f;
 }

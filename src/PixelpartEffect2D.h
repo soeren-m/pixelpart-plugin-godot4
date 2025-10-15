@@ -577,6 +577,8 @@ private:
 	bool flipH = false;
 	bool flipV = true;
 
+	bool finishedSignalEmitted = false;
+
 	PixelpartGraphicsResourceProvider graphicsResourceProvider;
 	std::unordered_map<pixelpart::ParticleEmissionPair, std::unique_ptr<PixelpartParticleRenderer2D>> particleRenderers;
 };

@@ -28,6 +28,7 @@ public:
 	void play(bool mode);
 	void restart(bool clear);
 	bool is_playing() const;
+	bool is_finished() const;
 	float get_time() const;
 
 	void set_loop(bool mode);

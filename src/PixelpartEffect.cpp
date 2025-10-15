@@ -32,6 +32,7 @@ void PixelpartEffect::_enter_tree() {
 	}
 
 	update_transform();
+
 	effectRuntime.start();
 
 	RenderingServer::get_singleton()->connect("frame_pre_draw", Callable(this, "draw"));
@@ -50,7 +51,13 @@ void PixelpartEffect::_process(double dt) {
 	}
 
 	update_transform();
+
 	effectRuntime.advance(dt);
+
+	if(!finishedSignalEmitted && effectRuntime.is_finished()) {
+		finishedSignalEmitted = true;
+		emit_signal("finished");
+	}
 }
 
 void PixelpartEffect::draw() {
@@ -96,6 +103,8 @@ void PixelpartEffect::draw() {
 void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> resource) {
 	effectRuntime.reset_effect();
 
+	finishedSignalEmitted = false;
+
 	graphicsResourceProvider.clear();
 	particleRenderers.clear();
 
@@ -106,19 +115,18 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> resource) {
 	}
 
 	effectResource->load();
-
 	effectRuntime.set_effect(effectResource->get_asset().effect());
 
 	try {
 		graphicsResourceProvider.load(effectRuntime.get_effect());
 
 		for(const pixelpart::ParticleEmissionPair& emissionPair : effectRuntime.get_effect().particleEmissionPairs()) {
-			particleRenderers[emissionPair] = std::unique_ptr<PixelpartParticleRenderer3D>(new PixelpartParticleRenderer3D(
+			particleRenderers[emissionPair] = std::make_unique<PixelpartParticleRenderer3D>(
 				graphicsResourceProvider,
 				PixelpartSystem::get_instance()->get_shader_provider(),
 				effectRuntime.get_effect(),
 				emissionPair.emitterId,
-				emissionPair.typeId));
+				emissionPair.typeId);
 		}
 	}
 	catch(const std::exception& e) {
@@ -391,6 +399,8 @@ void PixelpartEffect::_bind_methods() {
 
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "effect_scale", PROPERTY_HINT_RANGE, "0.0,1000.0,0.1,or_greater,exp"), "set_effect_scale", "get_effect_scale");
+
+	ADD_SIGNAL(MethodInfo("finished"));
 
 	// Deprecated
 	ClassDB::bind_method(D_METHOD("find_particle_emitter", "name"), &PixelpartEffect::find_particle_emitter);

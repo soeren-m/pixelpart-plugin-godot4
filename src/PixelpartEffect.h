@@ -538,6 +538,8 @@ private:
 
 	float effectScale = 1.0f;
 
+	bool finishedSignalEmitted = false;
+
 	PixelpartGraphicsResourceProvider graphicsResourceProvider;
 	std::unordered_map<pixelpart::ParticleEmissionPair, std::unique_ptr<PixelpartParticleRenderer3D>> particleRenderers;
 };

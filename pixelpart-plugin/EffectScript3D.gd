@@ -1,6 +1,9 @@
 extends Node3D
 
 func _ready():
+	# Connect to finished signal
+	$SampleEffect.finished.connect(_on_effect_finished)
+
 	# Print information about particle types
 	var particle_type = $SampleEffect.get_particle_type_at_index(0)
 	var particle_type_index = 0
@@ -18,3 +21,6 @@ func _ready():
 
 		node_index += 1
 		node = $SampleEffect.get_node_at_index(node_index)
+
+func _on_effect_finished():
+	print("Effect finished")

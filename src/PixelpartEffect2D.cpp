@@ -30,6 +30,7 @@ void PixelpartEffect2D::_enter_tree() {
 	}
 
 	update_transform();
+
 	effectRuntime.start();
 }
 
@@ -39,7 +40,13 @@ void PixelpartEffect2D::_process(double dt) {
 	}
 
 	update_transform();
+
 	effectRuntime.advance(dt);
+
+	if(!finishedSignalEmitted && effectRuntime.is_finished()) {
+		finishedSignalEmitted = true;
+		emit_signal("finished");
+	}
 
 	queue_redraw();
 }
@@ -91,6 +98,8 @@ void PixelpartEffect2D::_draw() {
 void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> resource) {
 	effectRuntime.reset_effect();
 
+	finishedSignalEmitted = false;
+
 	graphicsResourceProvider.clear();
 	particleRenderers.clear();
 
@@ -101,7 +110,6 @@ void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> resource) {
 	}
 
 	effectResource->load();
-
 	effectRuntime.set_effect(effectResource->get_asset().effect());
 
 	if(!Engine::get_singleton()->is_editor_hint()) {
@@ -109,12 +117,12 @@ void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> resource) {
 			graphicsResourceProvider.load(effectRuntime.get_effect());
 
 			for(const pixelpart::ParticleEmissionPair& emissionPair : effectRuntime.get_effect().particleEmissionPairs()) {
-				particleRenderers[emissionPair] = std::unique_ptr<PixelpartParticleRenderer2D>(new PixelpartParticleRenderer2D(
+				particleRenderers[emissionPair] = std::make_unique<PixelpartParticleRenderer2D>(
 					graphicsResourceProvider,
 					PixelpartSystem::get_instance()->get_shader_provider(),
 					effectRuntime.get_effect(),
 					emissionPair.emitterId,
-					emissionPair.typeId));
+					emissionPair.typeId);
 			}
 		}
 		catch(const std::exception& e) {
@@ -406,6 +414,8 @@ void PixelpartEffect2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "effect_scale", PROPERTY_HINT_RANGE, "0.0,1000.0,0.1,or_greater,exp"), "set_effect_scale", "get_effect_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "get_flip_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "get_flip_v");
+
+	ADD_SIGNAL(MethodInfo("finished"));
 
 	// Deprecated
 	ClassDB::bind_method(D_METHOD("find_particle_emitter", "name"), &PixelpartEffect2D::find_particle_emitter);
