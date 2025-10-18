@@ -4,6 +4,7 @@
 #include "node/PixelpartParticleEmitter.h"
 #include "util/PixelpartUtil.h"
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <pixelpart-runtime/common/Math.h>
 #include <pixelpart-runtime/common/Id.h>
@@ -82,6 +83,13 @@ void PixelpartEffectRuntime::start() {
 
 	apply_inputs();
 
+	if(randomSeed) {
+		effectEngine->reseed(static_cast<std::uint32_t>(Time::get_singleton()->get_ticks_usec()));
+	}
+	else {
+		effectEngine->reseed(static_cast<std::uint32_t>(seed));
+	}
+
 	simulationTime = warmupTime;
 	while(simulationTime > timeStep) {
 		simulationTime -= timeStep;
@@ -101,8 +109,11 @@ void PixelpartEffectRuntime::advance(double dt) {
 		effectEngine->advance(timeStep * speed);
 
 		if(loop && effectEngine->context().time() > loopTime) {
-			effectEngine->clearParticles();
 			effectEngine->restart();
+
+			if(!randomSeed) {
+				effectEngine->reseed(static_cast<std::uint32_t>(seed));
+			}
 		}
 	}
 }
@@ -181,10 +192,24 @@ float PixelpartEffectRuntime::get_speed() const {
 }
 
 void PixelpartEffectRuntime::set_frame_rate(float rate) {
-	timeStep = 1.0f / std::min(std::max(rate, 1.0f), 100.0f);
+	timeStep = 1.0f / std::clamp(rate, 1.0f, 100.0f);
 }
 float PixelpartEffectRuntime::get_frame_rate() const {
 	return 1.0f / timeStep;
+}
+
+void PixelpartEffectRuntime::set_seed(int sd) {
+	seed = std::max(sd, 0);
+}
+int PixelpartEffectRuntime::get_seed() const {
+	return seed;
+}
+
+void PixelpartEffectRuntime::enable_random_seed(bool mode) {
+	randomSeed = mode;
+}
+bool PixelpartEffectRuntime::is_random_seed_enabled() const {
+	return randomSeed;
 }
 
 void PixelpartEffectRuntime::set_inputs(Dictionary inputs) {

@@ -194,6 +194,20 @@ float PixelpartEffect::get_frame_rate() const {
 	return effectRuntime.get_frame_rate();
 }
 
+void PixelpartEffect::set_seed(int sd) {
+	effectRuntime.set_seed(sd);
+}
+int PixelpartEffect::get_seed() const {
+	return effectRuntime.get_seed();
+}
+
+void PixelpartEffect::enable_random_seed(bool mode) {
+	effectRuntime.enable_random_seed(mode);
+}
+bool PixelpartEffect::is_random_seed_enabled() const {
+	return effectRuntime.is_random_seed_enabled();
+}
+
 void PixelpartEffect::set_effect_scale(float scale) {
 	effectScale = scale;
 }
@@ -356,6 +370,10 @@ void PixelpartEffect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_speed"), &PixelpartEffect::get_speed);
 	ClassDB::bind_method(D_METHOD("set_frame_rate", "rate"), &PixelpartEffect::set_frame_rate);
 	ClassDB::bind_method(D_METHOD("get_frame_rate"), &PixelpartEffect::get_frame_rate);
+	ClassDB::bind_method(D_METHOD("set_seed", "sd"), &PixelpartEffect::set_seed);
+	ClassDB::bind_method(D_METHOD("get_seed"), &PixelpartEffect::get_seed);
+	ClassDB::bind_method(D_METHOD("enable_random_seed", "mode"), &PixelpartEffect::enable_random_seed);
+	ClassDB::bind_method(D_METHOD("is_random_seed_enabled"), &PixelpartEffect::is_random_seed_enabled);
 	ClassDB::bind_method(D_METHOD("set_effect_scale", "scale"), &PixelpartEffect::set_effect_scale);
 	ClassDB::bind_method(D_METHOD("get_effect_scale"), &PixelpartEffect::get_effect_scale);
 	ClassDB::bind_method(D_METHOD("set_inputs", "inputs"), &PixelpartEffect::set_inputs);
@@ -384,6 +402,8 @@ void PixelpartEffect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_particle_type", "id"), &PixelpartEffect::get_particle_type);
 	ClassDB::bind_method(D_METHOD("get_particle_type_at_index", "index"), &PixelpartEffect::get_particle_type_at_index);
 
+	ADD_SIGNAL(MethodInfo("finished"));
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "effect", PROPERTY_HINT_RESOURCE_TYPE, "PixelpartEffectResource"), "set_effect", "get_effect");
 
 	ADD_GROUP("Playback", "");
@@ -393,14 +413,14 @@ void PixelpartEffect::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "warmup_time", PROPERTY_HINT_RANGE, "0.0,10.0,0.01,or_greater"), "set_warmup_time", "get_warmup_time");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed", PROPERTY_HINT_RANGE, "0.0,10.0,0.01,or_greater,exp"), "set_speed", "get_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frame_rate", PROPERTY_HINT_RANGE, "1.0,100.0,1.0"), "set_frame_rate", "get_frame_rate");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed"), "set_seed", "get_seed");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "random_seed"), "enable_random_seed", "is_random_seed_enabled");
 
 	ADD_GROUP("Inputs", "");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "inputs"), "set_inputs", "get_inputs");
 
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "effect_scale", PROPERTY_HINT_RANGE, "0.0,1000.0,0.1,or_greater,exp"), "set_effect_scale", "get_effect_scale");
-
-	ADD_SIGNAL(MethodInfo("finished"));
 
 	// Deprecated
 	ClassDB::bind_method(D_METHOD("find_particle_emitter", "name"), &PixelpartEffect::find_particle_emitter);

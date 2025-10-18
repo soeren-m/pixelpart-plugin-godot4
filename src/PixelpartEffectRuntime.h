@@ -46,6 +46,12 @@ public:
 	void set_frame_rate(float rate);
 	float get_frame_rate() const;
 
+	void set_seed(int sd);
+	int get_seed() const;
+
+	void enable_random_seed(bool mode);
+	bool is_random_seed_enabled() const;
+
 	void set_inputs(Dictionary inputs);
 	Dictionary get_inputs() const;
 
@@ -77,6 +83,8 @@ private:
 	float warmupTime = 0.0f;
 	float speed = 1.0f;
 	float timeStep = 1.0f / 60.0f;
+	int seed = 0;
+	bool randomSeed = false;
 	Dictionary inputValues;
 
 	std::unique_ptr<pixelpart::EffectEngine> effectEngine;

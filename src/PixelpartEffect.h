@@ -69,6 +69,18 @@ public:
 	float frame_rate;
 
 	/**
+	 * @brief Seed used to initialize the effect simulation.
+	 *
+	 * This seed is used if `random_seed` is not enabled.
+	 */
+	int seed;
+
+	/**
+	 * @brief Whether to use a random seed to initialize the effect simulation.
+	 */
+	bool random_seed;
+
+	/**
 	 * @brief Dictionary of effect input values.
 	 *
 	 * Do not use to change effect inputs at runtime, use the `set_input` methods instead.
@@ -219,6 +231,36 @@ public:
 	 * @return Frame rate, in frames per second
 	 */
 	float get_frame_rate() const;
+
+	/**
+	 * @brief Set the seed used to initialize the effect simulation.
+	 *
+	 * This seed is used if `random_seed` is not enabled.
+	 *
+	 * @param sd Seed value
+	 */
+	void set_seed(int sd);
+
+	/**
+	 * @brief Return the seed used to initialize the effect simulation.
+	 *
+	 * @return Seed value
+	 */
+	int get_seed() const;
+
+	/**
+	 * @brief Use a random seed to initialize the effect simulation.
+	 *
+	 * @param mode Whether to use a random simulation seed
+	 */
+	void enable_random_seed(bool mode);
+
+	/**
+	 * @brief Return whether a random seed is used to initialize the effect simulation.
+	 *
+	 * @return Whether a random simulation seed is used
+	 */
+	bool is_random_seed_enabled() const;
 
 	/**
 	 * @brief Set multiplier for the size of the effect.
