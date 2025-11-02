@@ -20,6 +20,10 @@ namespace godot {
  * @brief A node that plays a Pixelpart effect.
  *
  * This class offers methods and properties to change how the effect is simulated and rendered.
+ *
+ * @paragraph signals Signals
+ * - finished: Signal that is emitted when the effect is finished.
+ * This signal is never emitted for effects with repeating particle emitters.
  */
 class PixelpartEffect : public VisualInstance3D {
 	GDCLASS(PixelpartEffect, VisualInstance3D)
