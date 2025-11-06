@@ -5,8 +5,8 @@ compatibility_minimum = 4.3
 
 [icons]
 
-PixelpartEffect2D = "res://addons/pixelpart/pixelpart_node2d.svg"
-PixelpartEffect = "res://addons/pixelpart/pixelpart_node3d.svg"
+PixelpartEffect2D = "res://addons/pixelpart/pixelpart-node2d.svg"
+PixelpartEffect = "res://addons/pixelpart/pixelpart-node3d.svg"
 
 [libraries]
 
