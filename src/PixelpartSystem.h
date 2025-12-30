@@ -13,19 +13,13 @@ public:
 	PixelpartSystem();
 	~PixelpartSystem();
 
-#ifdef PIXELPART_RUNTIME_MULTITHREADING
 	std::shared_ptr<pixelpart::ThreadPool> get_thread_pool();
-#endif
-
 	PixelpartShaderProvider& get_shader_provider();
 
 private:
 	static PixelpartSystem* instance;
 
-#ifdef PIXELPART_RUNTIME_MULTITHREADING
 	std::shared_ptr<pixelpart::ThreadPool> threadPool;
-#endif
-
 	PixelpartShaderProvider shaderProvider;
 };
 }

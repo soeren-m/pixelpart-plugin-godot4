@@ -4,6 +4,10 @@
 #include <pixelpart-runtime/effect/ShaderGraph.h>
 #include <pixelpart-runtime/json/json.hpp>
 
+#ifdef PIXELPART_RUNTIME_MULTITHREADING
+#include <pixelpart-runtime/common/StdThreadPool.h>
+#endif
+
 namespace godot {
 PixelpartSystem* PixelpartSystem::instance = nullptr;
 PixelpartSystem* PixelpartSystem::get_instance() {
@@ -21,19 +25,16 @@ PixelpartSystem::PixelpartSystem() {
 	pixelpart::ShaderGraph::graphLanguage = modelJson;
 
 #ifdef PIXELPART_RUNTIME_MULTITHREADING
-	threadPool = std::shared_ptr<pixelpart::ThreadPool>(new pixelpart::ThreadPool(std::thread::hardware_concurrency()));
+	threadPool = std::make_shared<pixelpart::StdThreadPool>(std::thread::hardware_concurrency());
 #endif
 }
 PixelpartSystem::~PixelpartSystem() {
 	instance = nullptr;
 }
 
-#ifdef PIXELPART_RUNTIME_MULTITHREADING
 std::shared_ptr<pixelpart::ThreadPool> PixelpartSystem::get_thread_pool() {
 	return threadPool;
 }
-#endif
-
 PixelpartShaderProvider& PixelpartSystem::get_shader_provider() {
 	return shaderProvider;
 }

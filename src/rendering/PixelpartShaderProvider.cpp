@@ -1,7 +1,7 @@
 #include "PixelpartShaderProvider.h"
 #include "../util/PixelpartUtil.h"
 #include <godot_cpp/classes/rendering_server.hpp>
-#include <pixelpart-runtime/common/StringUtil.h>
+#include <pixelpart-runtime/common/StringFormat.h>
 
 namespace godot {
 std::unordered_map<std::string, pixelpart::id_t> PixelpartShaderProvider::ShaderMetadata::builtInMaterialParameterIds = std::unordered_map<std::string, pixelpart::id_t> {
