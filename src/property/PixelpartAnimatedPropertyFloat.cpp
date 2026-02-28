@@ -70,7 +70,9 @@ float PixelpartAnimatedPropertyFloat::get_keyframe_value(int index) const {
 
 int PixelpartAnimatedPropertyFloat::get_keyframe_index(float position, float epsilon) {
 	if(property) {
-		return static_cast<int>(property->keyframeIndex(static_cast<pixelpart::float_t>(position), static_cast<pixelpart::float_t>(epsilon)));
+		auto index = property->keyframeIndex(position, epsilon);
+
+		return index ? static_cast<int>(index.value()) : -1;
 	}
 
 	return -1;
@@ -86,18 +88,7 @@ int PixelpartAnimatedPropertyFloat::get_keyframe_interpolation() const {
 		return static_cast<int>(property->keyframeInterpolation());
 	}
 
-	return static_cast<int>(pixelpart::CurveInterpolation::none);
-}
-
-void PixelpartAnimatedPropertyFloat::enable_adaptive_cache() {
-	if(property) {
-		property->enableAdaptiveCache();
-	}
-}
-void PixelpartAnimatedPropertyFloat::enable_fixed_cache(int size) {
-	if(property) {
-		property->enableFixedCache(static_cast<std::size_t>(std::max(size, 0)));
-	}
+	return static_cast<int>(pixelpart::CurveInterpolation::step);
 }
 
 void PixelpartAnimatedPropertyFloat::_bind_methods() {
@@ -113,8 +104,6 @@ void PixelpartAnimatedPropertyFloat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_keyframe_index", "position", "epsilon"), &PixelpartAnimatedPropertyFloat::get_keyframe_index);
 	ClassDB::bind_method(D_METHOD("set_keyframe_interpolation", "method"), &PixelpartAnimatedPropertyFloat::set_keyframe_interpolation);
 	ClassDB::bind_method(D_METHOD("get_keyframe_interpolation"), &PixelpartAnimatedPropertyFloat::get_keyframe_interpolation);
-	ClassDB::bind_method(D_METHOD("enable_adaptive_cache"), &PixelpartAnimatedPropertyFloat::enable_adaptive_cache);
-	ClassDB::bind_method(D_METHOD("enable_fixed_cache", "size"), &PixelpartAnimatedPropertyFloat::enable_fixed_cache);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "keyframe_interpolation"), "set_keyframe_interpolation", "get_keyframe_interpolation");
 

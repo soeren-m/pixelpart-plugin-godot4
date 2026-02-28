@@ -18,6 +18,7 @@
 
 namespace godot {
 PixelpartParticleRenderer2D::PixelpartParticleRenderer2D(PixelpartGraphicsResourceProvider& resourceProvider, PixelpartShaderProvider& shaderProvider,
+	std::shared_ptr<pixelpart::ThreadPool> threadPool,
 	const pixelpart::Effect& eff, pixelpart::id_t emitterId, pixelpart::id_t typeId) :
 	resources(resourceProvider), effect(eff), particleEmitterId(emitterId), particleTypeId(typeId) {
 	const pixelpart::ParticleType& particleType = effect.particleTypes().at(particleTypeId);
@@ -41,7 +42,7 @@ PixelpartParticleRenderer2D::PixelpartParticleRenderer2D(PixelpartGraphicsResour
 
 		shaderParameterNames = shaderBuildResult.parameterNames;
 		for(std::uint32_t samplerIndex = 0; samplerIndex < shaderBuildResult.textureResourceIds.size(); samplerIndex++) {
-			textureResourceIds[pixelpart::ShaderGraph::graphLanguage.textureSamplers[samplerIndex]] = shaderBuildResult.textureResourceIds[samplerIndex];
+			textureResourceIds[pixelpart::ShaderGraph::specification.textureSamplers[samplerIndex]] = shaderBuildResult.textureResourceIds[samplerIndex];
 		}
 
 		shader = shaderProvider.get_custom_canvas_item_shader(
@@ -77,7 +78,7 @@ PixelpartParticleRenderer2D::PixelpartParticleRenderer2D(PixelpartGraphicsResour
 		}, pixelpart::VertexWindingOrder::cw);
 
 	vertexGenerator = std::make_unique<pixelpart::ParticleVertexGenerator>(
-		effect, particleEmitterId, particleTypeId, vertexFormat);
+		effect, particleEmitterId, particleTypeId, vertexFormat, threadPool);
 }
 PixelpartParticleRenderer2D::~PixelpartParticleRenderer2D() {
 	RenderingServer* rs = RenderingServer::get_singleton();

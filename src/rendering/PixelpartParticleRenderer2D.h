@@ -6,9 +6,8 @@
 #include <godot_cpp/classes/node2d.hpp>
 #include <godot_cpp/classes/shader.hpp>
 #include <pixelpart-runtime/common/Types.h>
-#include <pixelpart-runtime/common/Math.h>
 #include <pixelpart-runtime/common/Id.h>
-#include <pixelpart-runtime/common/Curve.h>
+#include <pixelpart-runtime/common/ThreadPool.h>
 #include <pixelpart-runtime/effect/Effect.h>
 #include <pixelpart-runtime/effect/EffectRuntimeContext.h>
 #include <pixelpart-runtime/engine/ParticleCollection.h>
@@ -23,6 +22,7 @@ namespace godot {
 class PixelpartParticleRenderer2D {
 public:
 	PixelpartParticleRenderer2D(PixelpartGraphicsResourceProvider& resourceProvider, PixelpartShaderProvider& shaderProvider,
+		std::shared_ptr<pixelpart::ThreadPool> threadPool,
 		const pixelpart::Effect& eff, pixelpart::id_t emitterId, pixelpart::id_t typeId);
 	PixelpartParticleRenderer2D(const PixelpartParticleRenderer2D&) = delete;
 	~PixelpartParticleRenderer2D();

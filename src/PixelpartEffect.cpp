@@ -7,7 +7,6 @@
 #include <godot_cpp/classes/viewport.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <pixelpart-runtime/common/Types.h>
-#include <pixelpart-runtime/common/Math.h>
 #include <pixelpart-runtime/common/Transform.h>
 #include <pixelpart-runtime/common/Curve.h>
 #include <pixelpart-runtime/common/VariantValue.h>
@@ -124,6 +123,7 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> resource) {
 			particleRenderers[emissionPair] = std::make_unique<PixelpartParticleRenderer3D>(
 				graphicsResourceProvider,
 				PixelpartSystem::get_instance()->get_shader_provider(),
+				PixelpartSystem::get_instance()->get_thread_pool(),
 				effectRuntime.get_effect(),
 				emissionPair.emitterId,
 				emissionPair.typeId);
@@ -327,7 +327,7 @@ Ref<PixelpartCollider> PixelpartEffect::get_collider_at_index(int index) const {
 void PixelpartEffect::update_transform() {
 	Basis basis = get_global_transform().get_basis().transposed();
 	Vector3 origin = get_global_transform().get_origin();
-	pixelpart::Transform transform = pixelpart::Transform(pixelpart::mat4_t(
+	pixelpart::Transform transform = pixelpart::Transform(pixelpart::matrix4_t(
 		pixelpart::float4_t(gd_to_pxpt(basis[0]), 0.0),
 		pixelpart::float4_t(gd_to_pxpt(basis[1]), 0.0),
 		pixelpart::float4_t(gd_to_pxpt(basis[2]), 0.0),

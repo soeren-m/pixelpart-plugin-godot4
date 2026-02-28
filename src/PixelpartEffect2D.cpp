@@ -6,7 +6,6 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <pixelpart-runtime/common/Types.h>
-#include <pixelpart-runtime/common/Math.h>
 #include <pixelpart-runtime/common/Curve.h>
 #include <pixelpart-runtime/common/VariantValue.h>
 #include <pixelpart-runtime/effect/Effect.h>
@@ -120,6 +119,7 @@ void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> resource) {
 				particleRenderers[emissionPair] = std::make_unique<PixelpartParticleRenderer2D>(
 					graphicsResourceProvider,
 					PixelpartSystem::get_instance()->get_shader_provider(),
+					PixelpartSystem::get_instance()->get_thread_pool(),
 					effectRuntime.get_effect(),
 					emissionPair.emitterId,
 					emissionPair.typeId);

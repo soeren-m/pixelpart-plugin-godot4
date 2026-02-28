@@ -119,19 +119,6 @@ public:
 	 */
 	int get_keyframe_interpolation() const;
 
-	/**
-	 * @brief Enable an adaptive cache, which resizes itself automatically if the number of keyframes increases or decreases a lot.
-	 *
-	 */
-	void enable_adaptive_cache();
-
-	/**
-	 * @brief Enable a fixed cache with the given size, which only stores up to @p size different value.
-	 *
-	 * @param size Cache size
-	 */
-	void enable_fixed_cache(int size);
-
 protected:
 	static void _bind_methods();
 

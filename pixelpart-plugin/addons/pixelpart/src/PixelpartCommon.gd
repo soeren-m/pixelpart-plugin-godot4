@@ -1,5 +1,5 @@
 enum InterpolationType {
-	OFF = 0,
+	STEP = 0,
 	LINEAR = 1,
 	SPLINE = 2,
 	BEZIER = 3
@@ -7,7 +7,7 @@ enum InterpolationType {
 
 enum BlendMode {
 	OFF = 0,
-	NORMAL = 1,
+	ALPHA = 1,
 	ADDITIVE = 2,
 	SUBTRACTIVE = 3
 }

@@ -7,7 +7,6 @@
 #include <godot_cpp/variant/vector4.hpp>
 #include <godot_cpp/variant/color.hpp>
 #include <pixelpart-runtime/common/Types.h>
-#include <pixelpart-runtime/common/Math.h>
 #include <pixelpart-runtime/common/VariantValue.h>
 
 namespace godot {

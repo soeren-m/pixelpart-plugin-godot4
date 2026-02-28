@@ -1,6 +1,7 @@
 #include "PixelpartParticleEmitter.h"
 #include "../util/PixelpartUtil.h"
 #include <godot_cpp/core/class_db.hpp>
+#include <pixelpart-runtime/math/Geometry.h>
 #include <algorithm>
 
 namespace godot {
@@ -182,7 +183,7 @@ void PixelpartParticleEmitter::set_shape_points(const std::vector<pixelpart::flo
 	pixelpart::float_t length = 0.0;
 
 	for(std::size_t i = 1; i < points.size(); i++) {
-		length += std::max(glm::distance(points[i], points[i - 1]), 0.000001);
+		length += std::max(pixelpart::math::distance(points[i], points[i - 1]), 0.000001);
 		distances[i] = length;
 	}
 

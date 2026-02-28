@@ -10,8 +10,8 @@
 #include <godot_cpp/classes/shader_material.hpp>
 #include <godot_cpp/classes/camera3d.hpp>
 #include <pixelpart-runtime/common/Types.h>
-#include <pixelpart-runtime/common/Math.h>
 #include <pixelpart-runtime/common/Id.h>
+#include <pixelpart-runtime/common/ThreadPool.h>
 #include <pixelpart-runtime/effect/Effect.h>
 #include <pixelpart-runtime/effect/EffectRuntimeContext.h>
 #include <pixelpart-runtime/engine/ParticleCollection.h>
@@ -26,6 +26,7 @@ namespace godot {
 class PixelpartParticleRenderer3D {
 public:
 	PixelpartParticleRenderer3D(PixelpartGraphicsResourceProvider& resourceProvider, PixelpartShaderProvider& shaderProvider,
+		std::shared_ptr<pixelpart::ThreadPool> threadPool,
 		const pixelpart::Effect& eff, pixelpart::id_t emitterId, pixelpart::id_t typeId);
 	PixelpartParticleRenderer3D(const PixelpartParticleRenderer3D&) = delete;
 	~PixelpartParticleRenderer3D();

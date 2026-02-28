@@ -1,5 +1,5 @@
 #include "PixelpartGraphicsResourceProvider.h"
-#include <pixelpart-runtime/common/Math.h>
+#include <pixelpart-runtime/common/Types.h>
 #include <cstdint>
 #include <cstring>
 
@@ -77,9 +77,9 @@ void PixelpartGraphicsResourceProvider::load_mesh(const std::string& name, const
 		indices[index] = static_cast<std::int32_t>(meshResource.faces()[index]);
 	}
 
-	std::memcpy(vertexArray.ptrw(), meshResource.positions().data(), meshResource.positions().size() * sizeof(glm::vec3));
-	std::memcpy(normalArray.ptrw(), meshResource.normals().data(), meshResource.normals().size() * sizeof(glm::vec3));
-	std::memcpy(uvArray.ptrw(), meshResource.textureCoords().data(), meshResource.textureCoords().size() * sizeof(glm::vec2));
+	std::memcpy(vertexArray.ptrw(), meshResource.positions().data(), meshResource.positions().size() * sizeof(pixelpart::math::vector3<float>));
+	std::memcpy(normalArray.ptrw(), meshResource.normals().data(), meshResource.normals().size() * sizeof(pixelpart::math::vector3<float>));
+	std::memcpy(uvArray.ptrw(), meshResource.textureCoords().data(), meshResource.textureCoords().size() * sizeof(pixelpart::math::vector2<float>));
 
 	Array meshArray;
 	meshArray.resize(Mesh::ARRAY_MAX);

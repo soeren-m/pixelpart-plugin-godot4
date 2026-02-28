@@ -15,10 +15,10 @@ Vector3 pxpt_to_gd(const pixelpart::float3_t& v) {
 	return Vector3(v.x, v.y, v.z);
 }
 Vector4 pxpt_to_gd(const pixelpart::float4_t& v) {
-	return Vector4(v.r, v.g, v.b, v.a);
+	return Vector4(v.x, v.y, v.z, v.w);
 }
 Color pxpt_to_gd_color(const pixelpart::float4_t& v) {
-	return Color(v.r, v.g, v.b, v.a);
+	return Color(v.x, v.y, v.z, v.w);
 }
 Variant pxpt_to_gd(const pixelpart::VariantValue& v) {
 	switch(v.type()) {

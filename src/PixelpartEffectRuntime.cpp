@@ -6,9 +6,10 @@
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
-#include <pixelpart-runtime/common/Math.h>
+#include <pixelpart-runtime/common/Types.h>
 #include <pixelpart-runtime/common/Id.h>
 #include <pixelpart-runtime/effect/EffectRuntimeContext.h>
+#include <pixelpart-runtime/engine/EffectRuntimeQuery.h>
 #include <pixelpart-runtime/engine/SingleThreadedEffectEngine.h>
 #include <pixelpart-runtime/engine/MultiThreadedEffectEngine.h>
 #include <pixelpart-runtime/engine/DefaultParticleGenerator.h>
@@ -140,24 +141,7 @@ bool PixelpartEffectRuntime::is_finished() const {
 		return false;
 	}
 
-	for(const auto* particleEmitter : effect.sceneGraph().nodesWithType<pixelpart::ParticleEmitter>()) {
-		if(!particleEmitter->primary()) {
-			continue;
-		}
-
-		if(particleEmitter->active(effectEngine->context()) || particleEmitter->repeat() ||
-			effectEngine->context().time() < particleEmitter->start() + particleEmitter->duration()) {
-			return false;
-		}
-	}
-
-	for(const auto& [emissionPair, particleCollection] : effectEngine->state().particleCollections()) {
-		if(particleCollection.count() > 0) {
-			return false;
-		}
-	}
-
-	return true;
+	return pixelpart::isEffectSimulationFinished(effect, effectEngine->state(), effectEngine->context());
 }
 float PixelpartEffectRuntime::get_time() const {
 	return effectEngine ? static_cast<float>(effectEngine->context().time()) : 0.0f;
@@ -271,7 +255,7 @@ void PixelpartEffectRuntime::activate_trigger(String name) {
 	std::string triggerName = std::string(nameCharString.get_data(), nameCharString.length());
 
 	auto triggerIt = std::find_if(effect.triggers().begin(), effect.triggers().end(),
-		[&triggerName](const std::pair<pixelpart::id_t, pixelpart::Trigger>& entry) {
+		[&triggerName](const std::pair<pixelpart::id_t, pixelpart::EffectTrigger>& entry) {
 			return entry.second.name() == triggerName;
 		});
 
@@ -287,7 +271,7 @@ bool PixelpartEffectRuntime::is_trigger_activated(String name) const {
 	std::string triggerName = std::string(nameCharString.get_data(), nameCharString.length());
 
 	auto triggerIt = std::find_if(effect.triggers().begin(), effect.triggers().end(),
-		[&triggerName](const std::pair<pixelpart::id_t, pixelpart::Trigger>& entry) {
+		[&triggerName](const std::pair<pixelpart::id_t, pixelpart::EffectTrigger>& entry) {
 			return entry.second.name() == triggerName;
 		});
 

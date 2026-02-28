@@ -1,5 +1,5 @@
 {
-    "version": 9,
+    "version": 10,
     "effect": {
         "3d": true,
         "scene": [
@@ -324,31 +324,17 @@
                     "material_id": "SpriteUnlitAlpha",
                     "material_parameters": [
                         [
-                            42,
-                            {
-                                "type": "bool",
-                                "value": 0
-                            }
-                        ],
-                        [
-                            43,
-                            {
-                                "type": "float",
-                                "value": 0.1
-                            }
-                        ],
-                        [
-                            30,
-                            {
-                                "type": "int",
-                                "value": 1
-                            }
-                        ],
-                        [
                             0,
                             {
                                 "type": "resource_image",
                                 "value": "basic_01.png10592539008377860021"
+                            }
+                        ],
+                        [
+                            10,
+                            {
+                                "type": "enum",
+                                "value": 0
                             }
                         ],
                         [
@@ -363,24 +349,10 @@
                             }
                         ],
                         [
-                            33,
+                            30,
                             {
                                 "type": "int",
                                 "value": 1
-                            }
-                        ],
-                        [
-                            10,
-                            {
-                                "type": "enum",
-                                "value": 0
-                            }
-                        ],
-                        [
-                            36,
-                            {
-                                "type": "bool",
-                                "value": 0
                             }
                         ],
                         [
@@ -398,6 +370,13 @@
                             }
                         ],
                         [
+                            33,
+                            {
+                                "type": "int",
+                                "value": 1
+                            }
+                        ],
+                        [
                             34,
                             {
                                 "type": "int",
@@ -412,6 +391,13 @@
                             }
                         ],
                         [
+                            36,
+                            {
+                                "type": "bool",
+                                "value": 0
+                            }
+                        ],
+                        [
                             40,
                             {
                                 "type": "bool",
@@ -420,6 +406,20 @@
                         ],
                         [
                             41,
+                            {
+                                "type": "float",
+                                "value": 0.1
+                            }
+                        ],
+                        [
+                            42,
+                            {
+                                "type": "bool",
+                                "value": 0
+                            }
+                        ],
+                        [
+                            43,
                             {
                                 "type": "float",
                                 "value": 0.1
@@ -1036,7 +1036,8 @@
         "simulation_seed": 0,
         "frame_width": 512,
         "frame_height": 512,
-        "capture_rate": 30.0,
+        "simulation_rate": 60.0,
+        "frame_rate": 30.0,
         "duration": 1.0,
         "delay": 0.0,
         "playback_speed": 1.0,
@@ -1063,7 +1064,8 @@
         "simulation_seed": 0,
         "frame_width": 1024,
         "frame_height": 1024,
-        "capture_rate": 30.0,
+        "simulation_rate": 60.0,
+        "frame_rate": 30.0,
         "duration": 5.0,
         "delay": 0.0,
         "playback_speed": 1.0,

@@ -120,7 +120,7 @@ PixelpartShaderProvider::PixelpartShaderProvider() {
 	};
 
 	builtInCanvasItemShaders["SpriteUnlitAlpha"] = BuiltInShaderEntry{
-		get_canvas_item_shader(spriteCanvasItemShader, "", "", pixelpart::BlendMode::normal, pixelpart::LightingMode::unlit),
+		get_canvas_item_shader(spriteCanvasItemShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::unlit),
 		ShaderMetadata(spriteUnlitParameterNames)
 	};
 	builtInCanvasItemShaders["SpriteUnlitAdditive"] = BuiltInShaderEntry{
@@ -128,7 +128,7 @@ PixelpartShaderProvider::PixelpartShaderProvider() {
 		ShaderMetadata(spriteUnlitParameterNames)
 	};
 	builtInCanvasItemShaders["TrailUnlitAlpha"] = BuiltInShaderEntry{
-		get_canvas_item_shader(trailCanvasItemShader, "", "", pixelpart::BlendMode::normal, pixelpart::LightingMode::unlit),
+		get_canvas_item_shader(trailCanvasItemShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::unlit),
 		ShaderMetadata(trailUnlitParameterNames)
 	};
 	builtInCanvasItemShaders["TrailUnlitAdditive"] = BuiltInShaderEntry{
@@ -136,7 +136,7 @@ PixelpartShaderProvider::PixelpartShaderProvider() {
 		ShaderMetadata(trailUnlitParameterNames)
 	};
 	builtInCanvasItemShaders["SpriteLitAlpha"] = BuiltInShaderEntry{
-		get_canvas_item_shader(spriteCanvasItemShader, "", "", pixelpart::BlendMode::normal, pixelpart::LightingMode::unlit),
+		get_canvas_item_shader(spriteCanvasItemShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::unlit),
 		ShaderMetadata(spriteLitParameterNames)
 	};
 	builtInCanvasItemShaders["SpriteLitAdditive"] = BuiltInShaderEntry{
@@ -144,7 +144,7 @@ PixelpartShaderProvider::PixelpartShaderProvider() {
 		ShaderMetadata(spriteLitParameterNames)
 	};
 	builtInCanvasItemShaders["TrailLitAlpha"] = BuiltInShaderEntry{
-		get_canvas_item_shader(trailCanvasItemShader, "", "", pixelpart::BlendMode::normal, pixelpart::LightingMode::unlit),
+		get_canvas_item_shader(trailCanvasItemShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::unlit),
 		ShaderMetadata(trailLitParameterNames)
 	};
 	builtInCanvasItemShaders["TrailLitAdditive"] = BuiltInShaderEntry{
@@ -153,7 +153,7 @@ PixelpartShaderProvider::PixelpartShaderProvider() {
 	};
 
 	builtInSpatialShaders["SpriteUnlitAlpha"] = BuiltInShaderEntry{
-		get_spatial_shader(spriteSpatialShader, "", "", pixelpart::BlendMode::normal, pixelpart::LightingMode::unlit, false),
+		get_spatial_shader(spriteSpatialShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::unlit, false),
 		ShaderMetadata(spriteUnlitParameterNames)
 	};
 	builtInSpatialShaders["SpriteUnlitAdditive"] = BuiltInShaderEntry{
@@ -161,7 +161,7 @@ PixelpartShaderProvider::PixelpartShaderProvider() {
 		ShaderMetadata(spriteUnlitParameterNames)
 	};
 	builtInSpatialShaders["TrailUnlitAlpha"] = BuiltInShaderEntry{
-		get_spatial_shader(trailSpatialShader, "", "", pixelpart::BlendMode::normal, pixelpart::LightingMode::unlit, false),
+		get_spatial_shader(trailSpatialShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::unlit, false),
 		ShaderMetadata(trailUnlitParameterNames)
 	};
 	builtInSpatialShaders["TrailUnlitAdditive"] = BuiltInShaderEntry{
@@ -173,11 +173,11 @@ PixelpartShaderProvider::PixelpartShaderProvider() {
 		ShaderMetadata(meshUnlitParameterNames)
 	};
 	builtInSpatialShaders["MeshUnlitAlpha"] = BuiltInShaderEntry{
-		get_spatial_shader(meshSpatialShader, "", "", pixelpart::BlendMode::normal, pixelpart::LightingMode::unlit, true),
+		get_spatial_shader(meshSpatialShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::unlit, true),
 		ShaderMetadata(meshUnlitAlphaParameterNames)
 	};
 	builtInSpatialShaders["SpriteLitAlpha"] = BuiltInShaderEntry{
-		get_spatial_shader(spriteSpatialShader, "", "", pixelpart::BlendMode::normal, pixelpart::LightingMode::lit, false),
+		get_spatial_shader(spriteSpatialShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::lit, false),
 		ShaderMetadata(spriteLitParameterNames)
 	};
 	builtInSpatialShaders["SpriteLitAdditive"] = BuiltInShaderEntry{
@@ -185,7 +185,7 @@ PixelpartShaderProvider::PixelpartShaderProvider() {
 		ShaderMetadata(spriteLitParameterNames)
 	};
 	builtInSpatialShaders["TrailLitAlpha"] = BuiltInShaderEntry{
-		get_spatial_shader(trailSpatialShader, "", "", pixelpart::BlendMode::normal, pixelpart::LightingMode::lit, false),
+		get_spatial_shader(trailSpatialShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::lit, false),
 		ShaderMetadata(trailLitParameterNames)
 	};
 	builtInSpatialShaders["TrailLitAdditive"] = BuiltInShaderEntry{
@@ -197,7 +197,7 @@ PixelpartShaderProvider::PixelpartShaderProvider() {
 		ShaderMetadata(meshLitParameterNames)
 	};
 	builtInSpatialShaders["MeshLitAlpha"] = BuiltInShaderEntry{
-		get_spatial_shader(meshSpatialShader, "", "", pixelpart::BlendMode::normal, pixelpart::LightingMode::lit, true),
+		get_spatial_shader(meshSpatialShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::lit, true),
 		ShaderMetadata(meshLitAlphaParameterNames)
 	};
 }
@@ -258,7 +258,7 @@ Ref<Shader> PixelpartShaderProvider::get_canvas_item_shader(const std::string& s
 	outputCode += "\tCOLOR = final_Color;";
 
 	switch(blendMode) {
-		case pixelpart::BlendMode::normal:
+		case pixelpart::BlendMode::alpha:
 			renderMode = "blend_mix";
 			break;
 		case pixelpart::BlendMode::additive:
@@ -300,7 +300,7 @@ Ref<Shader> PixelpartShaderProvider::get_spatial_shader(const std::string& shade
 	outputCode += "\tMETALLIC = final_Metallic;";
 
 	switch(blendMode) {
-		case pixelpart::BlendMode::normal:
+		case pixelpart::BlendMode::alpha:
 			renderMode += ",blend_mix";
 			break;
 		case pixelpart::BlendMode::additive:

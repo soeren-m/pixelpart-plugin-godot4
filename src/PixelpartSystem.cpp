@@ -1,5 +1,5 @@
 #include "PixelpartSystem.h"
-#include "shaders/PixelpartShaderLanguage.h"
+#include "shaders/PixelpartShaderGraphSpecification.h"
 #include <pixelpart-runtime/effect/ComputeGraph.h>
 #include <pixelpart-runtime/effect/ShaderGraph.h>
 #include <pixelpart-runtime/json/json.hpp>
@@ -17,12 +17,10 @@ PixelpartSystem* PixelpartSystem::get_instance() {
 PixelpartSystem::PixelpartSystem() {
 	instance = this;
 
-	pixelpart::ComputeGraph::nodeFactory.registerBuiltInNodes();
-
-	nlohmann::ordered_json modelJson = nlohmann::json::parse(
-		PixelpartShaderLanguage_json,
-		PixelpartShaderLanguage_json + PixelpartShaderLanguage_json_size);
-	pixelpart::ShaderGraph::graphLanguage = modelJson;
+	nlohmann::ordered_json shaderGraphSpecsJson = nlohmann::json::parse(
+		PixelpartShaderGraphSpecification_json,
+		PixelpartShaderGraphSpecification_json + PixelpartShaderGraphSpecification_json_size);
+	pixelpart::ShaderGraph::specification = shaderGraphSpecsJson;
 
 #ifdef PIXELPART_RUNTIME_MULTITHREADING
 	threadPool = std::make_shared<pixelpart::StdThreadPool>(std::thread::hardware_concurrency());
