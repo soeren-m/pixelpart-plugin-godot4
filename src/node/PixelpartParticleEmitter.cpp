@@ -231,11 +231,5 @@ void PixelpartParticleEmitter::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "grid_order"), "set_grid_order", "get_grid_order");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_mode"), "set_emission_mode", "get_emission_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction_mode"), "set_direction_mode", "get_direction_mode");
-
-	// Deprecated
-	ClassDB::bind_method(D_METHOD("get_num_shape_points"), &PixelpartParticleEmitter::get_shape_point);
-	ClassDB::bind_method(D_METHOD("get_grid_width"), &PixelpartParticleEmitter::get_grid_size_x);
-	ClassDB::bind_method(D_METHOD("get_grid_height"), &PixelpartParticleEmitter::get_grid_size_y);
-	ClassDB::bind_method(D_METHOD("get_grid_depth"), &PixelpartParticleEmitter::get_grid_size_z);
 }
 }

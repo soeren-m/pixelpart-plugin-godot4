@@ -306,34 +306,6 @@ Ref<PixelpartParticleType> PixelpartEffect2D::get_particle_type_at_index(int ind
 	return effectRuntime.get_particle_type_at_index(index);
 }
 
-Ref<PixelpartParticleEmitter> PixelpartEffect2D::find_particle_emitter(String name) const {
-	return find_node(name);
-}
-Ref<PixelpartForceField> PixelpartEffect2D::find_force_field(String name) const {
-	return find_node(name);
-}
-Ref<PixelpartCollider> PixelpartEffect2D::find_collider(String name) const {
-	return find_node(name);
-}
-Ref<PixelpartParticleEmitter> PixelpartEffect2D::get_particle_emitter(int id) const {
-	return get_node(id);
-}
-Ref<PixelpartForceField> PixelpartEffect2D::get_force_field(int id) const {
-	return get_node(id);
-}
-Ref<PixelpartCollider> PixelpartEffect2D::get_collider(int id) const {
-	return get_node(id);
-}
-Ref<PixelpartParticleEmitter> PixelpartEffect2D::get_particle_emitter_at_index(int index) const {
-	return get_node_at_index(index);
-}
-Ref<PixelpartForceField> PixelpartEffect2D::get_force_field_at_index(int index) const {
-	return get_node_at_index(index);
-}
-Ref<PixelpartCollider> PixelpartEffect2D::get_collider_at_index(int index) const {
-	return get_node_at_index(index);
-}
-
 void PixelpartEffect2D::update_transform() {
 	pixelpart::float2_t scale = pixelpart::float2_t(
 		flipH ? -1.0 : +1.0,
@@ -436,16 +408,5 @@ void PixelpartEffect2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "effect_scale", PROPERTY_HINT_RANGE, "0.0,1000.0,0.1,or_greater,exp"), "set_effect_scale", "get_effect_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "get_flip_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "get_flip_v");
-
-	// Deprecated
-	ClassDB::bind_method(D_METHOD("find_particle_emitter", "name"), &PixelpartEffect2D::find_particle_emitter);
-	ClassDB::bind_method(D_METHOD("find_force_field", "name"), &PixelpartEffect2D::find_force_field);
-	ClassDB::bind_method(D_METHOD("find_collider", "name"), &PixelpartEffect2D::find_collider);
-	ClassDB::bind_method(D_METHOD("get_particle_emitter", "id"), &PixelpartEffect2D::get_particle_emitter);
-	ClassDB::bind_method(D_METHOD("get_force_field", "id"), &PixelpartEffect2D::get_force_field);
-	ClassDB::bind_method(D_METHOD("get_collider", "id"), &PixelpartEffect2D::get_collider);
-	ClassDB::bind_method(D_METHOD("get_particle_emitter_at_index", "index"), &PixelpartEffect2D::get_particle_emitter_at_index);
-	ClassDB::bind_method(D_METHOD("get_force_field_at_index", "index"), &PixelpartEffect2D::get_force_field_at_index);
-	ClassDB::bind_method(D_METHOD("get_collider_at_index", "index"), &PixelpartEffect2D::get_collider_at_index);
 }
 }

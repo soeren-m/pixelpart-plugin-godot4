@@ -106,21 +106,5 @@ void PixelpartAnimatedPropertyFloat2::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_keyframe_interpolation"), &PixelpartAnimatedPropertyFloat2::get_keyframe_interpolation);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "keyframe_interpolation"), "set_keyframe_interpolation", "get_keyframe_interpolation");
-
-	// Deprecated
-	ClassDB::bind_method(D_METHOD("get", "position"), &PixelpartAnimatedPropertyFloat2::at);
-	ClassDB::bind_method(D_METHOD("add_point", "position", "value"), &PixelpartAnimatedPropertyFloat2::add_keyframe);
-	ClassDB::bind_method(D_METHOD("remove_point", "index"), &PixelpartAnimatedPropertyFloat2::remove_keyframe);
-	ClassDB::bind_method(D_METHOD("set_point", "index", "value"), &PixelpartAnimatedPropertyFloat2::set_keyframe_value);
-	ClassDB::bind_method(D_METHOD("set_point_position", "index", "position"), &PixelpartAnimatedPropertyFloat2::set_keyframe_position);
-	ClassDB::bind_method(D_METHOD("clear"), &PixelpartAnimatedPropertyFloat2::clear_keyframes);
-	ClassDB::bind_method(D_METHOD("contains_points"), &PixelpartAnimatedPropertyFloat2::contains_keyframes);
-	ClassDB::bind_method(D_METHOD("get_num_points"), &PixelpartAnimatedPropertyFloat2::get_keyframe_count);
-	ClassDB::bind_method(D_METHOD("get_point", "index"), &PixelpartAnimatedPropertyFloat2::get_keyframe_value);
-	ClassDB::bind_method(D_METHOD("get_point_index", "position", "epsilon"), &PixelpartAnimatedPropertyFloat2::get_keyframe_index);
-	ClassDB::bind_method(D_METHOD("set_interpolation", "method"), &PixelpartAnimatedPropertyFloat2::set_keyframe_interpolation);
-	ClassDB::bind_method(D_METHOD("get_interpolation"), &PixelpartAnimatedPropertyFloat2::get_keyframe_interpolation);
-
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "interpolation"), "set_keyframe_interpolation", "get_keyframe_interpolation");
 }
 }

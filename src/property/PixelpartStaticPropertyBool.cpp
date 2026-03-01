@@ -38,10 +38,5 @@ void PixelpartStaticPropertyBool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_base_value"), &PixelpartStaticPropertyBool::get_base_value);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "base_value"), "set_base_value", "get_base_value");
-
-	// Deprecated
-	ClassDB::bind_method(D_METHOD("get"), &PixelpartStaticPropertyBool::value);
-	ClassDB::bind_method(D_METHOD("set_value", "value"), &PixelpartStaticPropertyBool::set_base_value);
-	ClassDB::bind_method(D_METHOD("get_value"), &PixelpartStaticPropertyBool::get_base_value);
 }
 }

@@ -457,8 +457,5 @@ void PixelpartParticleType::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment_mode"), "set_alignment_mode", "get_alignment_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer"), "set_layer", "get_layer");
-
-	// Deprecated
-	ClassDB::bind_method(D_METHOD("get_num_particles"), &PixelpartParticleType::get_count);
 }
 }

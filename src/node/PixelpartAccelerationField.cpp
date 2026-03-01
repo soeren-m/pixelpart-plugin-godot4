@@ -79,10 +79,5 @@ void PixelpartAccelerationField::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_acceleration_grid_size_x"), &PixelpartAccelerationField::get_acceleration_grid_size_x);
 	ClassDB::bind_method(D_METHOD("get_acceleration_grid_size_y"), &PixelpartAccelerationField::get_acceleration_grid_size_y);
 	ClassDB::bind_method(D_METHOD("get_acceleration_grid_size_z"), &PixelpartAccelerationField::get_acceleration_grid_size_z);
-
-	// Deprecated
-	ClassDB::bind_method(D_METHOD("get_acceleration_grid_width"), &PixelpartAccelerationField::get_acceleration_grid_size_x);
-	ClassDB::bind_method(D_METHOD("get_acceleration_grid_height"), &PixelpartAccelerationField::get_acceleration_grid_size_y);
-	ClassDB::bind_method(D_METHOD("get_acceleration_grid_depth"), &PixelpartAccelerationField::get_acceleration_grid_size_z);
 }
 }

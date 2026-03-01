@@ -41,9 +41,5 @@ Ref<PixelpartStaticPropertyFloat> PixelpartDragField::get_size_influence() const
 void PixelpartDragField::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_velocity_influence"), &PixelpartDragField::get_velocity_influence);
 	ClassDB::bind_method(D_METHOD("get_size_influence"), &PixelpartDragField::get_size_influence);
-
-	// Deprecated
-	ClassDB::bind_method(D_METHOD("get_drag_velocity_influence"), &PixelpartDragField::get_velocity_influence);
-	ClassDB::bind_method(D_METHOD("get_drag_size_influence"), &PixelpartDragField::get_size_influence);
 }
 }

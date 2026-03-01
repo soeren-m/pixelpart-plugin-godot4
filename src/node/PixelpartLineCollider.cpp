@@ -58,8 +58,5 @@ void PixelpartLineCollider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_point", "index"), &PixelpartLineCollider::remove_point);
 	ClassDB::bind_method(D_METHOD("get_point", "index"), &PixelpartLineCollider::get_point);
 	ClassDB::bind_method(D_METHOD("get_point_count"), &PixelpartLineCollider::get_point_count);
-
-	// Deprecated
-	ClassDB::bind_method(D_METHOD("get_num_points"), &PixelpartLineCollider::get_point_count);
 }
 }

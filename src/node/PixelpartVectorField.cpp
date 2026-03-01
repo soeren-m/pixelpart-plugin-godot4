@@ -46,8 +46,5 @@ void PixelpartVectorField::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tightness"), &PixelpartVectorField::get_tightness);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vector_filter"), "set_vector_filter", "get_vector_filter");
-
-	// Deprecated
-	ClassDB::bind_method(D_METHOD("get_vector_tightness"), &PixelpartVectorField::get_tightness);
 }
 }

@@ -104,8 +104,5 @@ void PixelpartNoiseField::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_noise_animation_time_base"), &PixelpartNoiseField::get_noise_animation_time_base);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "noise_animated"), "set_noise_animated", "is_noise_animated");
-
-	// Deprecated
-	ClassDB::bind_method(D_METHOD("get_noise_animated"), &PixelpartNoiseField::is_noise_animated);
 }
 }

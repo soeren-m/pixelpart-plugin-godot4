@@ -38,10 +38,5 @@ void PixelpartStaticPropertyFloat2::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_base_value"), &PixelpartStaticPropertyFloat2::get_base_value);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "base_value"), "set_base_value", "get_base_value");
-
-	// Deprecated
-	ClassDB::bind_method(D_METHOD("get"), &PixelpartStaticPropertyFloat2::value);
-	ClassDB::bind_method(D_METHOD("set_value", "value"), &PixelpartStaticPropertyFloat2::set_base_value);
-	ClassDB::bind_method(D_METHOD("get_value"), &PixelpartStaticPropertyFloat2::get_base_value);
 }
 }
