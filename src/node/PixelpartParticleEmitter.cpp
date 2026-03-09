@@ -18,19 +18,19 @@ void PixelpartParticleEmitter::init(pixelpart::Node* internalNode, pixelpart::Ef
 	particleEmitter = dynamic_cast<pixelpart::ParticleEmitter*>(internalNode);
 }
 
-void PixelpartParticleEmitter::set_shape(int type) {
+void PixelpartParticleEmitter::set_shape(ShapeType type) {
 	if(!particleEmitter) {
 		return;
 	}
 
 	particleEmitter->shape(static_cast<pixelpart::ParticleEmitter::Shape>(type));
 }
-int PixelpartParticleEmitter::get_shape() const {
+PixelpartParticleEmitter::ShapeType PixelpartParticleEmitter::get_shape() const {
 	if(!particleEmitter) {
-		return static_cast<int>(pixelpart::ParticleEmitter::Shape::point);
+		return SHAPE_POINT;
 	}
 
-	return static_cast<int>(particleEmitter->shape());
+	return static_cast<ShapeType>(particleEmitter->shape());
 }
 void PixelpartParticleEmitter::add_shape_point(Vector3 point) {
 	if(!particleEmitter) {
@@ -79,33 +79,33 @@ int PixelpartParticleEmitter::get_shape_point_count() const {
 	return particleEmitter ? static_cast<int>(particleEmitter->path().pointCount()) : 0;
 }
 
-void PixelpartParticleEmitter::set_distribution(int mode) {
+void PixelpartParticleEmitter::set_distribution(DistributionType mode) {
 	if(!particleEmitter) {
 		return;
 	}
 
 	particleEmitter->distribution(static_cast<pixelpart::ParticleEmitter::Distribution>(mode));
 }
-int PixelpartParticleEmitter::get_distribution() const {
+PixelpartParticleEmitter::DistributionType PixelpartParticleEmitter::get_distribution() const {
 	if(!particleEmitter) {
-		return static_cast<int>(pixelpart::ParticleEmitter::Distribution::uniform);
+		return DISTRIBUTION_UNIFORM;
 	}
 
-	return static_cast<int>(particleEmitter->distribution());
+	return static_cast<DistributionType>(particleEmitter->distribution());
 }
-void PixelpartParticleEmitter::set_grid_order(int mode) {
+void PixelpartParticleEmitter::set_grid_order(GridOrderType mode) {
 	if(!particleEmitter) {
 		return;
 	}
 
 	particleEmitter->gridOrder(static_cast<pixelpart::ParticleEmitter::GridOrder>(mode));
 }
-int PixelpartParticleEmitter::get_grid_order() const {
+PixelpartParticleEmitter::GridOrderType PixelpartParticleEmitter::get_grid_order() const {
 	if(!particleEmitter) {
-		return static_cast<int>(pixelpart::ParticleEmitter::GridOrder::x_y_z);
+		return GRID_ORDER_X_Y_Z;
 	}
 
-	return static_cast<int>(particleEmitter->gridOrder());
+	return static_cast<GridOrderType>(particleEmitter->gridOrder());
 }
 void PixelpartParticleEmitter::set_grid_size(int x, int y, int z) {
 	if(!particleEmitter) {
@@ -126,33 +126,33 @@ int PixelpartParticleEmitter::get_grid_size_y() const {
 int PixelpartParticleEmitter::get_grid_size_z() const {
 	return particleEmitter ? static_cast<int>(particleEmitter->gridSizeZ()) : 0;
 }
-void PixelpartParticleEmitter::set_emission_mode(int mode) {
+void PixelpartParticleEmitter::set_emission_mode(EmissionMode mode) {
 	if(!particleEmitter) {
 		return;
 	}
 
 	particleEmitter->emissionMode(static_cast<pixelpart::ParticleEmitter::EmissionMode>(mode));
 }
-int PixelpartParticleEmitter::get_emission_mode() const {
+PixelpartParticleEmitter::EmissionMode PixelpartParticleEmitter::get_emission_mode() const {
 	if(!particleEmitter) {
-		return static_cast<int>(pixelpart::ParticleEmitter::EmissionMode::continuous);
+		return EMISSION_CONTINUOUS;
 	}
 
-	return static_cast<int>(particleEmitter->emissionMode());
+	return static_cast<EmissionMode>(particleEmitter->emissionMode());
 }
-void PixelpartParticleEmitter::set_direction_mode(int mode) {
+void PixelpartParticleEmitter::set_direction_mode(DirectionMode mode) {
 	if(!particleEmitter) {
 		return;
 	}
 
 	particleEmitter->directionMode(static_cast<pixelpart::ParticleEmitter::DirectionMode>(mode));
 }
-int PixelpartParticleEmitter::get_direction_mode() const {
+PixelpartParticleEmitter::DirectionMode PixelpartParticleEmitter::get_direction_mode() const {
 	if(!particleEmitter) {
-		return static_cast<int>(pixelpart::ParticleEmitter::DirectionMode::fixed);
+		return DIRECTION_FIXED;
 	}
 
-	return static_cast<int>(particleEmitter->directionMode());
+	return static_cast<DirectionMode>(particleEmitter->directionMode());
 }
 
 Ref<PixelpartAnimatedPropertyFloat3> PixelpartParticleEmitter::get_direction() const {
@@ -231,5 +231,38 @@ void PixelpartParticleEmitter::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "grid_order"), "set_grid_order", "get_grid_order");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_mode"), "set_emission_mode", "get_emission_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction_mode"), "set_direction_mode", "get_direction_mode");
+
+	BIND_ENUM_CONSTANT(SHAPE_POINT);
+	BIND_ENUM_CONSTANT(SHAPE_LINE);
+	BIND_ENUM_CONSTANT(SHAPE_ELLIPSE);
+	BIND_ENUM_CONSTANT(SHAPE_RECTANGLE);
+	BIND_ENUM_CONSTANT(SHAPE_PATH);
+	BIND_ENUM_CONSTANT(SHAPE_ELLIPSOID);
+	BIND_ENUM_CONSTANT(SHAPE_CUBOID);
+	BIND_ENUM_CONSTANT(SHAPE_CYLINDER);
+
+	BIND_ENUM_CONSTANT(DISTRIBUTION_UNIFORM);
+	BIND_ENUM_CONSTANT(DISTRIBUTION_CENTER);
+	BIND_ENUM_CONSTANT(DISTRIBUTION_HOLE);
+	BIND_ENUM_CONSTANT(DISTRIBUTION_BOUNDARY);
+	BIND_ENUM_CONSTANT(DISTRIBUTION_GRID_RANDOM);
+	BIND_ENUM_CONSTANT(DISTRIBUTION_GRID_ORDERED);
+
+	BIND_ENUM_CONSTANT(GRID_ORDER_X_Y_Z);
+	BIND_ENUM_CONSTANT(GRID_ORDER_X_Z_Y);
+	BIND_ENUM_CONSTANT(GRID_ORDER_Y_X_Z);
+	BIND_ENUM_CONSTANT(GRID_ORDER_Y_Z_X);
+	BIND_ENUM_CONSTANT(GRID_ORDER_Z_X_Y);
+	BIND_ENUM_CONSTANT(GRID_ORDER_Z_Y_X);
+
+	BIND_ENUM_CONSTANT(EMISSION_CONTINUOUS);
+	BIND_ENUM_CONSTANT(EMISSION_BURST_START);
+	BIND_ENUM_CONSTANT(EMISSION_BURST_END);
+
+	BIND_ENUM_CONSTANT(DIRECTION_FIXED);
+	BIND_ENUM_CONSTANT(DIRECTION_OUTWARDS);
+	BIND_ENUM_CONSTANT(DIRECTION_INWARDS);
+	BIND_ENUM_CONSTANT(DIRECTION_INHERIT);
+	BIND_ENUM_CONSTANT(DIRECTION_INHERIT_INVERSE);
 }
 }

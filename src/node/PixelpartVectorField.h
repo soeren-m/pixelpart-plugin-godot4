@@ -15,6 +15,21 @@ class PixelpartVectorField : public PixelpartForceField {
 	GDCLASS(PixelpartVectorField, PixelpartForceField)
 
 public:
+	/**
+	 * @brief Filtering techniques.
+	 */
+	enum FilterType {
+		/**
+		 * No filter.
+		 */
+		FILTER_NONE = 0,
+
+		/**
+		 * Linear filter.
+		 */
+		FILTER_LINEAR = 1
+	};
+
 	PixelpartVectorField();
 	virtual ~PixelpartVectorField();
 
@@ -22,7 +37,7 @@ public:
 	/**
 	 * @brief How velocity values are interpolated between the cells of the vector field.
 	 */
-	int vector_filter;
+	FilterType vector_filter;
 #endif
 
 	virtual void init(pixelpart::Node* internalNode, pixelpart::EffectEngine* effectEnginePtr) override;
@@ -32,14 +47,14 @@ public:
 	 *
 	 * @param filter Filtering algorithm to use
 	 */
-	void set_vector_filter(int filter);
+	void set_vector_filter(FilterType filter);
 
 	/**
 	 * @brief How velocity values are interpolated between the cells of the vector field.
 	 *
 	 * @return Filtering algorithm used
 	 */
-	int get_vector_filter() const;
+	FilterType get_vector_filter() const;
 
 	/**
 	 * @brief How directly particles follow the vectors in the force field.
@@ -58,5 +73,7 @@ private:
 	pixelpart::VectorField* vectorField = nullptr;
 };
 }
+
+VARIANT_ENUM_CAST(PixelpartVectorField::FilterType)
 
 #endif

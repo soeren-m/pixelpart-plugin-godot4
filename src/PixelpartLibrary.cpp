@@ -22,6 +22,7 @@
 #include "property/PixelpartStaticPropertyFloat2.h"
 #include "property/PixelpartStaticPropertyFloat3.h"
 #include "property/PixelpartStaticPropertyFloat4.h"
+#include "property/PixelpartAnimatedProperty.h"
 #include "property/PixelpartAnimatedPropertyFloat.h"
 #include "property/PixelpartAnimatedPropertyFloat2.h"
 #include "property/PixelpartAnimatedPropertyFloat3.h"
@@ -42,6 +43,7 @@ void pixelpart_register(godot::ModuleInitializationLevel level) {
 	godot::ClassDB::register_class<godot::PixelpartStaticPropertyFloat2>();
 	godot::ClassDB::register_class<godot::PixelpartStaticPropertyFloat3>();
 	godot::ClassDB::register_class<godot::PixelpartStaticPropertyFloat4>();
+	godot::ClassDB::register_class<godot::PixelpartAnimatedProperty>();
 	godot::ClassDB::register_class<godot::PixelpartAnimatedPropertyFloat>();
 	godot::ClassDB::register_class<godot::PixelpartAnimatedPropertyFloat2>();
 	godot::ClassDB::register_class<godot::PixelpartAnimatedPropertyFloat3>();

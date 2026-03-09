@@ -15,17 +15,17 @@ void PixelpartVectorField::init(pixelpart::Node* internalNode, pixelpart::Effect
 	vectorField = dynamic_cast<pixelpart::VectorField*>(internalNode);
 }
 
-void PixelpartVectorField::set_vector_filter(int filter) {
+void PixelpartVectorField::set_vector_filter(FilterType filter) {
 	if(!vectorField) {
 		return;
 	}
 
 	vectorField->vectorFieldFilter(static_cast<pixelpart::VectorField::Filter>(filter));
 }
-int PixelpartVectorField::get_vector_filter() const {
+PixelpartVectorField::FilterType PixelpartVectorField::get_vector_filter() const {
 	return vectorField
-		? static_cast<int>(vectorField->vectorFieldFilter())
-		: static_cast<int>(pixelpart::VectorField::Filter::none);
+		? static_cast<FilterType>(vectorField->vectorFieldFilter())
+		: FILTER_NONE;
 }
 
 Ref<PixelpartAnimatedPropertyFloat> PixelpartVectorField::get_tightness() const {
@@ -46,5 +46,8 @@ void PixelpartVectorField::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tightness"), &PixelpartVectorField::get_tightness);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vector_filter"), "set_vector_filter", "get_vector_filter");
+
+	BIND_ENUM_CONSTANT(FILTER_NONE);
+	BIND_ENUM_CONSTANT(FILTER_LINEAR);
 }
 }

@@ -34,6 +34,51 @@ class PixelpartParticleType : public RefCounted {
 	GDCLASS(PixelpartParticleType, RefCounted)
 
 public:
+	/**
+	 * @brief Whether the rotation property represents the exact rotation of particles or their angular velocity.
+	 */
+	enum RotationMode {
+		/**
+		 * Rotation property defines angle of rotation in degrees.
+		 */
+		ROTATION_ANGLE = 0,
+
+		/**
+		 * Rotation property defines angular velocity in degrees/second.
+		 */
+		ROTATION_VELOCITY = 1
+	};
+
+	/**
+	 * @brief Direction to which particles are aligned.
+	 */
+	enum AlignmentMode {
+		/**
+		 * Particles do not align to anything.
+		 */
+		ALIGNMENT_NONE = 0,
+
+		/**
+		 * Particles always face the camera (3D).
+		 */
+		ALIGNMENT_CAMERA = 1,
+
+		/**
+		 * Particles align to their own velocity vector.
+		 */
+		ALIGNMENT_MOTION = 2,
+
+		/**
+		 * Particles face their emitter.
+		 */
+		ALIGNMENT_EMISSION = 3,
+
+		/**
+		 * Particles copy the rotation of their emitter.
+		 */
+		ALIGNMENT_EMITTER = 4
+	};
+
 	PixelpartParticleType();
 	virtual ~PixelpartParticleType();
 
@@ -51,7 +96,7 @@ public:
 	 * - ANGLE
 	 * - VELOCITY
 	 */
-	int rotation_mode;
+	RotationMode rotation_mode;
 
 	/**
 	 * @brief Direction to which particles are aligned.
@@ -63,7 +108,7 @@ public:
 	 * - EMISSION
 	 * - EMITTER
 	 */
-	int alignment_mode;
+	AlignmentMode alignment_mode;
 
 	/**
 	 * @brief Whether particles of this type are visible.
@@ -121,7 +166,7 @@ public:
 	 *
 	 * @param mode Rotation mode
 	 */
-	void set_rotation_mode(int mode);
+	void set_rotation_mode(RotationMode mode);
 
 	/**
 	 * @brief Whether the rotation property represents the exact rotation of particles
@@ -129,21 +174,21 @@ public:
 	 *
 	 * @return Rotation mode
 	 */
-	int get_rotation_mode() const;
+	RotationMode get_rotation_mode() const;
 
 	/**
 	 * @brief Set direction to which particles are aligned.
 	 *
 	 * @param mode Alignment mode
 	 */
-	void set_alignment_mode(int mode);
+	void set_alignment_mode(AlignmentMode mode);
 
 	/**
 	 * @brief Direction to which particles are aligned.
 	 *
 	 * @return Alignment mode
 	 */
-	int get_alignment_mode() const;
+	AlignmentMode get_alignment_mode() const;
 
 	/**
 	 * @brief Center of rotation relative to the particle’s center.
@@ -392,5 +437,8 @@ private:
 	pixelpart::EffectEngine* effectEngine = nullptr;
 };
 }
+
+VARIANT_ENUM_CAST(PixelpartParticleType::RotationMode);
+VARIANT_ENUM_CAST(PixelpartParticleType::AlignmentMode);
 
 #endif

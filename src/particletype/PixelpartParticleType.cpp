@@ -36,30 +36,30 @@ bool PixelpartParticleType::is_position_relative() const {
 	return particleType ? particleType->positionRelative() : false;
 }
 
-void PixelpartParticleType::set_rotation_mode(int mode) {
+void PixelpartParticleType::set_rotation_mode(RotationMode mode) {
 	if(!particleType) {
 		return;
 	}
 
 	particleType->rotationMode(static_cast<pixelpart::RotationMode>(mode));
 }
-int PixelpartParticleType::get_rotation_mode() const {
+PixelpartParticleType::RotationMode PixelpartParticleType::get_rotation_mode() const {
 	return particleType
-		? static_cast<int>(particleType->rotationMode())
-		: static_cast<int>(pixelpart::RotationMode::angle);
+		? static_cast<RotationMode>(particleType->rotationMode())
+		: ROTATION_ANGLE;
 }
 
-void PixelpartParticleType::set_alignment_mode(int mode) {
+void PixelpartParticleType::set_alignment_mode(AlignmentMode mode) {
 	if(!particleType) {
 		return;
 	}
 
 	particleType->alignmentMode(static_cast<pixelpart::AlignmentMode>(mode));
 }
-int PixelpartParticleType::get_alignment_mode() const {
+PixelpartParticleType::AlignmentMode PixelpartParticleType::get_alignment_mode() const {
 	return particleType
-		? static_cast<int>(particleType->alignmentMode())
-		: static_cast<int>(pixelpart::AlignmentMode::none);
+		? static_cast<AlignmentMode>(particleType->alignmentMode())
+		: ALIGNMENT_NONE;
 }
 
 Ref<PixelpartStaticPropertyFloat3> PixelpartParticleType::get_pivot() const {
@@ -457,5 +457,14 @@ void PixelpartParticleType::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment_mode"), "set_alignment_mode", "get_alignment_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer"), "set_layer", "get_layer");
+
+	BIND_ENUM_CONSTANT(ROTATION_ANGLE);
+	BIND_ENUM_CONSTANT(ROTATION_VELOCITY);
+
+	BIND_ENUM_CONSTANT(ALIGNMENT_NONE);
+	BIND_ENUM_CONSTANT(ALIGNMENT_CAMERA);
+	BIND_ENUM_CONSTANT(ALIGNMENT_MOTION);
+	BIND_ENUM_CONSTANT(ALIGNMENT_EMISSION);
+	BIND_ENUM_CONSTANT(ALIGNMENT_EMITTER);
 }
 }

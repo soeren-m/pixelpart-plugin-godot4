@@ -78,17 +78,17 @@ int PixelpartAnimatedPropertyFloat4::get_keyframe_index(float position, float ep
 	return -1;
 }
 
-void PixelpartAnimatedPropertyFloat4::set_keyframe_interpolation(int method) {
+void PixelpartAnimatedPropertyFloat4::set_keyframe_interpolation(InterpolationType method) {
 	if(property) {
 		property->keyframeInterpolation(static_cast<pixelpart::CurveInterpolation>(method));
 	}
 }
-int PixelpartAnimatedPropertyFloat4::get_keyframe_interpolation() const {
+PixelpartAnimatedPropertyFloat4::InterpolationType PixelpartAnimatedPropertyFloat4::get_keyframe_interpolation() const {
 	if(property) {
-		return static_cast<int>(property->keyframeInterpolation());
+		return static_cast<InterpolationType>(property->keyframeInterpolation());
 	}
 
-	return static_cast<int>(pixelpart::CurveInterpolation::step);
+	return INTERPOLATION_STEP;
 }
 
 void PixelpartAnimatedPropertyFloat4::_bind_methods() {

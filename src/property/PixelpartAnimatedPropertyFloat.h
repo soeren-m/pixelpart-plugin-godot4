@@ -1,6 +1,7 @@
 #ifndef PIXELPART_ANIMATED_PROPERTY_FLOAT_H
 #define PIXELPART_ANIMATED_PROPERTY_FLOAT_H
 
+#include "PixelpartAnimatedProperty.h"
 #include <godot_cpp/core/binder_common.hpp>
 #include <godot_cpp/classes/ref.hpp>
 #include <pixelpart-runtime/common/Types.h>
@@ -14,8 +15,8 @@ namespace godot {
  * and are affected by effect inputs. Such properties are represented by one of the `PixelpartAnimatedProperty` classes,
  * depending on the type of the property.
  */
-class PixelpartAnimatedPropertyFloat : public RefCounted {
-	GDCLASS(PixelpartAnimatedPropertyFloat, RefCounted)
+class PixelpartAnimatedPropertyFloat : public PixelpartAnimatedProperty {
+	GDCLASS(PixelpartAnimatedPropertyFloat, PixelpartAnimatedProperty)
 
 public:
 	PixelpartAnimatedPropertyFloat();
@@ -24,7 +25,7 @@ public:
 	/**
 	 * @brief Interpolation applied to the animation curve.
 	 */
-	int keyframe_interpolation;
+	InterpolationType keyframe_interpolation;
 #endif
 
 	void init(pixelpart::AnimatedProperty<pixelpart::float_t>* prop);
@@ -110,14 +111,14 @@ public:
 	 *
 	 * @param method Interpolation method
 	 */
-	void set_keyframe_interpolation(int method);
+	void set_keyframe_interpolation(InterpolationType method);
 
 	/**
 	 * @brief Return interpolation applied to the animation curve.
 	 *
 	 * @return Interpolation method
 	 */
-	int get_keyframe_interpolation() const;
+	InterpolationType get_keyframe_interpolation() const;
 
 protected:
 	static void _bind_methods();
