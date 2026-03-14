@@ -4,12 +4,15 @@
 #include "node/PixelpartNode.h"
 #include "particletype/PixelpartParticleType.h"
 #include <godot_cpp/core/binder_common.hpp>
+#include <pixelpart-runtime/common/Types.h>
+#include <pixelpart-runtime/common/Id.h>
 #include <pixelpart-runtime/common/VariantValue.h>
 #include <pixelpart-runtime/effect/Effect.h>
 #include <pixelpart-runtime/engine/EffectEngine.h>
 #include <memory>
 #include <cstdint>
 #include <string>
+#include <vector>
 #include <unordered_map>
 
 namespace godot {
@@ -62,6 +65,9 @@ public:
 	void activate_trigger(String name);
 	bool is_trigger_activated(String name) const;
 
+	String get_event_name(pixelpart::id_t id) const;
+	std::vector<pixelpart::id_t> get_invoked_events() const;
+
 	void spawn_particles(String particleEmitterName, String particleTypeName, int count);
 
 	Ref<PixelpartNode> find_node(String name) const;
@@ -90,6 +96,7 @@ private:
 	std::unique_ptr<pixelpart::EffectEngine> effectEngine;
 	std::uint32_t particleCapacity = 10000;
 	float simulationTime = 0.0f;
+	std::vector<pixelpart::id_t> invokedEventIds;
 
 	std::unordered_map<std::string, Ref<PixelpartNode>> nodeRefs;
 	std::unordered_map<std::string, Ref<PixelpartParticleType>> particleTypeRefs;

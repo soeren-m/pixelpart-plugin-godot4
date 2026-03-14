@@ -6,6 +6,7 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <pixelpart-runtime/common/Types.h>
+#include <pixelpart-runtime/common/Id.h>
 #include <pixelpart-runtime/common/Curve.h>
 #include <pixelpart-runtime/common/VariantValue.h>
 #include <pixelpart-runtime/effect/Effect.h>
@@ -41,6 +42,11 @@ void PixelpartEffect2D::_process(double dt) {
 	update_transform();
 
 	effectRuntime.advance(dt);
+
+	for(pixelpart::id_t eventId : effectRuntime.get_invoked_events()) {
+		emit_signal("effect_event",
+			static_cast<int>(eventId.value()), effectRuntime.get_event_name(eventId.value()));
+	}
 
 	if(!finishedSignalEmitted && effectRuntime.is_finished()) {
 		finishedSignalEmitted = true;
@@ -388,6 +394,9 @@ void PixelpartEffect2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_particle_type_at_index", "index"), &PixelpartEffect2D::get_particle_type_at_index);
 
 	ADD_SIGNAL(MethodInfo("finished"));
+	ADD_SIGNAL(MethodInfo("effect_event",
+		PropertyInfo(Variant::INT, "event_id"),
+		PropertyInfo(Variant::STRING, "event_name")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "effect", PROPERTY_HINT_RESOURCE_TYPE, "PixelpartEffectResource"), "set_effect", "get_effect");
 

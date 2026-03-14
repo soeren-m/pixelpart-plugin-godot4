@@ -6,8 +6,6 @@
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
-#include <pixelpart-runtime/common/Types.h>
-#include <pixelpart-runtime/common/Id.h>
 #include <pixelpart-runtime/effect/EffectRuntimeContext.h>
 #include <pixelpart-runtime/engine/EffectRuntimeQuery.h>
 #include <pixelpart-runtime/engine/SingleThreadedEffectEngine.h>
@@ -102,12 +100,18 @@ void PixelpartEffectRuntime::advance(double dt) {
 		return;
 	}
 
+	invokedEventIds.clear();
+
 	dt = std::clamp(dt, 0.0, 1.0);
 	simulationTime += static_cast<float>(dt) * speed;
 
 	while(simulationTime > timeStep * speed) {
 		simulationTime -= timeStep * speed;
 		effectEngine->advance(timeStep * speed);
+
+		for(pixelpart::id_t eventId : effectEngine->context().invokedEvents()) {
+			invokedEventIds.push_back(eventId);
+		}
 
 		if(loop && effectEngine->context().time() > loopTime) {
 			effectEngine->restart();
@@ -281,6 +285,18 @@ bool PixelpartEffectRuntime::is_trigger_activated(String name) const {
 	}
 
 	return effectEngine->context().triggerActivated(triggerIt->first);
+}
+
+String PixelpartEffectRuntime::get_event_name(pixelpart::id_t id) const {
+	auto eventIt = effect.events().find(id);
+	if(eventIt == effect.events().end()) {
+		return String();
+	}
+
+	return String(eventIt->second.name().c_str());
+}
+std::vector<pixelpart::id_t> PixelpartEffectRuntime::get_invoked_events() const {
+	return invokedEventIds;
 }
 
 void PixelpartEffectRuntime::spawn_particles(String particleEmitterName, String particleTypeName, int count) {
