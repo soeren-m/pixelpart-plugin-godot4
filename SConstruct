@@ -40,7 +40,7 @@ elif env["platform"] == "ios":
     additional_identifier = ".simulator" if env["ios_simulator"] else ""
 
 # Target file path
-target_path = "pixelpart-plugin/addons/pixelpart/bin/libpixelpart.{}-{}{}{}".format(
+target_path = "pixelpart-plugin/addons/pixelpart/bin/libpixelpartgd.{}-{}{}{}".format(
     env["platform"], env["arch"], additional_identifier, target_ext)
 
 # Disable multi-threading in web build

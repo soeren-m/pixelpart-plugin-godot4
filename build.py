@@ -17,9 +17,9 @@ elif "platform=ios" in sys.argv:
     subprocess.run("scons platform=ios arch=arm64 target=template_release ios_simulator=no generate_bindings=true disable_exceptions=false", shell = True)
 
     subprocess.run("xcodebuild -create-xcframework " +
-        "-library pixelpart-plugin/addons/pixelpart/bin/libpixelpart.ios-arm64.a " +
-        "-library pixelpart-plugin/addons/pixelpart/bin/libpixelpart.ios-universal.simulator.a " +
-        "-output pixelpart-plugin/addons/pixelpart/bin/libpixelpart.ios.xcframework", shell = True)
+        "-library pixelpart-plugin/addons/pixelpart/bin/libpixelpartgd.ios-arm64.a " +
+        "-library pixelpart-plugin/addons/pixelpart/bin/libpixelpartgd.ios-universal.simulator.a " +
+        "-output pixelpart-plugin/addons/pixelpart/bin/libpixelpartgd.ios.xcframework", shell = True)
     subprocess.run("xcodebuild -create-xcframework " +
         "-library godot-cpp/bin/libgodot-cpp.ios.template_release.arm64.a " +
         "-library godot-cpp/bin/libgodot-cpp.ios.template_release.universal.simulator.a " +
