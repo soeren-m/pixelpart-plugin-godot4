@@ -3,7 +3,6 @@
 #include "node/PixelpartNodeFactory.h"
 #include "node/PixelpartParticleEmitter.h"
 #include "util/PixelpartUtil.h"
-#include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <pixelpart-runtime/effect/EffectRuntimeContext.h>
@@ -16,15 +15,10 @@
 
 namespace godot {
 PixelpartEffectRuntime::PixelpartEffectRuntime() {
-	ProjectSettings* settings = ProjectSettings::get_singleton();
 
-	if(settings->has_setting("pixelpart/particle_capacity")) {
-		particleCapacity = static_cast<std::uint32_t>(
-			std::max(static_cast<int>(settings->get_setting("pixelpart/particle_capacity")), 1));
-	}
 }
 
-void PixelpartEffectRuntime::set_effect(const pixelpart::Effect& eff) {
+void PixelpartEffectRuntime::set_effect(const pixelpart::Effect& eff, std::uint32_t particleCapacity) {
 	reset_effect();
 
 	effect = eff;
@@ -136,6 +130,10 @@ void PixelpartEffectRuntime::restart(bool clear) {
 	}
 
 	effectEngine->restart();
+
+	if(!randomSeed) {
+		effectEngine->reseed(static_cast<std::uint32_t>(seed));
+	}
 }
 bool PixelpartEffectRuntime::is_playing() const {
 	return playing;

@@ -12,6 +12,7 @@
 #include <pixelpart-runtime/effect/ParticleEmissionPair.h>
 #include <godot_cpp/core/binder_common.hpp>
 #include <godot_cpp/classes/visual_instance3d.hpp>
+#include <cstdint>
 #include <memory>
 #include <unordered_map>
 
@@ -24,6 +25,7 @@ namespace godot {
  * @paragraph signals Signals
  * - finished: Signal that is emitted when the effect is finished.
  * This signal is never emitted for effects with repeating particle emitters.
+ * - effect_event(event_id, event_name): Signal that is emitted when a custom effect event is invoked.
  */
 class PixelpartEffect : public VisualInstance3D {
 	GDCLASS(PixelpartEffect, VisualInstance3D)
@@ -491,6 +493,8 @@ private:
 
 	Ref<PixelpartEffectResource> effectResource;
 	PixelpartEffectRuntime effectRuntime;
+	std::uint32_t particleCapacity = 10000;
+	bool editorPreviewEnabled = true;
 
 	float effectScale = 1.0f;
 

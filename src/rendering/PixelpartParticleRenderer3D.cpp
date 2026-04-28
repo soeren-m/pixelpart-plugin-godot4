@@ -65,6 +65,7 @@ PixelpartParticleRenderer3D::PixelpartParticleRenderer3D(PixelpartGraphicsResour
 
 	RenderingServer* rs = RenderingServer::get_singleton();
 	instanceRID = rs->instance_create();
+	rs->instance_geometry_set_flag(instanceRID, RenderingServer::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
 
 	switch(particleType.renderer()) {
 		case pixelpart::ParticleRendererType::sprite:

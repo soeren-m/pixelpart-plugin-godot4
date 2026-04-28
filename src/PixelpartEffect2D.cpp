@@ -4,6 +4,7 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/math.hpp>
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <pixelpart-runtime/common/Types.h>
 #include <pixelpart-runtime/common/Id.h>
@@ -18,14 +19,25 @@
 
 namespace godot {
 PixelpartEffect2D::PixelpartEffect2D() : Node2D() {
+	ProjectSettings* settings = ProjectSettings::get_singleton();
 
+	if(Engine::get_singleton()->is_editor_hint()) {
+		particleCapacity = static_cast<std::uint32_t>(
+			std::max(static_cast<int>(settings->get_setting("pixelpart/particle_capacity_editor", Variant(100))), 1));
+	}
+	else {
+		particleCapacity = static_cast<std::uint32_t>(
+			std::max(static_cast<int>(settings->get_setting("pixelpart/particle_capacity"), Variant(10000)), 1));
+	}
+
+	editorPreviewEnabled = static_cast<bool>(settings->get_setting("pixelpart/editor_preview", Variant(true)));
 }
 PixelpartEffect2D::~PixelpartEffect2D() {
 
 }
 
 void PixelpartEffect2D::_enter_tree() {
-	if(Engine::get_singleton()->is_editor_hint()) {
+	if(Engine::get_singleton()->is_editor_hint() && !editorPreviewEnabled) {
 		return;
 	}
 
@@ -35,7 +47,7 @@ void PixelpartEffect2D::_enter_tree() {
 }
 
 void PixelpartEffect2D::_process(double dt) {
-	if(Engine::get_singleton()->is_editor_hint()) {
+	if(Engine::get_singleton()->is_editor_hint() && !editorPreviewEnabled) {
 		return;
 	}
 
@@ -57,10 +69,12 @@ void PixelpartEffect2D::_process(double dt) {
 }
 
 void PixelpartEffect2D::_draw() {
-	if(Engine::get_singleton()->is_editor_hint() || !effectRuntime.get_effect_engine()) {
+	if(Engine::get_singleton()->is_editor_hint() && !editorPreviewEnabled) {
 		return;
 	}
-
+	if(!effectRuntime.get_effect_engine()) {
+		return;
+	}
 	if(!get_viewport()) {
 		return;
 	}
@@ -115,9 +129,9 @@ void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> resource) {
 	}
 
 	effectResource->load();
-	effectRuntime.set_effect(effectResource->get_asset().effect());
+	effectRuntime.set_effect(effectResource->get_asset().effect(), particleCapacity);
 
-	if(!Engine::get_singleton()->is_editor_hint()) {
+	if(!Engine::get_singleton()->is_editor_hint() || editorPreviewEnabled) {
 		try {
 			graphicsResourceProvider.load(effectRuntime.get_effect());
 

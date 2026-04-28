@@ -5,6 +5,7 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/viewport.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <pixelpart-runtime/common/Types.h>
 #include <pixelpart-runtime/common/Id.h>
@@ -20,14 +21,25 @@
 
 namespace godot {
 PixelpartEffect::PixelpartEffect() : VisualInstance3D() {
+	ProjectSettings* settings = ProjectSettings::get_singleton();
 
+	if(Engine::get_singleton()->is_editor_hint()) {
+		particleCapacity = static_cast<std::uint32_t>(
+			std::max(static_cast<int>(settings->get_setting("pixelpart/particle_capacity_editor", Variant(100))), 1));
+	}
+	else {
+		particleCapacity = static_cast<std::uint32_t>(
+			std::max(static_cast<int>(settings->get_setting("pixelpart/particle_capacity"), Variant(10000)), 1));
+	}
+
+	editorPreviewEnabled = static_cast<bool>(settings->get_setting("pixelpart/editor_preview", Variant(true)));
 }
 PixelpartEffect::~PixelpartEffect() {
 
 }
 
 void PixelpartEffect::_enter_tree() {
-	if(Engine::get_singleton()->is_editor_hint()) {
+	if(Engine::get_singleton()->is_editor_hint() && !editorPreviewEnabled) {
 		return;
 	}
 
@@ -38,15 +50,13 @@ void PixelpartEffect::_enter_tree() {
 	RenderingServer::get_singleton()->connect("frame_pre_draw", Callable(this, "draw"));
 }
 void PixelpartEffect::_exit_tree() {
-	if(Engine::get_singleton()->is_editor_hint()) {
-		return;
+	if(RenderingServer::get_singleton()->is_connected("frame_pre_draw", Callable(this, "draw"))) {
+		RenderingServer::get_singleton()->disconnect("frame_pre_draw", Callable(this, "draw"));
 	}
-
-	RenderingServer::get_singleton()->disconnect("frame_pre_draw", Callable(this, "draw"));
 }
 
 void PixelpartEffect::_process(double dt) {
-	if(Engine::get_singleton()->is_editor_hint()) {
+	if(Engine::get_singleton()->is_editor_hint() && !editorPreviewEnabled) {
 		return;
 	}
 
@@ -66,10 +76,12 @@ void PixelpartEffect::_process(double dt) {
 }
 
 void PixelpartEffect::draw() {
-	if(Engine::get_singleton()->is_editor_hint() || !effectRuntime.get_effect_engine()) {
+	if(Engine::get_singleton()->is_editor_hint() && !editorPreviewEnabled) {
 		return;
 	}
-
+	if(!effectRuntime.get_effect_engine()) {
+		return;
+	}
 	if(!get_viewport()) {
 		return;
 	}
@@ -120,24 +132,26 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> resource) {
 	}
 
 	effectResource->load();
-	effectRuntime.set_effect(effectResource->get_asset().effect());
+	effectRuntime.set_effect(effectResource->get_asset().effect(), particleCapacity);
 
-	try {
-		graphicsResourceProvider.load(effectRuntime.get_effect());
+	if(!Engine::get_singleton()->is_editor_hint() || editorPreviewEnabled) {
+		try {
+			graphicsResourceProvider.load(effectRuntime.get_effect());
 
-		for(const pixelpart::ParticleEmissionPair& emissionPair : effectRuntime.get_effect().particleEmissionPairs()) {
-			particleRenderers[emissionPair] = std::make_unique<PixelpartParticleRenderer3D>(
-				graphicsResourceProvider,
-				PixelpartSystem::get_instance()->get_shader_provider(),
-				PixelpartSystem::get_instance()->get_thread_pool(),
-				effectRuntime.get_effect(),
-				emissionPair.emitterId,
-				emissionPair.typeId);
+			for(const pixelpart::ParticleEmissionPair& emissionPair : effectRuntime.get_effect().particleEmissionPairs()) {
+				particleRenderers[emissionPair] = std::make_unique<PixelpartParticleRenderer3D>(
+					graphicsResourceProvider,
+					PixelpartSystem::get_instance()->get_shader_provider(),
+					PixelpartSystem::get_instance()->get_thread_pool(),
+					effectRuntime.get_effect(),
+					emissionPair.emitterId,
+					emissionPair.typeId);
+			}
 		}
-	}
-	catch(const std::exception& e) {
-		effectRuntime.reset_effect();
-		UtilityFunctions::push_error(String("Failed to prepare resources for rendering: ") + String(e.what()));
+		catch(const std::exception& e) {
+			effectRuntime.reset_effect();
+			UtilityFunctions::push_error(String("Failed to prepare resources for rendering: ") + String(e.what()));
+		}
 	}
 
 	notify_property_list_changed();

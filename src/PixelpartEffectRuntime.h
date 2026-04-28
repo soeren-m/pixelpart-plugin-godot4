@@ -20,7 +20,7 @@ class PixelpartEffectRuntime {
 public:
 	PixelpartEffectRuntime();
 
-	void set_effect(const pixelpart::Effect& eff);
+	void set_effect(const pixelpart::Effect& eff, std::uint32_t particleCapacity);
 	void reset_effect();
 	const pixelpart::Effect& get_effect() const;
 	const pixelpart::EffectEngine* get_effect_engine() const;
@@ -94,7 +94,6 @@ private:
 	Dictionary inputValues;
 
 	std::unique_ptr<pixelpart::EffectEngine> effectEngine;
-	std::uint32_t particleCapacity = 10000;
 	float simulationTime = 0.0f;
 	std::vector<pixelpart::id_t> invokedEventIds;
 
