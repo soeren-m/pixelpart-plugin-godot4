@@ -81,35 +81,21 @@ void PixelpartEffect2D::_draw() {
 	const pixelpart::Effect& effect = effectRuntime.get_effect();
 	const pixelpart::EffectEngine* effectEngine = effectRuntime.get_effect_engine();
 
-	std::vector<pixelpart::ParticleEmissionPair> emissionPairsSortedByLayer = effect.particleEmissionPairs();
-	std::sort(emissionPairsSortedByLayer.begin(), emissionPairsSortedByLayer.end(),
-		[&effect](const pixelpart::ParticleEmissionPair& p1, const pixelpart::ParticleEmissionPair& p2) {
-			const pixelpart::ParticleType& pt1 = effect.particleTypes().at(p1.typeId);
-			const pixelpart::ParticleType& pt2 = effect.particleTypes().at(p2.typeId);
-
-			return pt1.layer() < pt2.layer();
-		});
-
-	pixelpart::float2_t scale = pixelpart::float2_t(
+	pixelpart::float2_t particleScale = pixelpart::float2_t(
 		flipH ? -1.0 : +1.0,
 		flipV ? -1.0 : +1.0) * static_cast<pixelpart::float_t>(effectScale);
 
-	for(const pixelpart::ParticleEmissionPair& emissionPair : emissionPairsSortedByLayer) {
-		if(particleRenderers.count(emissionPair) == 0) {
+	for(const pixelpart::ParticleEmissionPair& emissionPair : effect.particleEmissionPairs()) {
+		const pixelpart::ParticleCollection* particleCollection = effectEngine->state().particleCollection(
+			emissionPair.emitterId, emissionPair.typeId);
+		auto particleCanvasItemIt = particleCanvasItems.find(emissionPair);
+		if(!particleCollection || particleCanvasItemIt == particleCanvasItems.end()) {
 			continue;
 		}
 
-		const pixelpart::ParticleCollection* particleCollection =
-			effectEngine->state().particleCollection(emissionPair.emitterId, emissionPair.typeId);
-		if(!particleCollection) {
-			continue;
-		}
-
-		particleRenderers.at(emissionPair)->draw(this,
-			particleCollection->readPtr(),
-			particleCollection->count(),
+		particleCanvasItemIt->second->draw(*particleCollection,
 			effectEngine->context(),
-			scale);
+			particleScale);
 	}
 }
 
@@ -129,7 +115,7 @@ void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> resource) {
 	finishedSignalEmitted = false;
 
 	graphicsResourceProvider.clear();
-	particleRenderers.clear();
+	particleCanvasItems.clear();
 
 	effectResource = resource;
 	if(effectResource.is_null()) {
@@ -145,13 +131,13 @@ void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> resource) {
 			graphicsResourceProvider.load(effectRuntime.get_effect());
 
 			for(const pixelpart::ParticleEmissionPair& emissionPair : effectRuntime.get_effect().particleEmissionPairs()) {
-				particleRenderers[emissionPair] = std::make_unique<PixelpartParticleRenderer2D>(
-					graphicsResourceProvider,
-					PixelpartSystem::get_instance()->get_shader_provider(),
-					PixelpartSystem::get_instance()->get_thread_pool(),
+				particleCanvasItems[emissionPair] = std::make_unique<PixelpartParticleCanvasItem>(this,
 					effectRuntime.get_effect(),
 					emissionPair.emitterId,
-					emissionPair.typeId);
+					emissionPair.typeId,
+					graphicsResourceProvider,
+					PixelpartSystem::get_instance()->get_shader_provider(),
+					PixelpartSystem::get_instance()->get_thread_pool());
 			}
 		}
 		catch(const std::exception& e) {
@@ -349,7 +335,7 @@ void PixelpartEffect2D::apply_transform() {
 		flipV ? -1.0 : +1.0) * static_cast<pixelpart::float_t>(effectScale);
 
 	pixelpart::float2_t globalPosition = gd_to_pxpt(get_global_transform().get_origin()) / scale;
-	pixelpart::float_t globalRotation = gd_to_pxpt(get_global_transform().get_rotation()) / Math_PI * 180.0;
+	pixelpart::float_t globalRotation = gd_to_pxpt(-get_global_transform().get_rotation()) / Math_PI * 180.0;
 	pixelpart::float2_t globalScale = gd_to_pxpt(get_global_transform().get_scale());
 
 	for(const std::unique_ptr<pixelpart::Node>& node : effectRuntime.get_effect().sceneGraph().nodes()) {

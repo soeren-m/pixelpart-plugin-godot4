@@ -98,29 +98,15 @@ void PixelpartEffect::draw() {
 	const pixelpart::Effect& effect = effectRuntime.get_effect();
 	const pixelpart::EffectEngine* effectEngine = effectRuntime.get_effect_engine();
 
-	std::vector<pixelpart::ParticleEmissionPair> emissionPairsSortedByLayer = effect.particleEmissionPairs();
-	std::sort(emissionPairsSortedByLayer.begin(), emissionPairsSortedByLayer.end(),
-		[this, &effect](const pixelpart::ParticleEmissionPair& p1, const pixelpart::ParticleEmissionPair& p2) {
-			const pixelpart::ParticleType& pt1 = effect.particleTypes().at(p1.typeId);
-			const pixelpart::ParticleType& pt2 = effect.particleTypes().at(p2.typeId);
-
-			return pt1.layer() < pt2.layer();
-		});
-
-	for(const pixelpart::ParticleEmissionPair& emissionPair : emissionPairsSortedByLayer) {
-		if(particleRenderers.count(emissionPair) == 0) {
+	for(const pixelpart::ParticleEmissionPair& emissionPair : effect.particleEmissionPairs()) {
+		const pixelpart::ParticleCollection* particleCollection = effectEngine->state().particleCollection(
+			emissionPair.emitterId, emissionPair.typeId);
+		auto particleInstanceIt = particleInstances.find(emissionPair);
+		if(!particleCollection || particleInstanceIt == particleInstances.end()) {
 			continue;
 		}
 
-		const pixelpart::ParticleCollection* particleCollection =
-			effectEngine->state().particleCollection(emissionPair.emitterId, emissionPair.typeId);
-		if(!particleCollection) {
-			continue;
-		}
-
-		particleRenderers.at(emissionPair)->draw(this,
-			particleCollection->readPtr(),
-			particleCollection->count(),
+		particleInstanceIt->second->draw(*particleCollection,
 			effectEngine->context(),
 			static_cast<pixelpart::float_t>(effectScale));
 	}
@@ -132,7 +118,7 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> resource) {
 	finishedSignalEmitted = false;
 
 	graphicsResourceProvider.clear();
-	particleRenderers.clear();
+	particleInstances.clear();
 
 	effectResource = resource;
 	if(effectResource.is_null()) {
@@ -148,13 +134,13 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> resource) {
 			graphicsResourceProvider.load(effectRuntime.get_effect());
 
 			for(const pixelpart::ParticleEmissionPair& emissionPair : effectRuntime.get_effect().particleEmissionPairs()) {
-				particleRenderers[emissionPair] = std::make_unique<PixelpartParticleRenderer3D>(
-					graphicsResourceProvider,
-					PixelpartSystem::get_instance()->get_shader_provider(),
-					PixelpartSystem::get_instance()->get_thread_pool(),
+				particleInstances[emissionPair] = std::make_unique<PixelpartParticleInstance3D>(this,
 					effectRuntime.get_effect(),
 					emissionPair.emitterId,
-					emissionPair.typeId);
+					emissionPair.typeId,
+					graphicsResourceProvider,
+					PixelpartSystem::get_instance()->get_shader_provider(),
+					PixelpartSystem::get_instance()->get_thread_pool());
 			}
 		}
 		catch(const std::exception& e) {

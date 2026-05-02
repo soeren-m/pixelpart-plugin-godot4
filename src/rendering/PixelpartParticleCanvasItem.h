@@ -1,5 +1,5 @@
-#ifndef PIXELPART_PARTICLE_RENDERER_2D_H
-#define PIXELPART_PARTICLE_RENDERER_2D_H
+#ifndef PIXELPART_PARTICLE_CANVAS_ITEM_H
+#define PIXELPART_PARTICLE_CANVAS_ITEM_H
 
 #include "PixelpartGraphicsResourceProvider.h"
 #include "PixelpartShaderProvider.h"
@@ -14,38 +14,37 @@
 #include <pixelpart-runtime/vertex/ParticleVertexGenerator.h>
 #include <memory>
 #include <cstdint>
-#include <string>
-#include <vector>
-#include <unordered_map>
 
 namespace godot {
-class PixelpartParticleRenderer2D {
+class PixelpartParticleCanvasItem {
 public:
-	PixelpartParticleRenderer2D(PixelpartGraphicsResourceProvider& resourceProvider, PixelpartShaderProvider& shaderProvider,
-		std::shared_ptr<pixelpart::ThreadPool> threadPool,
-		const pixelpart::Effect& eff, pixelpart::id_t emitterId, pixelpart::id_t typeId);
-	PixelpartParticleRenderer2D(const PixelpartParticleRenderer2D&) = delete;
-	~PixelpartParticleRenderer2D();
+	PixelpartParticleCanvasItem(Node2D* parent,
+		const pixelpart::Effect& eff, pixelpart::id_t emitterId, pixelpart::id_t typeId,
+		PixelpartGraphicsResourceProvider& resourceProvider, PixelpartShaderProvider& shaderProvider,
+		std::shared_ptr<pixelpart::ThreadPool> threadPool);
+	PixelpartParticleCanvasItem(const PixelpartParticleCanvasItem&) = delete;
+	~PixelpartParticleCanvasItem();
 
-	PixelpartParticleRenderer2D& operator=(const PixelpartParticleRenderer2D&) = delete;
+	PixelpartParticleCanvasItem& operator=(const PixelpartParticleCanvasItem&) = delete;
 
-	void draw(Node2D* parentNode,
-		pixelpart::ParticleCollection::ReadPtr particles, std::uint32_t particleCount,
+	void draw(const pixelpart::ParticleCollection& particles,
 		const pixelpart::EffectRuntimeContext& runtimeContext, pixelpart::float2_t scale);
 
 private:
-	PixelpartGraphicsResourceProvider& resources;
+	void create_material(PixelpartGraphicsResourceProvider& resourceProvider, PixelpartShaderProvider& shaderProvider);
+	void create_canvas_item();
+	void create_vertex_generator(std::shared_ptr<pixelpart::ThreadPool> threadPool);
+
+	Node2D* parentNode = nullptr;
 
 	const pixelpart::Effect& effect;
 	pixelpart::id_t particleEmitterId;
 	pixelpart::id_t particleTypeId;
 
-	RID canvasItemRID;
-	RID meshRID;
-	RID materialRID;
+	RID canvasItemRid;
+	RID meshRid;
+	RID materialRid;
 	Ref<Shader> shader;
-	std::unordered_map<pixelpart::id_t, std::string> shaderParameterNames;
-	std::unordered_map<std::string, std::string> textureResourceIds;
 
 	std::unique_ptr<pixelpart::ParticleVertexGenerator> vertexGenerator;
 	PackedInt32Array indexArray;

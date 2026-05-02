@@ -23,10 +23,10 @@ void PixelpartGraphicsResourceProvider::clear() {
 	providerMeshes.clear();
 }
 
-const PixelpartGraphicsResourceProvider::TextureResourceMap& PixelpartGraphicsResourceProvider::textures() const {
+const PixelpartGraphicsResourceProvider::TextureResourceMap& PixelpartGraphicsResourceProvider::get_textures() const {
 	return providerTextures;
 }
-const PixelpartGraphicsResourceProvider::MeshResourceMap& PixelpartGraphicsResourceProvider::meshes() const {
+const PixelpartGraphicsResourceProvider::MeshResourceMap& PixelpartGraphicsResourceProvider::get_meshes() const {
 	return providerMeshes;
 }
 

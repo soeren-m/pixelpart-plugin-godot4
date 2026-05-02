@@ -4,7 +4,7 @@
 #include "PixelpartEffectResource.h"
 #include "PixelpartEffectRuntime.h"
 #include "rendering/PixelpartGraphicsResourceProvider.h"
-#include "rendering/PixelpartParticleRenderer2D.h"
+#include "rendering/PixelpartParticleCanvasItem.h"
 #include "particletype/PixelpartParticleType.h"
 #include "node/PixelpartParticleEmitter.h"
 #include "node/PixelpartForceField.h"
@@ -542,7 +542,7 @@ private:
 	bool finishedSignalEmitted = false;
 
 	PixelpartGraphicsResourceProvider graphicsResourceProvider;
-	std::unordered_map<pixelpart::ParticleEmissionPair, std::unique_ptr<PixelpartParticleRenderer2D>> particleRenderers;
+	std::unordered_map<pixelpart::ParticleEmissionPair, std::unique_ptr<PixelpartParticleCanvasItem>> particleCanvasItems;
 };
 }
 

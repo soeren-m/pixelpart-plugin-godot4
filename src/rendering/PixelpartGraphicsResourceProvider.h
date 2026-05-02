@@ -21,8 +21,8 @@ public:
 
 	void clear();
 
-	const TextureResourceMap& textures() const;
-	const MeshResourceMap& meshes() const;
+	const TextureResourceMap& get_textures() const;
+	const MeshResourceMap& get_meshes() const;
 
 private:
 	void load_texture(const std::string& name, const pixelpart::ImageResource& imageResource, bool convertToLinear);

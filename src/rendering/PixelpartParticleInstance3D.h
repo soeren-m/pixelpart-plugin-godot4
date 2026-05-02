@@ -1,5 +1,5 @@
-#ifndef PIXELPART_PARTICLE_RENDERER_3D_H
-#define PIXELPART_PARTICLE_RENDERER_3D_H
+#ifndef PIXELPART_PARTICLE_INSTANCE_3D_H
+#define PIXELPART_PARTICLE_INSTANCE_3D_H
 
 #include "PixelpartGraphicsResourceProvider.h"
 #include "PixelpartShaderProvider.h"
@@ -18,42 +18,40 @@
 #include <pixelpart-runtime/vertex/ParticleVertexGenerator.h>
 #include <memory>
 #include <cstdint>
-#include <string>
-#include <vector>
-#include <unordered_map>
 
 namespace godot {
-class PixelpartParticleRenderer3D {
+class PixelpartParticleInstance3D {
 public:
-	PixelpartParticleRenderer3D(PixelpartGraphicsResourceProvider& resourceProvider, PixelpartShaderProvider& shaderProvider,
-		std::shared_ptr<pixelpart::ThreadPool> threadPool,
-		const pixelpart::Effect& eff, pixelpart::id_t emitterId, pixelpart::id_t typeId);
-	PixelpartParticleRenderer3D(const PixelpartParticleRenderer3D&) = delete;
-	~PixelpartParticleRenderer3D();
+	PixelpartParticleInstance3D(VisualInstance3D* parent,
+		const pixelpart::Effect& eff, pixelpart::id_t emitterId, pixelpart::id_t typeId,
+		PixelpartGraphicsResourceProvider& resourceProvider, PixelpartShaderProvider& shaderProvider,
+		std::shared_ptr<pixelpart::ThreadPool> threadPool);
+	PixelpartParticleInstance3D(const PixelpartParticleInstance3D&) = delete;
+	~PixelpartParticleInstance3D();
 
-	PixelpartParticleRenderer3D& operator=(const PixelpartParticleRenderer3D&) = delete;
+	PixelpartParticleInstance3D& operator=(const PixelpartParticleInstance3D&) = delete;
 
-	void draw(VisualInstance3D* parentNode,
-		pixelpart::ParticleCollection::ReadPtr particles, std::uint32_t particleCount,
+	void draw(const pixelpart::ParticleCollection& particles,
 		const pixelpart::EffectRuntimeContext& runtimeContext, pixelpart::float_t scale);
 
 private:
+	void create_material(PixelpartGraphicsResourceProvider& resourceProvider, PixelpartShaderProvider& shaderProvider);
+	void create_instance(PixelpartGraphicsResourceProvider& resourceProvider);
+	void create_vertex_generator(std::shared_ptr<pixelpart::ThreadPool> threadPool);
+
 	static float pack_int_float(float a, float b, float s);
 
-	PixelpartGraphicsResourceProvider& resources;
+	VisualInstance3D* parentNode = nullptr;
 
 	const pixelpart::Effect& effect;
 	pixelpart::id_t particleEmitterId;
 	pixelpart::id_t particleTypeId;
 
-	RID instanceRID;
-
+	RID instanceRid;
 	Ref<ArrayMesh> arrayMesh;
 	Ref<MultiMesh> multiMesh;
 	Ref<Shader> shader;
 	Ref<ShaderMaterial> shaderMaterial;
-	std::unordered_map<pixelpart::id_t, std::string> shaderParameterNames;
-	std::unordered_map<std::string, std::string> textureResourceIds;
 
 	std::unique_ptr<pixelpart::ParticleVertexGenerator> vertexGenerator;
 	PackedInt32Array indexArray;
