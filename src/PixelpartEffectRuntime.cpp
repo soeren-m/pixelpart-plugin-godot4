@@ -58,9 +58,13 @@ void PixelpartEffectRuntime::reset_effect() {
 	effectEngine = nullptr;
 	simulationTime = 0.0f;
 
+	invokedEventIds.clear();
+
 	nodeRefs.clear();
 	particleTypeRefs.clear();
 	inputValues.clear();
+
+	effect = pixelpart::Effect();
 }
 const pixelpart::Effect& PixelpartEffectRuntime::get_effect() const {
 	return effect;

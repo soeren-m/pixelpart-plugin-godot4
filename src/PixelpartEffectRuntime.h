@@ -95,6 +95,7 @@ private:
 
 	std::unique_ptr<pixelpart::EffectEngine> effectEngine;
 	float simulationTime = 0.0f;
+
 	std::vector<pixelpart::id_t> invokedEventIds;
 
 	std::unordered_map<std::string, Ref<PixelpartNode>> nodeRefs;

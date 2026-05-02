@@ -106,6 +106,8 @@ public:
 
 	virtual void _process(double dt) override;
 
+	void _notification(int p_what);
+
 	void draw();
 
 	/**
@@ -489,7 +491,7 @@ protected:
 	static void _bind_methods();
 
 private:
-	void update_transform();
+	void apply_transform();
 
 	Ref<PixelpartEffectResource> effectResource;
 	PixelpartEffectRuntime effectRuntime;

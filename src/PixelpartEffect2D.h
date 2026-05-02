@@ -117,6 +117,8 @@ public:
 
 	virtual void _draw() override;
 
+	void _notification(int p_what);
+
 	/**
 	 * @brief Change the effect resource that is shown.
 	 *
@@ -526,7 +528,7 @@ protected:
 	static void _bind_methods();
 
 private:
-	void update_transform();
+	void apply_transform();
 
 	Ref<PixelpartEffectResource> effectResource;
 	PixelpartEffectRuntime effectRuntime;

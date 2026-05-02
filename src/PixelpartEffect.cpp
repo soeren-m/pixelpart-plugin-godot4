@@ -33,6 +33,8 @@ PixelpartEffect::PixelpartEffect() : VisualInstance3D() {
 	}
 
 	editorPreviewEnabled = static_cast<bool>(settings->get_setting("pixelpart/editor_preview", Variant(true)));
+
+	set_notify_transform(true);
 }
 PixelpartEffect::~PixelpartEffect() {
 
@@ -43,8 +45,7 @@ void PixelpartEffect::_enter_tree() {
 		return;
 	}
 
-	update_transform();
-
+	apply_transform();
 	effectRuntime.start();
 
 	RenderingServer::get_singleton()->connect("frame_pre_draw", Callable(this, "draw"));
@@ -60,8 +61,6 @@ void PixelpartEffect::_process(double dt) {
 		return;
 	}
 
-	update_transform();
-
 	effectRuntime.advance(dt);
 
 	for(pixelpart::id_t eventId : effectRuntime.get_invoked_events()) {
@@ -72,6 +71,16 @@ void PixelpartEffect::_process(double dt) {
 	if(!finishedSignalEmitted && effectRuntime.is_finished()) {
 		finishedSignalEmitted = true;
 		emit_signal("finished");
+	}
+}
+
+void PixelpartEffect::_notification(int p_what) {
+	switch(p_what) {
+		case NOTIFICATION_TRANSFORM_CHANGED:
+			apply_transform();
+			break;
+		default:
+			break;
 	}
 }
 
@@ -154,6 +163,11 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> resource) {
 		}
 	}
 
+	if(is_inside_tree()) {
+		apply_transform();
+		effectRuntime.start();
+	}
+
 	notify_property_list_changed();
 }
 Ref<PixelpartEffectResource> PixelpartEffect::get_effect() const {
@@ -230,6 +244,7 @@ bool PixelpartEffect::is_random_seed_enabled() const {
 
 void PixelpartEffect::set_effect_scale(float scale) {
 	effectScale = scale;
+	apply_transform();
 }
 float PixelpartEffect::get_effect_scale() const {
 	return effectScale;
@@ -316,7 +331,7 @@ Ref<PixelpartParticleType> PixelpartEffect::get_particle_type_at_index(int index
 	return effectRuntime.get_particle_type_at_index(index);
 }
 
-void PixelpartEffect::update_transform() {
+void PixelpartEffect::apply_transform() {
 	Basis basis = get_global_transform().get_basis().transposed();
 	Vector3 origin = get_global_transform().get_origin();
 	pixelpart::Transform transform = pixelpart::Transform(pixelpart::matrix4_t(

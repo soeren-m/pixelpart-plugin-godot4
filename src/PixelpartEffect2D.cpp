@@ -31,6 +31,8 @@ PixelpartEffect2D::PixelpartEffect2D() : Node2D() {
 	}
 
 	editorPreviewEnabled = static_cast<bool>(settings->get_setting("pixelpart/editor_preview", Variant(true)));
+
+	set_notify_transform(true);
 }
 PixelpartEffect2D::~PixelpartEffect2D() {
 
@@ -41,8 +43,7 @@ void PixelpartEffect2D::_enter_tree() {
 		return;
 	}
 
-	update_transform();
-
+	apply_transform();
 	effectRuntime.start();
 }
 
@@ -50,8 +51,6 @@ void PixelpartEffect2D::_process(double dt) {
 	if(Engine::get_singleton()->is_editor_hint() && !editorPreviewEnabled) {
 		return;
 	}
-
-	update_transform();
 
 	effectRuntime.advance(dt);
 
@@ -114,6 +113,16 @@ void PixelpartEffect2D::_draw() {
 	}
 }
 
+void PixelpartEffect2D::_notification(int p_what) {
+	switch(p_what) {
+		case NOTIFICATION_TRANSFORM_CHANGED:
+			apply_transform();
+			break;
+		default:
+			break;
+	}
+}
+
 void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> resource) {
 	effectRuntime.reset_effect();
 
@@ -149,6 +158,11 @@ void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> resource) {
 			effectRuntime.reset_effect();
 			UtilityFunctions::push_error(String("Failed to prepare resources for rendering: ") + String(e.what()));
 		}
+	}
+
+	if(is_inside_tree()) {
+		apply_transform();
+		effectRuntime.start();
 	}
 
 	notify_property_list_changed();
@@ -227,6 +241,7 @@ bool PixelpartEffect2D::is_random_seed_enabled() const {
 
 void PixelpartEffect2D::set_effect_scale(float scale) {
 	effectScale = scale;
+	apply_transform();
 }
 float PixelpartEffect2D::get_effect_scale() const {
 	return effectScale;
@@ -234,9 +249,11 @@ float PixelpartEffect2D::get_effect_scale() const {
 
 void PixelpartEffect2D::set_flip_h(bool flip) {
 	flipH = flip;
+	apply_transform();
 }
 void PixelpartEffect2D::set_flip_v(bool flip) {
 	flipV = flip;
+	apply_transform();
 }
 bool PixelpartEffect2D::get_flip_h() const {
 	return flipH;
@@ -326,7 +343,7 @@ Ref<PixelpartParticleType> PixelpartEffect2D::get_particle_type_at_index(int ind
 	return effectRuntime.get_particle_type_at_index(index);
 }
 
-void PixelpartEffect2D::update_transform() {
+void PixelpartEffect2D::apply_transform() {
 	pixelpart::float2_t scale = pixelpart::float2_t(
 		flipH ? -1.0 : +1.0,
 		flipV ? -1.0 : +1.0) * static_cast<pixelpart::float_t>(effectScale);
