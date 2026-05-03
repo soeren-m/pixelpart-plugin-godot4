@@ -532,7 +532,6 @@ private:
 
 	Ref<PixelpartEffectResource> effectResource;
 	PixelpartEffectRuntime effectRuntime;
-	std::uint32_t particleCapacity = 10000;
 	bool editorPreviewEnabled = true;
 
 	float effectScale = 100.0f;

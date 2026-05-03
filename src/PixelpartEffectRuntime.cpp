@@ -18,7 +18,7 @@ PixelpartEffectRuntime::PixelpartEffectRuntime() {
 
 }
 
-void PixelpartEffectRuntime::set_effect(const pixelpart::Effect& eff, std::uint32_t particleCapacity) {
+void PixelpartEffectRuntime::set_effect(const pixelpart::Effect& eff) {
 	reset_effect();
 
 	effect = eff;
@@ -28,13 +28,11 @@ void PixelpartEffectRuntime::set_effect(const pixelpart::Effect& eff, std::uint3
 	effectEngine = std::make_unique<pixelpart::MultiThreadedEffectEngine>(effect,
 		std::make_shared<pixelpart::DefaultParticleGenerator>(),
 		std::make_shared<pixelpart::DefaultParticleModifier>(),
-		PixelpartSystem::get_instance()->get_thread_pool(),
-		particleCapacity);
+		PixelpartSystem::get_instance()->get_thread_pool());
 #else
 	effectEngine = std::make_unique<pixelpart::SingleThreadedEffectEngine>(effect,
 		std::make_shared<pixelpart::DefaultParticleGenerator>(),
-		std::make_shared<pixelpart::DefaultParticleModifier>(),
-		particleCapacity);
+		std::make_shared<pixelpart::DefaultParticleModifier>());
 #endif
 
 	for(const auto& node : effect.sceneGraph()) {

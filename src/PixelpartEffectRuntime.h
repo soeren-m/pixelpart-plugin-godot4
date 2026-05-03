@@ -20,7 +20,7 @@ class PixelpartEffectRuntime {
 public:
 	PixelpartEffectRuntime();
 
-	void set_effect(const pixelpart::Effect& eff, std::uint32_t particleCapacity);
+	void set_effect(const pixelpart::Effect& eff);
 	void reset_effect();
 	const pixelpart::Effect& get_effect() const;
 	const pixelpart::EffectEngine* get_effect_engine() const;

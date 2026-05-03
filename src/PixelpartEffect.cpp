@@ -22,16 +22,6 @@
 namespace godot {
 PixelpartEffect::PixelpartEffect() : VisualInstance3D() {
 	ProjectSettings* settings = ProjectSettings::get_singleton();
-
-	if(Engine::get_singleton()->is_editor_hint()) {
-		particleCapacity = static_cast<std::uint32_t>(
-			std::max(static_cast<int>(settings->get_setting("pixelpart/particle_capacity_editor", Variant(100))), 1));
-	}
-	else {
-		particleCapacity = static_cast<std::uint32_t>(
-			std::max(static_cast<int>(settings->get_setting("pixelpart/particle_capacity"), Variant(10000)), 1));
-	}
-
 	editorPreviewEnabled = static_cast<bool>(settings->get_setting("pixelpart/editor_preview", Variant(true)));
 
 	set_notify_transform(true);
@@ -127,7 +117,7 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> resource) {
 	}
 
 	effectResource->load();
-	effectRuntime.set_effect(effectResource->get_asset().effect(), particleCapacity);
+	effectRuntime.set_effect(effectResource->get_asset().effect());
 
 	if(!Engine::get_singleton()->is_editor_hint() || editorPreviewEnabled) {
 		try {

@@ -8,8 +8,6 @@ var gizmo_plugin
 var inspector_plugin
 
 func _enter_tree():
-	add_project_setting("pixelpart/particle_capacity", 10000, TYPE_INT, PROPERTY_HINT_RANGE, "100,100000")
-	add_project_setting("pixelpart/particle_capacity_editor", 1000, TYPE_INT, PROPERTY_HINT_RANGE, "100,100000")
 	add_project_setting("pixelpart/editor_preview", true, TYPE_BOOL, PROPERTY_HINT_NONE, "")
 
 	resource_import_plugin = load(plugin_path + "/src/PixelpartEffectResourceImportPlugin.gd").new()
@@ -25,8 +23,6 @@ func _exit_tree():
 	remove_inspector_plugin(inspector_plugin)
 	remove_node_3d_gizmo_plugin(gizmo_plugin)
 	remove_import_plugin(resource_import_plugin)
-	remove_project_setting("pixelpart/particle_capacity")
-	remove_project_setting("pixelpart/particle_capacity_editor")
 	remove_project_setting("pixelpart/editor_preview")
 
 func add_project_setting(name: String, initial_value, type: int, hint: int, hint_string: String) -> void:
