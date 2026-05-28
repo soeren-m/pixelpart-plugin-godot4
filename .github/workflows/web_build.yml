@@ -9,7 +9,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Update submodules
         uses: ./.github/actions/submodules
@@ -19,7 +19,7 @@ jobs:
 
       - name: Cache emsdk
         id: cache
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: ./emsdk
           key: ${{ runner.os }}-emsdk-3_1_64-v1
@@ -37,7 +37,7 @@ jobs:
           python build.py platform=web
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pixelpart-web
           path: ./pixelpart-plugin/addons/pixelpart/bin

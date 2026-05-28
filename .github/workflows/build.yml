@@ -40,40 +40,40 @@ jobs:
     needs: [windows-build, linux-build, macos-build, ios-build, android-build, web-build]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download Windows artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: pixelpart-windows
           path: artifacts
 
       - name: Download Linux artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: pixelpart-linux
           path: artifacts
 
       - name: Download macOS artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: pixelpart-macos
           path: artifacts
 
       - name: Download iOS artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: pixelpart-ios
           path: artifacts
 
       - name: Download Android artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: pixelpart-android
           path: artifacts
 
       - name: Download web artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: pixelpart-web
           path: artifacts
@@ -91,7 +91,7 @@ jobs:
           cp -r artifacts/*.wasm ./pixelpart-plugin/addons/pixelpart/bin/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pixelpart-plugin-godot4
           path: ./pixelpart-plugin/addons
