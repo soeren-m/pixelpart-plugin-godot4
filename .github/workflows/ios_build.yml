@@ -16,8 +16,16 @@ jobs:
       - name: Install common dependencies
         uses: ./.github/actions/deps
 
-      - name: Compile
-        run: python build.py platform=ios
+      - name: Compile (arm64)
+        run: scons platform=ios arch=arm64 target=template_release ios_simulator=no generate_bindings=true disable_exceptions=false -j 4
+
+      - name: Compile (simulator)
+        run: scons platform=ios arch=universal target=template_release ios_simulator=yes generate_bindings=true disable_exceptions=false -j 4
+
+      - name: Create xcframework
+        run: |
+          xcodebuild -create-xcframework -library pixelpart-plugin/addons/pixelpart/bin/libpixelpartgd.ios-arm64.a -library pixelpart-plugin/addons/pixelpart/bin/libpixelpartgd.ios-universal.simulator.a -output pixelpart-plugin/addons/pixelpart/bin/libpixelpartgd.ios.xcframework
+          xcodebuild -create-xcframework -library godot-cpp/bin/libgodot-cpp.ios.template_release.arm64.a -library godot-cpp/bin/libgodot-cpp.ios.template_release.universal.simulator.a -output pixelpart-plugin/addons/pixelpart/bin/libgodot-cpp.ios.xcframework
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7

@@ -15,6 +15,10 @@ jobs:
     name: Linux build
     uses: ./.github/workflows/linux_build.yml
 
+  linux-arm-build:
+    name: Linux arm build
+    uses: ./.github/workflows/linux_arm_build.yml
+
   macos-build:
     name: macOS build
     uses: ./.github/workflows/macos_build.yml
@@ -34,7 +38,7 @@ jobs:
   package:
     name: Package plugin
     runs-on: ubuntu-22.04
-    needs: [windows-build, linux-build, macos-build, ios-build, android-build, web-build]
+    needs: [windows-build, linux-build, linux-arm-build, macos-build, ios-build, android-build, web-build]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -49,6 +53,12 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: pixelpart-linux
+          path: artifacts
+
+      - name: Download Linux arm artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: pixelpart-linux-arm
           path: artifacts
 
       - name: Download macOS artifacts

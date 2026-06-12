@@ -12,9 +12,9 @@ The plugin supports the following target platforms:
 
 Platform | Architectures | Supported
 -------- | ------------- | ---------
-Windows | x64, x86_32 | Yes
-Linux | x64, x86_32 | Yes
-macOS | Universal | Yes
+Windows | x86_64, x86_32, arm64 | Yes
+Linux | x86_64, x86_32, arm64 | Yes
+macOS | arm64, x86_64 | Yes
 iOS | arm64 | Yes
 Android | arm64, arm32, x64, x86_32 | Yes
 Web | wasm32 | Yes

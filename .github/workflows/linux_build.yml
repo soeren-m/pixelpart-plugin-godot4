@@ -22,8 +22,11 @@ jobs:
           sudo apt-get install gcc-multilib
           sudo apt-get install g++-multilib
 
-      - name: Compile
-        run: python build.py platform=linux
+      - name: Compile (x86_64)
+        run: scons platform=linux arch=x86_64 target=template_release generate_bindings=true disable_exceptions=false -j 4
+
+      - name: Compile (x86_32)
+        run: scons platform=linux arch=x86_32 target=template_release generate_bindings=true disable_exceptions=false -j 4
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7

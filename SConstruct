@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import os
 
 def add_sources(sources, dir, extension):
