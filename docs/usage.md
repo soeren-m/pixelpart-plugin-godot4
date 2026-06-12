@@ -8,7 +8,7 @@ Save the effect you created in Pixelpart as a *.ppfx* file and place it inside t
 
 In order to actually play the effect in your game, add a new *PixelpartEffect* node to the scene (*PixelpartEffect2D* for 2D scenes). The effect is shown as a small Pixelpart icon in the scene view and can be moved and rotated like any other node.
 
-![Effect gizmo](./images/gizmo.png)
+![Effect node](./images/node.png)
 
 Now drag the imported effect asset (*.ppfx* file) onto the *Effect* field in the node's inspector window. The effect should now be visible in the game. If the effect *does not* appear, make sure you have set an appropriate *Effect Scale* value in the node's inspector.
 
