@@ -4,7 +4,7 @@ on:
 
 jobs:
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
     name: Build
 
     steps:
