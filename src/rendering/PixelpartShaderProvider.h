@@ -9,6 +9,8 @@
 #include <pixelpart-runtime/effect/BlendMode.h>
 #include <pixelpart-runtime/effect/LightingMode.h>
 #include <pixelpart-runtime/effect/ShaderGraph.h>
+#include <pixelpart-runtime/effect/BuiltInMaterialMetadata.h>
+#include <pixelpart-runtime/effect/BuiltInMaterialRepository.h>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -16,23 +18,14 @@
 namespace godot {
 class PixelpartShaderProvider {
 public:
-	struct ShaderMetadata {
-		static std::unordered_map<std::string, pixelpart::id_t> builtInMaterialParameterIds;
-
-		std::unordered_map<pixelpart::id_t, std::string> parameterNames;
-
-		ShaderMetadata() = default;
-		ShaderMetadata(std::vector<std::string> parameterList);
-	};
-
 	static const std::string uniformPrefix;
 
 	PixelpartShaderProvider();
 
-	Ref<Shader> get_builtin_canvas_item_shader(const std::string& shaderId);
-	Ref<Shader> get_builtin_spatial_shader(const std::string& shaderId);
-	ShaderMetadata get_builtin_canvas_item_shader_metadata(const std::string& shaderId);
-	ShaderMetadata get_builtin_spatial_shader_metadata(const std::string& shaderId);
+	Ref<Shader> get_builtin_canvas_item_shader(const std::string& shaderId) const;
+	Ref<Shader> get_builtin_spatial_shader(const std::string& shaderId) const;
+	const pixelpart::BuiltInMaterialMetadata& get_builtin_canvas_item_shader_metadata(const std::string& shaderId) const;
+	const pixelpart::BuiltInMaterialMetadata& get_builtin_spatial_shader_metadata(const std::string& shaderId) const;
 
 	Ref<Shader> get_custom_canvas_item_shader(
 		const std::string& mainShaderCode,
@@ -48,22 +41,18 @@ public:
 		pixelpart::LightingMode lightingMode);
 
 private:
-	struct BuiltInShaderEntry {
-		Ref<Shader> shader;
-		ShaderMetadata metadata;
-	};
-
 	Ref<Shader> get_canvas_item_shader(const std::string& shaderTemplate,
 		const std::string& mainShaderCode,
 		const std::string& parameterShaderCode,
+		pixelpart::ParticleRendererType renderer,
 		pixelpart::BlendMode blendMode,
 		pixelpart::LightingMode lightingMode);
 	Ref<Shader> get_spatial_shader(const std::string& shaderTemplate,
 		const std::string& mainShaderCode,
 		const std::string& parameterShaderCode,
+		pixelpart::ParticleRendererType renderer,
 		pixelpart::BlendMode blendMode,
-		pixelpart::LightingMode lightingMode,
-		bool cull);
+		pixelpart::LightingMode lightingMode);
 	Ref<Shader> get_shader(const std::string& shaderTemplate,
 		const std::string& mainShaderCode,
 		const std::string& parameterShaderCode,
@@ -84,9 +73,10 @@ private:
 	static const std::string meshSpatialShaderTemplate;
 
 	std::unordered_map<std::string, Ref<Shader>> shaders;
+	std::unordered_map<std::string, Ref<Shader>> builtInCanvasItemShaders;
+	std::unordered_map<std::string, Ref<Shader>> builtInSpatialShaders;
 
-	std::unordered_map<std::string, BuiltInShaderEntry> builtInCanvasItemShaders;
-	std::unordered_map<std::string, BuiltInShaderEntry> builtInSpatialShaders;
+	pixelpart::BuiltInMaterialRepository builtInMaterialRepository;
 };
 }
 

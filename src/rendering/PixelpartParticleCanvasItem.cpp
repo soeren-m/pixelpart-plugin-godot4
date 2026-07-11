@@ -109,9 +109,9 @@ void PixelpartParticleCanvasItem::create_material(PixelpartGraphicsResourceProvi
 		shader = shaderProvider.get_builtin_canvas_item_shader(materialInstance.materialId());
 
 		if(shader.is_valid()) {
-			const PixelpartShaderProvider::ShaderMetadata& metadata = shaderProvider.get_builtin_canvas_item_shader_metadata(materialInstance.materialId());
-			for(const auto& [parameterId, parameterName] : metadata.parameterNames) {
-				shaderParameterNames[parameterId] = PixelpartShaderProvider::uniformPrefix + parameterName;
+			const auto& metadata = shaderProvider.get_builtin_canvas_item_shader_metadata(materialInstance.materialId());
+			for(const auto& [parameterId, parameter] : metadata.parameters()) {
+				shaderParameterNames[parameterId] = PixelpartShaderProvider::uniformPrefix + parameter.name();
 			}
 		}
 	}

@@ -4,223 +4,49 @@
 #include <pixelpart-runtime/effect/StringFormat.h>
 
 namespace godot {
-std::unordered_map<std::string, pixelpart::id_t> PixelpartShaderProvider::ShaderMetadata::builtInMaterialParameterIds = std::unordered_map<std::string, pixelpart::id_t> {
-	{ "MainTexture", 0 },
-	{ "ColorBlendMode", 10 },
-	{ "Emission", 20 },
-	{ "Roughness", 21 },
-	{ "Metallic", 22 },
-	{ "SpriteSheetRowNumber", 30 },
-	{ "SpriteSheetColumnNumber", 31 },
-	{ "SpriteSheetOrigin", 32 },
-	{ "SpriteAnimationNumFrames", 33 },
-	{ "SpriteAnimationStartFrame", 34 },
-	{ "SpriteAnimationDuration", 35 },
-	{ "SpriteAnimationLoop", 36 },
-	{ "SoftParticles", 40 },
-	{ "SoftParticleTransition", 41 },
-	{ "DistanceFade", 42 },
-	{ "DistanceFadeTransition", 43 }
-};
-
-PixelpartShaderProvider::ShaderMetadata::ShaderMetadata(std::vector<std::string> parameterList) {
-	for(const std::string& name : parameterList) {
-		parameterNames[builtInMaterialParameterIds.at(name)] = name;
-	}
-}
-
 const std::string PixelpartShaderProvider::uniformPrefix = "u_";
 
 PixelpartShaderProvider::PixelpartShaderProvider() {
-	std::vector<std::string> spriteUnlitParameterNames = std::vector<std::string>{
-		"MainTexture",
-		"Emission",
-		"ColorBlendMode",
-		"SpriteSheetRowNumber",
-		"SpriteSheetColumnNumber",
-		"SpriteSheetOrigin",
-		"SpriteAnimationNumFrames",
-		"SpriteAnimationStartFrame",
-		"SpriteAnimationDuration",
-		"SpriteAnimationLoop",
-		"SoftParticles",
-		"SoftParticleTransition",
-		"DistanceFade",
-		"DistanceFadeTransition"
-	};
-	std::vector<std::string> spriteLitParameterNames = std::vector<std::string>{
-		"MainTexture",
-		"Emission",
-		"Roughness",
-		"Metallic",
-		"ColorBlendMode",
-		"SpriteSheetRowNumber",
-		"SpriteSheetColumnNumber",
-		"SpriteSheetOrigin",
-		"SpriteAnimationNumFrames",
-		"SpriteAnimationStartFrame",
-		"SpriteAnimationDuration",
-		"SpriteAnimationLoop",
-		"SoftParticles",
-		"SoftParticleTransition",
-		"DistanceFade",
-		"DistanceFadeTransition"
-	};
-	std::vector<std::string> trailUnlitParameterNames = std::vector<std::string>{
-		"MainTexture",
-		"Emission",
-		"ColorBlendMode",
-		"SoftParticles",
-		"SoftParticleTransition",
-		"DistanceFade",
-		"DistanceFadeTransition"
-	};
-	std::vector<std::string> trailLitParameterNames = std::vector<std::string>{
-		"MainTexture",
-		"Emission",
-		"Roughness",
-		"Metallic",
-		"ColorBlendMode",
-		"SoftParticles",
-		"SoftParticleTransition",
-		"DistanceFade",
-		"DistanceFadeTransition"
-	};
-	std::vector<std::string> meshUnlitParameterNames = std::vector<std::string>{
-		"MainTexture",
-		"Emission",
-		"ColorBlendMode"
-	};
-	std::vector<std::string> meshUnlitAlphaParameterNames = std::vector<std::string>{
-		"MainTexture",
-		"Emission",
-		"ColorBlendMode",
-		"SoftParticles",
-		"SoftParticleTransition",
-		"DistanceFade",
-		"DistanceFadeTransition"
-	};
-	 std::vector<std::string> meshLitParameterNames = std::vector<std::string>{
-		"MainTexture",
-		"Emission",
-		"Roughness",
-		"Metallic",
-		"ColorBlendMode"
-	};
-	 std::vector<std::string> meshLitAlphaParameterNames = std::vector<std::string>{
-		"MainTexture",
-		"Emission",
-		"Roughness",
-		"Metallic",
-		"ColorBlendMode",
-		"SoftParticles",
-		"SoftParticleTransition",
-		"DistanceFade",
-		"DistanceFadeTransition"
-	};
+	for(const auto& [materialName, materialMetadata] : builtInMaterialRepository.materials()) {
+		const std::string& canvasItemShaderCode =
+			materialMetadata.rendererType() == pixelpart::ParticleRendererType::trail ? trailCanvasItemShader : spriteCanvasItemShader;
+		const std::string& spatialShaderCode =
+			materialMetadata.rendererType() == pixelpart::ParticleRendererType::mesh ? meshSpatialShader :
+			(materialMetadata.rendererType() == pixelpart::ParticleRendererType::trail ? trailSpatialShader : spriteSpatialShader);
 
-	builtInCanvasItemShaders["SpriteUnlitAlpha"] = BuiltInShaderEntry{
-		get_canvas_item_shader(spriteCanvasItemShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::unlit),
-		ShaderMetadata(spriteUnlitParameterNames)
-	};
-	builtInCanvasItemShaders["SpriteUnlitAdditive"] = BuiltInShaderEntry{
-		get_canvas_item_shader(spriteCanvasItemShader, "", "", pixelpart::BlendMode::additive, pixelpart::LightingMode::unlit),
-		ShaderMetadata(spriteUnlitParameterNames)
-	};
-	builtInCanvasItemShaders["TrailUnlitAlpha"] = BuiltInShaderEntry{
-		get_canvas_item_shader(trailCanvasItemShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::unlit),
-		ShaderMetadata(trailUnlitParameterNames)
-	};
-	builtInCanvasItemShaders["TrailUnlitAdditive"] = BuiltInShaderEntry{
-		get_canvas_item_shader(trailCanvasItemShader, "", "", pixelpart::BlendMode::additive, pixelpart::LightingMode::unlit),
-		ShaderMetadata(trailUnlitParameterNames)
-	};
-	builtInCanvasItemShaders["SpriteLitAlpha"] = BuiltInShaderEntry{
-		get_canvas_item_shader(spriteCanvasItemShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::unlit),
-		ShaderMetadata(spriteLitParameterNames)
-	};
-	builtInCanvasItemShaders["SpriteLitAdditive"] = BuiltInShaderEntry{
-		get_canvas_item_shader(spriteCanvasItemShader, "", "", pixelpart::BlendMode::additive, pixelpart::LightingMode::unlit),
-		ShaderMetadata(spriteLitParameterNames)
-	};
-	builtInCanvasItemShaders["TrailLitAlpha"] = BuiltInShaderEntry{
-		get_canvas_item_shader(trailCanvasItemShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::unlit),
-		ShaderMetadata(trailLitParameterNames)
-	};
-	builtInCanvasItemShaders["TrailLitAdditive"] = BuiltInShaderEntry{
-		get_canvas_item_shader(trailCanvasItemShader, "", "", pixelpart::BlendMode::additive, pixelpart::LightingMode::unlit),
-		ShaderMetadata(trailLitParameterNames)
-	};
+		builtInCanvasItemShaders[materialName] = get_canvas_item_shader(
+			canvasItemShaderCode, "", "",
+			materialMetadata.rendererType(),
+			materialMetadata.blendMode(),
+			materialMetadata.lightingMode());
 
-	builtInSpatialShaders["SpriteUnlitAlpha"] = BuiltInShaderEntry{
-		get_spatial_shader(spriteSpatialShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::unlit, false),
-		ShaderMetadata(spriteUnlitParameterNames)
-	};
-	builtInSpatialShaders["SpriteUnlitAdditive"] = BuiltInShaderEntry{
-		get_spatial_shader(spriteSpatialShader, "", "", pixelpart::BlendMode::additive, pixelpart::LightingMode::unlit, false),
-		ShaderMetadata(spriteUnlitParameterNames)
-	};
-	builtInSpatialShaders["TrailUnlitAlpha"] = BuiltInShaderEntry{
-		get_spatial_shader(trailSpatialShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::unlit, false),
-		ShaderMetadata(trailUnlitParameterNames)
-	};
-	builtInSpatialShaders["TrailUnlitAdditive"] = BuiltInShaderEntry{
-		get_spatial_shader(trailSpatialShader, "", "", pixelpart::BlendMode::additive, pixelpart::LightingMode::unlit, false),
-		ShaderMetadata(trailUnlitParameterNames)
-	};
-	builtInSpatialShaders["MeshUnlit"] = BuiltInShaderEntry{
-		get_spatial_shader(meshSpatialShader, "", "", pixelpart::BlendMode::off, pixelpart::LightingMode::unlit, true),
-		ShaderMetadata(meshUnlitParameterNames)
-	};
-	builtInSpatialShaders["MeshUnlitAlpha"] = BuiltInShaderEntry{
-		get_spatial_shader(meshSpatialShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::unlit, true),
-		ShaderMetadata(meshUnlitAlphaParameterNames)
-	};
-	builtInSpatialShaders["SpriteLitAlpha"] = BuiltInShaderEntry{
-		get_spatial_shader(spriteSpatialShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::lit, false),
-		ShaderMetadata(spriteLitParameterNames)
-	};
-	builtInSpatialShaders["SpriteLitAdditive"] = BuiltInShaderEntry{
-		get_spatial_shader(spriteSpatialShader, "", "", pixelpart::BlendMode::additive, pixelpart::LightingMode::lit, false),
-		ShaderMetadata(spriteLitParameterNames)
-	};
-	builtInSpatialShaders["TrailLitAlpha"] = BuiltInShaderEntry{
-		get_spatial_shader(trailSpatialShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::lit, false),
-		ShaderMetadata(trailLitParameterNames)
-	};
-	builtInSpatialShaders["TrailLitAdditive"] = BuiltInShaderEntry{
-		get_spatial_shader(trailSpatialShader, "", "", pixelpart::BlendMode::additive, pixelpart::LightingMode::lit, false),
-		ShaderMetadata(trailLitParameterNames)
-	};
-	builtInSpatialShaders["MeshLit"] = BuiltInShaderEntry{
-		get_spatial_shader(meshSpatialShader, "", "", pixelpart::BlendMode::off, pixelpart::LightingMode::lit, true),
-		ShaderMetadata(meshLitParameterNames)
-	};
-	builtInSpatialShaders["MeshLitAlpha"] = BuiltInShaderEntry{
-		get_spatial_shader(meshSpatialShader, "", "", pixelpart::BlendMode::alpha, pixelpart::LightingMode::lit, true),
-		ShaderMetadata(meshLitAlphaParameterNames)
-	};
+		builtInSpatialShaders[materialName] = get_spatial_shader(
+			spatialShaderCode, "", "",
+			materialMetadata.rendererType(),
+			materialMetadata.blendMode(),
+			materialMetadata.lightingMode());
+	}
 }
 
-Ref<Shader> PixelpartShaderProvider::get_builtin_canvas_item_shader(const std::string& shaderId) {
+Ref<Shader> PixelpartShaderProvider::get_builtin_canvas_item_shader(const std::string& shaderId) const {
 	if(builtInCanvasItemShaders.count(shaderId) == 0) {
 		return Ref<Shader>();
 	}
 
-	return builtInCanvasItemShaders.at(shaderId).shader;
+	return builtInCanvasItemShaders.at(shaderId);
 }
-Ref<Shader> PixelpartShaderProvider::get_builtin_spatial_shader(const std::string& shaderId) {
+Ref<Shader> PixelpartShaderProvider::get_builtin_spatial_shader(const std::string& shaderId) const {
 	if(builtInSpatialShaders.count(shaderId) == 0) {
 		return Ref<Shader>();
 	}
 
-	return builtInSpatialShaders.at(shaderId).shader;
+	return builtInSpatialShaders.at(shaderId);
 }
-PixelpartShaderProvider::ShaderMetadata PixelpartShaderProvider::get_builtin_canvas_item_shader_metadata(const std::string& shaderId) {
-	return builtInCanvasItemShaders.at(shaderId).metadata;
+const pixelpart::BuiltInMaterialMetadata& PixelpartShaderProvider::get_builtin_canvas_item_shader_metadata(const std::string& shaderId) const {
+	return builtInMaterialRepository.materials().at(shaderId);
 }
-PixelpartShaderProvider::ShaderMetadata PixelpartShaderProvider::get_builtin_spatial_shader_metadata(const std::string& shaderId) {
-	return builtInSpatialShaders.at(shaderId).metadata;
+const pixelpart::BuiltInMaterialMetadata& PixelpartShaderProvider::get_builtin_spatial_shader_metadata(const std::string& shaderId) const {
+	return builtInMaterialRepository.materials().at(shaderId);
 }
 
 Ref<Shader> PixelpartShaderProvider::get_custom_canvas_item_shader(
@@ -229,7 +55,7 @@ Ref<Shader> PixelpartShaderProvider::get_custom_canvas_item_shader(
 	pixelpart::ParticleRendererType renderer,
 	pixelpart::BlendMode blendMode,
 	pixelpart::LightingMode lightingMode) {
-	return get_canvas_item_shader(canvasItemShaderTemplate, mainShaderCode, parameterShaderCode, blendMode, lightingMode);
+	return get_canvas_item_shader(canvasItemShaderTemplate, mainShaderCode, parameterShaderCode, renderer, blendMode, lightingMode);
 }
 Ref<Shader> PixelpartShaderProvider::get_custom_spatial_shader(
 	const std::string& mainShaderCode,
@@ -239,17 +65,18 @@ Ref<Shader> PixelpartShaderProvider::get_custom_spatial_shader(
 	pixelpart::LightingMode lightingMode) {
 	switch(renderer) {
 		case pixelpart::ParticleRendererType::trail:
-			return get_spatial_shader(trailSpatialShaderTemplate, mainShaderCode, parameterShaderCode, blendMode, lightingMode, false);
+			return get_spatial_shader(trailSpatialShaderTemplate, mainShaderCode, parameterShaderCode, renderer, blendMode, lightingMode);
 		case pixelpart::ParticleRendererType::mesh:
-			return get_spatial_shader(meshSpatialShaderTemplate, mainShaderCode, parameterShaderCode, blendMode, lightingMode, true);
+			return get_spatial_shader(meshSpatialShaderTemplate, mainShaderCode, parameterShaderCode, renderer, blendMode, lightingMode);
 		default:
-			return get_spatial_shader(spriteSpatialShaderTemplate, mainShaderCode, parameterShaderCode, blendMode, lightingMode, false);
+			return get_spatial_shader(spriteSpatialShaderTemplate, mainShaderCode, parameterShaderCode, renderer, blendMode, lightingMode);
 	}
 }
 
 Ref<Shader> PixelpartShaderProvider::get_canvas_item_shader(const std::string& shaderTemplate,
 	const std::string& mainShaderCode,
 	const std::string& parameterShaderCode,
+	pixelpart::ParticleRendererType renderer,
 	pixelpart::BlendMode blendMode,
 	pixelpart::LightingMode lightingMode) {
 	std::string renderMode;
@@ -281,12 +108,12 @@ Ref<Shader> PixelpartShaderProvider::get_canvas_item_shader(const std::string& s
 Ref<Shader> PixelpartShaderProvider::get_spatial_shader(const std::string& shaderTemplate,
 	const std::string& mainShaderCode,
 	const std::string& parameterShaderCode,
+	pixelpart::ParticleRendererType renderer,
 	pixelpart::BlendMode blendMode,
-	pixelpart::LightingMode lightingMode,
-	bool cull) {
+	pixelpart::LightingMode lightingMode) {
 	std::string renderMode = "depth_draw_opaque";
 
-	if(!cull) {
+	if(renderer != pixelpart::ParticleRendererType::mesh) {
 		renderMode += ",cull_disabled";
 	}
 
