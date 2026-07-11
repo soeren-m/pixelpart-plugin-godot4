@@ -2,7 +2,7 @@
 #define PIXELPART_SYSTEM_H
 
 #include "rendering/PixelpartShaderProvider.h"
-#include <pixelpart-runtime/common/ThreadPool.h>
+#include <pixelpart-runtime/platform/ThreadPool.h>
 #include <memory>
 
 namespace godot {

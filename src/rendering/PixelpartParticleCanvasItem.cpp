@@ -2,7 +2,7 @@
 #include "../util/PixelpartUtil.h"
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
-#include <pixelpart-runtime/common/VariantParameter.h>
+#include <pixelpart-runtime/effect/VariantParameter.h>
 #include <pixelpart-runtime/effect/MaterialResource.h>
 #include <pixelpart-runtime/effect/MaterialInstance.h>
 #include <pixelpart-runtime/effect/ShaderGraph.h>

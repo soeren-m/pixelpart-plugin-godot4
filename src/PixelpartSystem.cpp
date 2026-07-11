@@ -5,7 +5,7 @@
 #include <pixelpart-runtime/json/json.hpp>
 
 #ifdef PIXELPART_RUNTIME_MULTITHREADING
-#include <pixelpart-runtime/common/StdThreadPool.h>
+#include <pixelpart-runtime/platform/StdThreadPool.h>
 #endif
 
 namespace godot {

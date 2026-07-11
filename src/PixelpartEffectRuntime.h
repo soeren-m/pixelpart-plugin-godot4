@@ -4,9 +4,9 @@
 #include "node/PixelpartNode.h"
 #include "particletype/PixelpartParticleType.h"
 #include <godot_cpp/core/binder_common.hpp>
-#include <pixelpart-runtime/common/Types.h>
-#include <pixelpart-runtime/common/Id.h>
-#include <pixelpart-runtime/common/VariantValue.h>
+#include <pixelpart-runtime/types/Types.h>
+#include <pixelpart-runtime/types/Id.h>
+#include <pixelpart-runtime/types/VariantValue.h>
 #include <pixelpart-runtime/effect/Effect.h>
 #include <pixelpart-runtime/engine/EffectEngine.h>
 #include <memory>

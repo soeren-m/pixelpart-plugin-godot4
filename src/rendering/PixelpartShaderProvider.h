@@ -4,7 +4,7 @@
 #include <godot_cpp/classes/shader.hpp>
 #include <godot_cpp/classes/base_material3d.hpp>
 #include <godot_cpp/classes/canvas_item_material.hpp>
-#include <pixelpart-runtime/common/Id.h>
+#include <pixelpart-runtime/types/Id.h>
 #include <pixelpart-runtime/effect/ParticleRendererType.h>
 #include <pixelpart-runtime/effect/BlendMode.h>
 #include <pixelpart-runtime/effect/LightingMode.h>

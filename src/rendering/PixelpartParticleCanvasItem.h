@@ -5,9 +5,9 @@
 #include "PixelpartShaderProvider.h"
 #include <godot_cpp/classes/node2d.hpp>
 #include <godot_cpp/classes/shader.hpp>
-#include <pixelpart-runtime/common/Types.h>
-#include <pixelpart-runtime/common/Id.h>
-#include <pixelpart-runtime/common/ThreadPool.h>
+#include <pixelpart-runtime/types/Types.h>
+#include <pixelpart-runtime/types/Id.h>
+#include <pixelpart-runtime/platform/ThreadPool.h>
 #include <pixelpart-runtime/effect/Effect.h>
 #include <pixelpart-runtime/effect/EffectRuntimeContext.h>
 #include <pixelpart-runtime/engine/ParticleCollection.h>

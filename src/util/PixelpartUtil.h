@@ -6,8 +6,8 @@
 #include <godot_cpp/variant/vector3.hpp>
 #include <godot_cpp/variant/vector4.hpp>
 #include <godot_cpp/variant/color.hpp>
-#include <pixelpart-runtime/common/Types.h>
-#include <pixelpart-runtime/common/VariantValue.h>
+#include <pixelpart-runtime/types/Types.h>
+#include <pixelpart-runtime/types/VariantValue.h>
 
 namespace godot {
 int pxpt_to_gd(pixelpart::int_t v);

@@ -6,10 +6,10 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
-#include <pixelpart-runtime/common/Types.h>
-#include <pixelpart-runtime/common/Id.h>
-#include <pixelpart-runtime/common/Curve.h>
-#include <pixelpart-runtime/common/VariantValue.h>
+#include <pixelpart-runtime/types/Types.h>
+#include <pixelpart-runtime/types/Id.h>
+#include <pixelpart-runtime/types/VariantValue.h>
+#include <pixelpart-runtime/effect/Curve.h>
 #include <pixelpart-runtime/effect/Effect.h>
 #include <pixelpart-runtime/effect/ParticleType.h>
 #include <pixelpart-runtime/engine/EffectEngine.h>

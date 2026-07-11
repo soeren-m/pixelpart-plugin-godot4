@@ -1,5 +1,5 @@
 #include "PixelpartGraphicsResourceProvider.h"
-#include <pixelpart-runtime/common/Types.h>
+#include <pixelpart-runtime/types/Types.h>
 #include <cstdint>
 #include <cstring>
 
