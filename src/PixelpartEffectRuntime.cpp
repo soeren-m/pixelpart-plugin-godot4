@@ -173,7 +173,7 @@ float PixelpartEffectRuntime::get_warmup_time() const {
 }
 
 void PixelpartEffectRuntime::set_speed(float sp) {
-	speed = std::max(sp, 0.0f);
+	speed = std::max(sp, 0.01f);
 }
 float PixelpartEffectRuntime::get_speed() const {
 	return speed;
