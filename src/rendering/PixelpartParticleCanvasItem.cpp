@@ -45,7 +45,7 @@ void PixelpartParticleCanvasItem::draw(const pixelpart::ParticleCollection& part
 
 	rs->mesh_clear(meshRid);
 
-	if(!parentNode->is_visible() || !particleType.visible() || particleType.renderer() == pixelpart::ParticleRendererType::mesh) {
+	if(!parentNode->is_visible() || !particleType.visibleAtLod(runtimeContext.lod()) || particleType.renderer() == pixelpart::ParticleRendererType::mesh) {
 		return;
 	}
 

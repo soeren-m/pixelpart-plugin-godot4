@@ -5,6 +5,7 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/viewport.hpp>
+#include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <pixelpart-runtime/types/Types.h>
@@ -36,6 +37,7 @@ void PixelpartEffect::_enter_tree() {
 	}
 
 	apply_transform();
+	apply_lod();
 	effectRuntime.start();
 
 	RenderingServer::get_singleton()->connect("frame_pre_draw", Callable(this, "draw"));
@@ -50,6 +52,8 @@ void PixelpartEffect::_process(double dt) {
 	if(Engine::get_singleton()->is_editor_hint() && !editorPreviewEnabled) {
 		return;
 	}
+
+	apply_lod();
 
 	effectRuntime.advance(dt);
 
@@ -141,6 +145,7 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> resource) {
 
 	if(is_inside_tree()) {
 		apply_transform();
+		apply_lod();
 		effectRuntime.start();
 	}
 
@@ -331,6 +336,23 @@ void PixelpartEffect::apply_transform() {
 			transform.scale()
 		} });
 	}
+}
+void PixelpartEffect::apply_lod() {
+	if(Engine::get_singleton()->is_editor_hint()) {
+		effectRuntime.select_lod(0);
+		return;
+	}
+
+	if(!get_viewport()) {
+		return;
+	}
+
+	Camera3D* camera = get_viewport()->get_camera_3d();
+	if(!camera) {
+		return;
+	}
+
+	effectRuntime.select_lod(gd_to_pxpt(camera->get_global_position()) / static_cast<pixelpart::float_t>(effectScale));
 }
 
 void PixelpartEffect::_bind_methods() {

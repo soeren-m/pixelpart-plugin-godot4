@@ -529,6 +529,7 @@ protected:
 
 private:
 	void apply_transform();
+	void apply_lod();
 
 	Ref<PixelpartEffectResource> effectResource;
 	PixelpartEffectRuntime effectRuntime;

@@ -65,7 +65,7 @@ void PixelpartParticleInstance3D::draw(const pixelpart::ParticleCollection& part
 	if(!camera) {
 		return;
 	}
-	else if(!parentNode->is_visible() || !particleType.visible()) {
+	else if(!parentNode->is_visible() || !particleType.visibleAtLod(runtimeContext.lod())) {
 		return;
 	}
 

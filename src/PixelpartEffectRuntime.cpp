@@ -51,6 +51,8 @@ void PixelpartEffectRuntime::set_effect(const pixelpart::Effect& eff) {
 		StringName inputName = StringName(inputEntry.second.name().c_str());
 		inputValues[inputName] = pxpt_to_gd(inputEntry.second.value());
 	}
+
+	lod = 0;
 }
 void PixelpartEffectRuntime::reset_effect() {
 	effectEngine = nullptr;
@@ -85,6 +87,8 @@ void PixelpartEffectRuntime::start() {
 		effectEngine->reseed(static_cast<std::uint32_t>(seed));
 	}
 
+	effectEngine->selectLod(lod);
+
 	simulationTime = warmupTime;
 	while(simulationTime > timeStep) {
 		simulationTime -= timeStep;
@@ -100,6 +104,8 @@ void PixelpartEffectRuntime::advance(double dt) {
 
 	dt = std::clamp(dt, 0.0, 1.0);
 	simulationTime += static_cast<float>(dt) * speed;
+
+	effectEngine->selectLod(lod);
 
 	while(simulationTime > timeStep * speed) {
 		simulationTime -= timeStep * speed;
@@ -297,6 +303,18 @@ String PixelpartEffectRuntime::get_event_name(pixelpart::id_t id) const {
 }
 std::vector<pixelpart::id_t> PixelpartEffectRuntime::get_invoked_events() const {
 	return invokedEventIds;
+}
+
+void PixelpartEffectRuntime::select_lod(std::uint32_t lodIndex) {
+	lod = lodIndex;
+}
+void PixelpartEffectRuntime::select_lod(const pixelpart::float3_t& cameraPosition) {
+	if(!effectEngine) {
+		lod = 0;
+		return;
+	}
+
+	lod = pixelpart::queryEffectLod(effect, effectEngine->context(), cameraPosition);
 }
 
 void PixelpartEffectRuntime::spawn_particles(String particleEmitterName, String particleTypeName, int count) {

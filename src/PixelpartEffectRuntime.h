@@ -68,6 +68,9 @@ public:
 	String get_event_name(pixelpart::id_t id) const;
 	std::vector<pixelpart::id_t> get_invoked_events() const;
 
+	void select_lod(std::uint32_t lodIndex);
+	void select_lod(const pixelpart::float3_t& cameraPosition);
+
 	void spawn_particles(String particleEmitterName, String particleTypeName, int count);
 
 	Ref<PixelpartNode> find_node(String name) const;
@@ -97,6 +100,8 @@ private:
 	float simulationTime = 0.0f;
 
 	std::vector<pixelpart::id_t> invokedEventIds;
+
+	std::uint32_t lod = 0;
 
 	std::unordered_map<std::string, Ref<PixelpartNode>> nodeRefs;
 	std::unordered_map<std::string, Ref<PixelpartParticleType>> particleTypeRefs;

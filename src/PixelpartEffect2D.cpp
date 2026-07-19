@@ -4,6 +4,8 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/math.hpp>
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/viewport.hpp>
+#include <godot_cpp/classes/camera2d.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <pixelpart-runtime/types/Types.h>
@@ -34,6 +36,7 @@ void PixelpartEffect2D::_enter_tree() {
 	}
 
 	apply_transform();
+	apply_lod();
 	effectRuntime.start();
 }
 
@@ -41,6 +44,8 @@ void PixelpartEffect2D::_process(double dt) {
 	if(Engine::get_singleton()->is_editor_hint() && !editorPreviewEnabled) {
 		return;
 	}
+
+	apply_lod();
 
 	effectRuntime.advance(dt);
 
@@ -138,6 +143,7 @@ void PixelpartEffect2D::set_effect(Ref<PixelpartEffectResource> resource) {
 
 	if(is_inside_tree()) {
 		apply_transform();
+		apply_lod();
 		effectRuntime.start();
 	}
 
@@ -343,6 +349,26 @@ void PixelpartEffect2D::apply_transform() {
 			pixelpart::float3_t(globalScale, 1.0)
 		} });
 	}
+}
+void PixelpartEffect2D::apply_lod() {
+	if(Engine::get_singleton()->is_editor_hint()) {
+		effectRuntime.select_lod(0);
+		return;
+	}
+
+	if(!get_viewport()) {
+		return;
+	}
+
+	pixelpart::float2_t scale = pixelpart::float2_t(
+		flipH ? -1.0 : +1.0,
+		flipV ? -1.0 : +1.0) * static_cast<pixelpart::float_t>(effectScale);
+
+	Vector2 screenCenter =
+		-get_viewport()->get_canvas_transform().get_origin() +
+		get_viewport()->get_visible_rect().get_size() * 0.5;
+
+	effectRuntime.select_lod(pixelpart::float3_t(gd_to_pxpt(screenCenter) / scale, 0.0));
 }
 
 void PixelpartEffect2D::_bind_methods() {
