@@ -14,13 +14,13 @@ func _ready():
 		particle_type = $SampleEffect.get_particle_type_at_index(particle_type_index)
 
 	# Print information about effect nodes
-	var node = $SampleEffect.get_node_at_index(0)
+	var node = $SampleEffect.get_effect_node_at_index(0)
 	var node_index = 0
 	while node:
 		NodeUtil.print_info(node)
 
 		node_index += 1
-		node = $SampleEffect.get_node_at_index(node_index)
+		node = $SampleEffect.get_effect_node_at_index(node_index)
 
 func _on_effect_finished():
 	print("Effect finished")

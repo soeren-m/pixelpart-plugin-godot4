@@ -477,28 +477,28 @@ public:
 	void spawn_particles(String particleEmitterName, String particleTypeName, int count);
 
 	/**
-	 * @brief Return the node with the given name.
+	 * @brief Return the effect node with the given name.
 	 *
 	 * @param name Node name
 	 * @return Node or `null` if no node with this name exists
 	 */
-	Ref<PixelpartNode> find_node(String name) const;
+	Ref<PixelpartNode> find_effect_node(String name) const;
 
 	/**
-	 * @brief Return the node with the given ID.
+	 * @brief Return the effect node with the given ID.
 	 *
 	 * @param id Node ID
 	 * @return Node or `null` if no node with this ID exists
 	 */
-	Ref<PixelpartNode> get_node(int id) const;
+	Ref<PixelpartNode> get_effect_node(int id) const;
 
 	/**
-	 * @brief Return the node at the given index.
+	 * @brief Return the effect node at the given index.
 	 *
 	 * @param index Node index, starting from `0`
 	 * @return Node or `null` if no node at this index exists
 	 */
-	Ref<PixelpartNode> get_node_at_index(int index) const;
+	Ref<PixelpartNode> get_effect_node_at_index(int index) const;
 
 	/**
 	 * @brief Return the particle type with the given name.
@@ -523,6 +523,28 @@ public:
 	 * @return Particle type or `null` if no particle type at this index exists
 	 */
 	Ref<PixelpartParticleType> get_particle_type_at_index(int index) const;
+
+#ifdef DOXYGEN
+	/**
+	 * @brief Return the effect node with the given name.
+	 *
+	 * @deprecated Use `find_effect_node` instead.
+	 *
+	 * @param name Node name
+	 * @return Node or `null` if no node with this name exists
+	 */
+	Ref<PixelpartNode> find_node(String name) const;
+
+	/**
+	 * @brief Return the effect node at the given index.
+	 *
+	 * @deprecated Use `get_effect_node_at_index` instead.
+	 *
+	 * @param index Node index, starting from `0`
+	 * @return Node or `null` if no node at this index exists
+	 */
+	Ref<PixelpartNode> get_node_at_index(int index) const;
+#endif
 
 protected:
 	static void _bind_methods();

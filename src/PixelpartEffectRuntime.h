@@ -73,9 +73,9 @@ public:
 
 	void spawn_particles(String particleEmitterName, String particleTypeName, int count);
 
-	Ref<PixelpartNode> find_node(String name) const;
-	Ref<PixelpartNode> get_node(int id) const;
-	Ref<PixelpartNode> get_node_at_index(int index) const;
+	Ref<PixelpartNode> find_effect_node(String name) const;
+	Ref<PixelpartNode> get_effect_node(int id) const;
+	Ref<PixelpartNode> get_effect_node_at_index(int index) const;
 
 	Ref<PixelpartParticleType> find_particle_type(String name) const;
 	Ref<PixelpartParticleType> get_particle_type(int id) const;

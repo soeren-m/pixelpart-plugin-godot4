@@ -292,14 +292,14 @@ void PixelpartEffect::spawn_particles(String particleEmitterName, String particl
 	effectRuntime.spawn_particles(particleEmitterName, particleTypeName, count);
 }
 
-Ref<PixelpartNode> PixelpartEffect::find_node(String name) const {
-	return effectRuntime.find_node(name);
+Ref<PixelpartNode> PixelpartEffect::find_effect_node(String name) const {
+	return effectRuntime.find_effect_node(name);
 }
-Ref<PixelpartNode> PixelpartEffect::get_node(int id) const {
-	return effectRuntime.get_node(id);
+Ref<PixelpartNode> PixelpartEffect::get_effect_node(int id) const {
+	return effectRuntime.get_effect_node(id);
 }
-Ref<PixelpartNode> PixelpartEffect::get_node_at_index(int index) const {
-	return effectRuntime.get_node_at_index(index);
+Ref<PixelpartNode> PixelpartEffect::get_effect_node_at_index(int index) const {
+	return effectRuntime.get_effect_node_at_index(index);
 }
 
 Ref<PixelpartParticleType> PixelpartEffect::find_particle_type(String name) const {
@@ -400,9 +400,9 @@ void PixelpartEffect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("activate_trigger", "name"), &PixelpartEffect::activate_trigger);
 	ClassDB::bind_method(D_METHOD("is_trigger_activated", "name"), &PixelpartEffect::is_trigger_activated);
 	ClassDB::bind_method(D_METHOD("spawn_particles", "particleEmitterName", "particleTypeName", "count"), &PixelpartEffect::spawn_particles);
-	ClassDB::bind_method(D_METHOD("find_node", "name"), &PixelpartEffect::find_node);
-	ClassDB::bind_method(D_METHOD("get_node", "id"), &PixelpartEffect::get_node);
-	ClassDB::bind_method(D_METHOD("get_node_at_index", "index"), &PixelpartEffect::get_node_at_index);
+	ClassDB::bind_method(D_METHOD("find_effect_node", "name"), &PixelpartEffect::find_effect_node);
+	ClassDB::bind_method(D_METHOD("get_effect_node", "id"), &PixelpartEffect::get_effect_node);
+	ClassDB::bind_method(D_METHOD("get_effect_node_at_index", "index"), &PixelpartEffect::get_effect_node_at_index);
 	ClassDB::bind_method(D_METHOD("find_particle_type", "name"), &PixelpartEffect::find_particle_type);
 	ClassDB::bind_method(D_METHOD("get_particle_type", "id"), &PixelpartEffect::get_particle_type);
 	ClassDB::bind_method(D_METHOD("get_particle_type_at_index", "index"), &PixelpartEffect::get_particle_type_at_index);
@@ -429,5 +429,9 @@ void PixelpartEffect::_bind_methods() {
 
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "effect_scale", PROPERTY_HINT_RANGE, "0.0,1000.0,0.1,or_greater,exp"), "set_effect_scale", "get_effect_scale");
+
+	// Deprecated
+	ClassDB::bind_method(D_METHOD("find_node", "name"), &PixelpartEffect::find_effect_node);
+	ClassDB::bind_method(D_METHOD("get_node_at_index", "index"), &PixelpartEffect::get_effect_node_at_index);
 }
 }

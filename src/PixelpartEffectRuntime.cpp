@@ -325,7 +325,7 @@ void PixelpartEffectRuntime::spawn_particles(String particleEmitterName, String 
 		return;
 	}
 
-	Ref<PixelpartParticleEmitter> particleEmitter = find_node(particleEmitterName);
+	Ref<PixelpartParticleEmitter> particleEmitter = find_effect_node(particleEmitterName);
 	Ref<PixelpartParticleType> particleType = find_particle_type(particleTypeName);
 
 	if(!particleEmitter.is_valid()) {
@@ -343,7 +343,7 @@ void PixelpartEffectRuntime::spawn_particles(String particleEmitterName, String 
 		pixelpart::EffectRuntimeContext());
 }
 
-Ref<PixelpartNode> PixelpartEffectRuntime::find_node(String name) const {
+Ref<PixelpartNode> PixelpartEffectRuntime::find_effect_node(String name) const {
 	auto nodeIdIt = nodeNameIdMap.find(gd_to_pxpt(name));
 	if(nodeIdIt == nodeNameIdMap.end()) {
 		return Ref<PixelpartNode>();
@@ -356,15 +356,15 @@ Ref<PixelpartNode> PixelpartEffectRuntime::find_node(String name) const {
 
 	return nodeIt->second;
 }
-Ref<PixelpartNode> PixelpartEffectRuntime::get_node(int id) const {
-	auto nodeIt = nodeRefs.find(pixelpart::id_t(static_cast<std::uint32_t>(id))); 
+Ref<PixelpartNode> PixelpartEffectRuntime::get_effect_node(int id) const {
+	auto nodeIt = nodeRefs.find(pixelpart::id_t(static_cast<std::uint32_t>(id)));
 	if(nodeIt == nodeRefs.end()) {
 		return Ref<PixelpartNode>();
 	}
 
 	return nodeIt->second;
 }
-Ref<PixelpartNode> PixelpartEffectRuntime::get_node_at_index(int index) const {
+Ref<PixelpartNode> PixelpartEffectRuntime::get_effect_node_at_index(int index) const {
 	if(index < 0 || !effect.sceneGraph().containsIndex(static_cast<std::uint32_t>(index))) {
 		return Ref<PixelpartNode>();
 	}
@@ -385,7 +385,7 @@ Ref<PixelpartParticleType> PixelpartEffectRuntime::find_particle_type(String nam
 		return Ref<PixelpartParticleType>();
 	}
 
-	auto particleTypeIt = particleTypeRefs.find(particleTypeIdIt->second); 
+	auto particleTypeIt = particleTypeRefs.find(particleTypeIdIt->second);
 	if(particleTypeIt == particleTypeRefs.end()) {
 		return Ref<PixelpartParticleType>();
 	}
@@ -393,7 +393,7 @@ Ref<PixelpartParticleType> PixelpartEffectRuntime::find_particle_type(String nam
 	return particleTypeIt->second;
 }
 Ref<PixelpartParticleType> PixelpartEffectRuntime::get_particle_type(int id) const {
-	auto particleTypeIt = particleTypeRefs.find(pixelpart::id_t(static_cast<std::uint32_t>(id))); 
+	auto particleTypeIt = particleTypeRefs.find(pixelpart::id_t(static_cast<std::uint32_t>(id)));
 	if(particleTypeIt == particleTypeRefs.end()) {
 		return Ref<PixelpartParticleType>();
 	}
