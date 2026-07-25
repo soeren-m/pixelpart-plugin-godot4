@@ -1,4 +1,5 @@
 #include "PixelpartUtil.h"
+#include <cstdint>
 #include <cmath>
 
 namespace godot {
@@ -38,6 +39,9 @@ Variant pxpt_to_gd(const pixelpart::VariantValue& v) {
 			return Variant();
 	}
 }
+String pxpt_to_gd(const std::string& s) {
+	return String::utf8(s.c_str(), static_cast<std::int64_t>(s.size()));
+}
 
 pixelpart::int_t gd_to_pxpt(int v) {
 	return static_cast<pixelpart::int_t>(v);
@@ -76,5 +80,8 @@ pixelpart::VariantValue gd_to_pxpt(const Variant& v) {
 		default:
 			return pixelpart::VariantValue();
 	}
+}
+std::string gd_to_pxpt(const String& s) {
+	return std::string(s.utf8().get_data());
 }
 }

@@ -103,8 +103,11 @@ private:
 
 	std::uint32_t lod = 0;
 
-	std::unordered_map<std::string, Ref<PixelpartNode>> nodeRefs;
-	std::unordered_map<std::string, Ref<PixelpartParticleType>> particleTypeRefs;
+	std::unordered_map<pixelpart::id_t, Ref<PixelpartNode>> nodeRefs;
+	std::unordered_map<std::string, pixelpart::id_t> nodeNameIdMap;
+
+	std::unordered_map<pixelpart::id_t, Ref<PixelpartParticleType>> particleTypeRefs;
+	std::unordered_map<std::string, pixelpart::id_t> particleTypeNameIdMap;
 };
 }
 

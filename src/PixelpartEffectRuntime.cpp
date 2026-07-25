@@ -36,7 +36,8 @@ void PixelpartEffectRuntime::set_effect(const pixelpart::Effect& eff) {
 #endif
 
 	for(const auto& node : effect.sceneGraph()) {
-		nodeRefs[node->name()] = create_pixelpart_node(node.get(), effectEngine.get());
+		nodeNameIdMap[node->name()] = node->id();
+		nodeRefs[node->id()] = create_pixelpart_node(node.get(), effectEngine.get());
 	}
 
 	for(auto& particleType : effect.particleTypes()) {
@@ -44,27 +45,31 @@ void PixelpartEffectRuntime::set_effect(const pixelpart::Effect& eff) {
 		particleTypeRef.instantiate();
 		particleTypeRef->init(&particleType, effectEngine.get());
 
-		particleTypeRefs[particleType.name()] = particleTypeRef;
+		particleTypeNameIdMap[particleType.name()] = particleType.id();
+		particleTypeRefs[particleType.id()] = particleTypeRef;
 	}
 
-	for(const auto& inputEntry : effect.inputs()) {
-		StringName inputName = StringName(inputEntry.second.name().c_str());
-		inputValues[inputName] = pxpt_to_gd(inputEntry.second.value());
+	for(const auto& [inputId, input] : effect.inputs()) {
+		StringName inputName = StringName(input.name().c_str());
+		inputValues[inputName] = pxpt_to_gd(input.value());
 	}
 
 	lod = 0;
 }
 void PixelpartEffectRuntime::reset_effect() {
+	effect = pixelpart::Effect();
 	effectEngine = nullptr;
 	simulationTime = 0.0f;
+
+	inputValues.clear();
 
 	invokedEventIds.clear();
 
 	nodeRefs.clear();
-	particleTypeRefs.clear();
-	inputValues.clear();
+	nodeNameIdMap.clear();
 
-	effect = pixelpart::Effect();
+	particleTypeRefs.clear();
+	particleTypeNameIdMap.clear();
 }
 const pixelpart::Effect& PixelpartEffectRuntime::get_effect() const {
 	return effect;
@@ -215,9 +220,9 @@ Dictionary PixelpartEffectRuntime::get_inputs() const {
 }
 
 void PixelpartEffectRuntime::set_input(String name, const pixelpart::VariantValue& value) {
-	std::string inputName = std::string(name.utf8().get_data());
-	pixelpart::EffectInputCollection::iterator inputIt = std::find_if(
-		effect.inputs().begin(), effect.inputs().end(),
+	std::string inputName = gd_to_pxpt(name);
+
+	auto inputIt = std::find_if(effect.inputs().begin(), effect.inputs().end(),
 		[&inputName](const std::pair<pixelpart::id_t, pixelpart::EffectInput>& entry) {
 			return entry.second.name() == inputName;
 		});
@@ -233,9 +238,9 @@ void PixelpartEffectRuntime::set_input(String name, const pixelpart::VariantValu
 	effect.applyInputs();
 }
 pixelpart::VariantValue PixelpartEffectRuntime::get_input(String name) const {
-	std::string inputName = std::string(name.utf8().get_data());
-	pixelpart::EffectInputCollection::const_iterator inputIt = std::find_if(
-		effect.inputs().begin(), effect.inputs().end(),
+	std::string inputName = gd_to_pxpt(name);
+
+	auto inputIt = std::find_if(effect.inputs().begin(), effect.inputs().end(),
 		[&inputName](const std::pair<pixelpart::id_t, pixelpart::EffectInput>& entry) {
 			return entry.second.name() == inputName;
 		});
@@ -249,8 +254,8 @@ pixelpart::VariantValue PixelpartEffectRuntime::get_input(String name) const {
 }
 TypedArray<String> PixelpartEffectRuntime::get_input_names() const {
 	TypedArray<String> names;
-	for(const auto& entry : effect.inputs()) {
-		names.append(String(entry.second.name().c_str()));
+	for(const auto& [inputId, input] : effect.inputs()) {
+		names.append(pxpt_to_gd(input.name()));
 	}
 
 	return names;
@@ -261,8 +266,7 @@ void PixelpartEffectRuntime::activate_trigger(String name) {
 		return;
 	}
 
-	CharString nameCharString = name.utf8();
-	std::string triggerName = std::string(nameCharString.get_data(), nameCharString.length());
+	std::string triggerName = gd_to_pxpt(name);
 
 	auto triggerIt = std::find_if(effect.triggers().begin(), effect.triggers().end(),
 		[&triggerName](const std::pair<pixelpart::id_t, pixelpart::EffectTrigger>& entry) {
@@ -277,8 +281,7 @@ void PixelpartEffectRuntime::activate_trigger(String name) {
 	effectEngine->activateTrigger(triggerIt->first);
 }
 bool PixelpartEffectRuntime::is_trigger_activated(String name) const {
-	CharString nameCharString = name.utf8();
-	std::string triggerName = std::string(nameCharString.get_data(), nameCharString.length());
+	std::string triggerName = gd_to_pxpt(name);
 
 	auto triggerIt = std::find_if(effect.triggers().begin(), effect.triggers().end(),
 		[&triggerName](const std::pair<pixelpart::id_t, pixelpart::EffectTrigger>& entry) {
@@ -341,83 +344,85 @@ void PixelpartEffectRuntime::spawn_particles(String particleEmitterName, String 
 }
 
 Ref<PixelpartNode> PixelpartEffectRuntime::find_node(String name) const {
-	CharString nameCharString = name.utf8();
-	std::string nameStdString = std::string(nameCharString.get_data(), nameCharString.length());
-
-	if(nodeRefs.count(nameStdString) == 0) {
+	auto nodeIdIt = nodeNameIdMap.find(gd_to_pxpt(name));
+	if(nodeIdIt == nodeNameIdMap.end()) {
 		return Ref<PixelpartNode>();
 	}
 
-	return nodeRefs.at(nameStdString);
+	auto nodeIt = nodeRefs.find(nodeIdIt->second);
+	if(nodeIt == nodeRefs.end()) {
+		return Ref<PixelpartNode>();
+	}
+
+	return nodeIt->second;
 }
 Ref<PixelpartNode> PixelpartEffectRuntime::get_node(int id) const {
-	if(id < 0 || !effect.sceneGraph().contains(pixelpart::id_t(static_cast<std::uint32_t>(id)))) {
+	auto nodeIt = nodeRefs.find(pixelpart::id_t(static_cast<std::uint32_t>(id))); 
+	if(nodeIt == nodeRefs.end()) {
 		return Ref<PixelpartNode>();
 	}
 
-	std::string name = effect.sceneGraph().at(pixelpart::id_t(static_cast<std::uint32_t>(id))).name();
-	if(nodeRefs.count(name) == 0) {
-		return Ref<PixelpartNode>();
-	}
-
-	return nodeRefs.at(name);
+	return nodeIt->second;
 }
 Ref<PixelpartNode> PixelpartEffectRuntime::get_node_at_index(int index) const {
 	if(index < 0 || !effect.sceneGraph().containsIndex(static_cast<std::uint32_t>(index))) {
 		return Ref<PixelpartNode>();
 	}
 
-	std::string name = effect.sceneGraph().atIndex(static_cast<std::uint32_t>(index)).name();
-	if(nodeRefs.count(name) == 0) {
+	pixelpart::id_t id = effect.sceneGraph().atIndex(static_cast<std::uint32_t>(index)).id();
+
+	auto nodeIt = nodeRefs.find(id);
+	if(nodeIt == nodeRefs.end()) {
 		return Ref<PixelpartNode>();
 	}
 
-	return nodeRefs.at(name);
+	return nodeIt->second;
 }
 
 Ref<PixelpartParticleType> PixelpartEffectRuntime::find_particle_type(String name) const {
-	CharString nameCharString = name.utf8();
-	std::string nameStdString = std::string(nameCharString.get_data(), nameCharString.length());
-
-	if(particleTypeRefs.count(nameStdString) == 0) {
+	auto particleTypeIdIt = particleTypeNameIdMap.find(gd_to_pxpt(name));
+	if(particleTypeIdIt == particleTypeNameIdMap.end()) {
 		return Ref<PixelpartParticleType>();
 	}
 
-	return particleTypeRefs.at(nameStdString);
+	auto particleTypeIt = particleTypeRefs.find(particleTypeIdIt->second); 
+	if(particleTypeIt == particleTypeRefs.end()) {
+		return Ref<PixelpartParticleType>();
+	}
+
+	return particleTypeIt->second;
 }
 Ref<PixelpartParticleType> PixelpartEffectRuntime::get_particle_type(int id) const {
-	if(id < 0 || !effect.particleTypes().contains(pixelpart::id_t(static_cast<std::uint32_t>(id)))) {
+	auto particleTypeIt = particleTypeRefs.find(pixelpart::id_t(static_cast<std::uint32_t>(id))); 
+	if(particleTypeIt == particleTypeRefs.end()) {
 		return Ref<PixelpartParticleType>();
 	}
 
-	std::string name = effect.particleTypes().at(pixelpart::id_t(static_cast<std::uint32_t>(id))).name();
-	if(particleTypeRefs.count(name) == 0) {
-		return Ref<PixelpartParticleType>();
-	}
-
-	return particleTypeRefs.at(name);
+	return particleTypeIt->second;
 }
 Ref<PixelpartParticleType> PixelpartEffectRuntime::get_particle_type_at_index(int index) const {
 	if(index < 0 || !effect.particleTypes().containsIndex(static_cast<std::uint32_t>(index))) {
 		return Ref<PixelpartParticleType>();
 	}
 
-	std::string name = effect.particleTypes().atIndex(static_cast<std::uint32_t>(index)).name();
-	if(particleTypeRefs.count(name) == 0) {
+	pixelpart::id_t id = effect.particleTypes().atIndex(static_cast<std::uint32_t>(index)).id();
+
+	auto particleTypeIt = particleTypeRefs.find(id);
+	if(particleTypeIt == particleTypeRefs.end()) {
 		return Ref<PixelpartParticleType>();
 	}
 
-	return particleTypeRefs.at(name);
+	return particleTypeIt->second;
 }
 
 void PixelpartEffectRuntime::apply_inputs() {
-	for(auto& inputEntry : effect.inputs()) {
-		StringName inputName = StringName(inputEntry.second.name().c_str());
+	for(auto& [inputId, input] : effect.inputs()) {
+		StringName inputName = StringName(input.name().c_str());
 		if(!inputValues.has(inputName)) {
 			continue;
 		}
 
-		inputEntry.second.value(gd_to_pxpt(inputValues.get(inputName, Variant())));
+		input.value(gd_to_pxpt(inputValues.get(inputName, Variant())));
 	}
 
 	effect.applyInputs();
