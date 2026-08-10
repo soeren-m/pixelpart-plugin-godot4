@@ -1,6 +1,6 @@
 # Getting Started {#mainpage}
 
-This is the documentation of the *Pixelpart* plugin for the Godot game engine. Start by [installing the plugin](./installation.md) and [use Pixelpart effects](./usage.md) in your game. The plugin also offers an extensive [scripting API](./scripting.md) to dynamically adjust effects with *GDScript*.
+This is the documentation of the Pixelpart plugin for the Godot game engine. Start by [installing the plugin](./installation.md) and [use Pixelpart effects](./usage.md) in your game. The plugin also offers an extensive [scripting API](./scripting.md) to dynamically adjust effects with *GDScript*.
 
 ## Requirements
 
@@ -12,13 +12,13 @@ The plugin supports the following target platforms:
 
 Platform | Architectures | Supported
 -------- | ------------- | ---------
-Windows | x86_64, x86_32, arm64 | Yes
-Linux | x86_64, x86_32, arm64 | Yes
-macOS | arm64, x86_64 | Yes
-iOS | arm64 | Yes
-Android | arm64, arm32, x64, x86_32 | Yes
-Web | wasm32 | Yes
-Console | | No
+Windows | x86_64, x86_32, arm64 | @emoji :heavy_check_mark:
+Linux | x86_64, x86_32, arm64 | @emoji :heavy_check_mark:
+macOS | arm64, x86_64 | @emoji :heavy_check_mark:
+iOS | arm64 | @emoji :heavy_check_mark:
+Android | arm64, arm32, x86_64, x86_32 | @emoji :heavy_check_mark:
+Web | wasm32 | @emoji :heavy_check_mark:
+Console | - | @emoji :heavy_multiplication_x:
 
 ## Feature Support
 
@@ -26,9 +26,15 @@ The plugins supports the following features:
 
 Feature | Supported
 ------- | ---------
-2D effects | Yes
-3D effects | Yes
-Inputs | Yes
-Triggers | Yes
-Events | Yes
-Custom materials | Yes
+2D effects | @emoji :heavy_check_mark:
+3D effects | @emoji :heavy_check_mark:
+Keyframe animation | @emoji :heavy_check_mark:
+Inputs | @emoji :heavy_check_mark:
+Triggers | @emoji :heavy_check_mark:
+Events | @emoji :heavy_check_mark:
+Level of detail | @emoji :heavy_check_mark:
+Sprite particles | @emoji :heavy_check_mark:
+Trail particles | @emoji :heavy_check_mark:
+Mesh particles | @emoji :heavy_check_mark:
+Built-in materials | @emoji :heavy_check_mark:
+Custom materials | @emoji :heavy_check_mark:

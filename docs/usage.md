@@ -14,8 +14,6 @@ Now drag the imported effect asset (*.ppfx* file) onto the *Effect* field in the
 
 ![Effect inspector](./images/inspector.png)
 
-## Effect properties
-
 When you select a *PixelpartEffect* or *PixelpartEffect2D* node, the inspector shows important properties that can be used to adjust how the effect is simulated and rendered.
 
 Property | Description

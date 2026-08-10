@@ -36,8 +36,8 @@ Triggers are used to make effects react to events in your game. The following ex
 
 ```
 func _ready():
-	# Activate the trigger "Event"
-	$SampleEffect.activate_trigger("Event")
+	# Activate the trigger "MyTrigger"
+	$SampleEffect.activate_trigger("MyTrigger")
 ```
 
 To check if a trigger has already been activated, use godot::PixelpartEffect::is_trigger_activated.
