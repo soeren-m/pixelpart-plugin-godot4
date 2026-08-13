@@ -1,30 +1,43 @@
 #include "PixelpartShaderProvider.h"
 #include "../util/PixelpartUtil.h"
 #include <godot_cpp/classes/rendering_server.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
 #include <pixelpart-runtime/effect/StringFormat.h>
 
 namespace godot {
 const std::string PixelpartShaderProvider::uniformPrefix = "u_";
 
 PixelpartShaderProvider::PixelpartShaderProvider() {
+	const String shaderBasePath = "res://addons/pixelpart/shaders/";
+
+	ResourceLoader* resourceLoader = ResourceLoader::get_singleton();
+
 	for(const auto& [materialName, materialMetadata] : builtInMaterialRepository.materials()) {
-		const std::string& canvasItemShaderCode =
-			materialMetadata.rendererType() == pixelpart::ParticleRendererType::trail ? trailCanvasItemShader : spriteCanvasItemShader;
-		const std::string& spatialShaderCode =
-			materialMetadata.rendererType() == pixelpart::ParticleRendererType::mesh ? meshSpatialShader :
-			(materialMetadata.rendererType() == pixelpart::ParticleRendererType::trail ? trailSpatialShader : spriteSpatialShader);
+		String canvasItemShaderFile =
+			String("Pixelpart") + pxpt_to_gd(materialName) + String("CanvasItem.gdshader");
+		String spatialShaderFile =
+			String("Pixelpart") + pxpt_to_gd(materialName) + String("Spatial.gdshader");
 
-		builtInCanvasItemShaders[materialName] = get_canvas_item_shader(
-			canvasItemShaderCode, "", "",
-			materialMetadata.rendererType(),
-			materialMetadata.blendMode(),
-			materialMetadata.lightingMode());
+		if(materialMetadata.rendererType() != pixelpart::ParticleRendererType::mesh) {
+			Ref<Shader> canvasItemShader = resourceLoader->load(shaderBasePath + canvasItemShaderFile, "Shader");
+			if(canvasItemShader.is_valid()) {
+				builtInCanvasItemShaders[materialName] = canvasItemShader;
+			}
+			else {
+				UtilityFunctions::push_error(String("Failed to load built-in shader \"") + canvasItemShaderFile + String("\""));
+				continue;
+			}
+		}
 
-		builtInSpatialShaders[materialName] = get_spatial_shader(
-			spatialShaderCode, "", "",
-			materialMetadata.rendererType(),
-			materialMetadata.blendMode(),
-			materialMetadata.lightingMode());
+		Ref<Shader> spatialShader = resourceLoader->load(shaderBasePath + spatialShaderFile, "Shader");
+		if(spatialShader.is_valid()) {
+			builtInSpatialShaders[materialName] = spatialShader;
+		}
+		else {
+			UtilityFunctions::push_error(String("Failed to load built-in shader \"") + spatialShaderFile + String("\""));
+			continue;
+		}
 	}
 }
 
@@ -55,7 +68,7 @@ Ref<Shader> PixelpartShaderProvider::get_custom_canvas_item_shader(
 	pixelpart::ParticleRendererType renderer,
 	pixelpart::BlendMode blendMode,
 	pixelpart::LightingMode lightingMode) {
-	return get_canvas_item_shader(canvasItemShaderTemplate, mainShaderCode, parameterShaderCode, renderer, blendMode, lightingMode);
+	return create_shader_from_code(canvasItemShaderTemplate, mainShaderCode, parameterShaderCode, renderer, blendMode, lightingMode);
 }
 Ref<Shader> PixelpartShaderProvider::get_custom_spatial_shader(
 	const std::string& mainShaderCode,
@@ -63,149 +76,85 @@ Ref<Shader> PixelpartShaderProvider::get_custom_spatial_shader(
 	pixelpart::ParticleRendererType renderer,
 	pixelpart::BlendMode blendMode,
 	pixelpart::LightingMode lightingMode) {
+	return create_shader_from_code(spatialShaderTemplate, mainShaderCode, parameterShaderCode, renderer, blendMode, lightingMode);
+}
+
+String PixelpartShaderProvider::generate_defines(
+	pixelpart::ParticleRendererType renderer,
+	pixelpart::BlendMode blendMode,
+	pixelpart::LightingMode lightingMode) {
+	const auto define = [](String& shaderCode, const String& def) {
+		shaderCode += "#define ";
+		shaderCode += def;
+		shaderCode += "\n";
+	};
+
+	String shaderCode;
+
 	switch(renderer) {
-		case pixelpart::ParticleRendererType::trail:
-			return get_spatial_shader(trailSpatialShaderTemplate, mainShaderCode, parameterShaderCode, renderer, blendMode, lightingMode);
 		case pixelpart::ParticleRendererType::mesh:
-			return get_spatial_shader(meshSpatialShaderTemplate, mainShaderCode, parameterShaderCode, renderer, blendMode, lightingMode);
+			define(shaderCode, "PIXELPART_RENDERER_MESH");
+			break;
+		case pixelpart::ParticleRendererType::trail:
+			define(shaderCode, "PIXELPART_RENDERER_TRAIL");
+			break;
 		default:
-			return get_spatial_shader(spriteSpatialShaderTemplate, mainShaderCode, parameterShaderCode, renderer, blendMode, lightingMode);
+			define(shaderCode, "PIXELPART_RENDERER_SPRITE");
+			break;
 	}
-}
-
-Ref<Shader> PixelpartShaderProvider::get_canvas_item_shader(const std::string& shaderTemplate,
-	const std::string& mainShaderCode,
-	const std::string& parameterShaderCode,
-	pixelpart::ParticleRendererType renderer,
-	pixelpart::BlendMode blendMode,
-	pixelpart::LightingMode lightingMode) {
-	std::string renderMode;
-
-	std::string outputCode = "\tfinal_Color.rgb += final_Emission;\n";
-	outputCode += "\tCOLOR = final_Color;";
 
 	switch(blendMode) {
 		case pixelpart::BlendMode::alpha:
-			renderMode = "blend_mix";
+			define(shaderCode, "PIXELPART_BLEND_ALPHA");
 			break;
 		case pixelpart::BlendMode::additive:
-			renderMode = "blend_add";
+			define(shaderCode, "PIXELPART_BLEND_ADDITIVE");
 			break;
 		case pixelpart::BlendMode::subtractive:
-			renderMode = "blend_sub";
+			define(shaderCode, "PIXELPART_BLEND_SUBTRACTIVE");
 			break;
 		default:
-			renderMode = "blend_disabled";
-			break;
-	}
-
-	if(lightingMode == pixelpart::LightingMode::unlit) {
-		renderMode += ",unshaded";
-	}
-
-	return get_shader(shaderTemplate, mainShaderCode, parameterShaderCode, outputCode, renderMode);
-}
-Ref<Shader> PixelpartShaderProvider::get_spatial_shader(const std::string& shaderTemplate,
-	const std::string& mainShaderCode,
-	const std::string& parameterShaderCode,
-	pixelpart::ParticleRendererType renderer,
-	pixelpart::BlendMode blendMode,
-	pixelpart::LightingMode lightingMode) {
-	std::string renderMode = "depth_draw_opaque";
-
-	if(renderer != pixelpart::ParticleRendererType::mesh) {
-		renderMode += ",cull_disabled";
-	}
-
-	std::string outputCode = "\tALBEDO = final_Color.rgb;\n";
-	if(blendMode != pixelpart::BlendMode::off) {
-		outputCode += "\tALPHA = final_Color.a;\n";
-	}
-
-	outputCode += "\tEMISSION = final_Emission;\n";
-	outputCode += "\tROUGHNESS = final_Roughness;\n";
-	outputCode += "\tMETALLIC = final_Metallic;";
-
-	switch(blendMode) {
-		case pixelpart::BlendMode::alpha:
-			renderMode += ",blend_mix";
-			break;
-		case pixelpart::BlendMode::additive:
-			renderMode += ",blend_add";
-			break;
-		case pixelpart::BlendMode::subtractive:
-			renderMode += ",blend_sub";
-			break;
-		default:
+			define(shaderCode, "PIXELPART_BLEND_OFF");
 			break;
 	}
 
 	switch(lightingMode) {
 		case pixelpart::LightingMode::lit:
-			renderMode += ",diffuse_burley,specular_schlick_ggx";
+			define(shaderCode, "PIXELPART_LIGHTING_LIT");
 			break;
 		default:
-			renderMode += ",unshaded";
+			define(shaderCode, "PIXELPART_LIGHTING_UNLIT");
 			break;
 	}
 
-	return get_shader(shaderTemplate, mainShaderCode, parameterShaderCode, outputCode, renderMode);
+	shaderCode += "\n";
+
+	return shaderCode;
 }
-Ref<Shader> PixelpartShaderProvider::get_shader(const std::string& shaderTemplate,
+
+Ref<Shader> PixelpartShaderProvider::create_shader_from_code(const std::string& shaderTemplate,
 	const std::string& mainShaderCode,
 	const std::string& parameterShaderCode,
-	const std::string& outputCode,
-	const std::string& renderMode) {
-
-	std::string shaderSource = pixelpart::replaceString(shaderTemplate, renderMode, "{mode}");
-	shaderSource = pixelpart::replaceString(shaderSource, shaderCommonCode, "{common}");
-	shaderSource = pixelpart::replaceString(shaderSource, mainShaderCode, "{main}");
+	pixelpart::ParticleRendererType renderer,
+	pixelpart::BlendMode blendMode,
+	pixelpart::LightingMode lightingMode) {
+	std::string shaderSource = pixelpart::replaceString(shaderTemplate, mainShaderCode, "{main}");
 	shaderSource = pixelpart::replaceString(shaderSource, parameterShaderCode, "{parameter}");
-	shaderSource = pixelpart::replaceString(shaderSource, outputCode, "{output}");
 
-	if(shaders.count(shaderSource) != 0u) {
-		return shaders.at(shaderSource);
-	}
+	String shaderCode = generate_defines(renderer, blendMode, lightingMode);
+	shaderCode += String(shaderSource.c_str());
 
 	Ref<Shader> shader;
 	shader.instantiate();
-	shader->set_code(String(shaderSource.c_str()));
-
-	shaders[shaderSource] = shader;
+	shader->set_code(shaderCode);
 
 	return shader;
 }
 
-const std::string PixelpartShaderProvider::shaderCommonCode = std::string(
-	#include "../shaders/PixelpartShaderCommon.glsl"
-);
-
-const std::string PixelpartShaderProvider::spriteCanvasItemShader = std::string(
-	#include "../shaders/PixelpartSpriteCanvasItemShader.glsl"
-);
-const std::string PixelpartShaderProvider::trailCanvasItemShader = std::string(
-	#include "../shaders/PixelpartTrailCanvasItemShader.glsl"
-);
-const std::string PixelpartShaderProvider::spriteSpatialShader = std::string(
-	#include "../shaders/PixelpartSpriteSpatialShader.glsl"
-);
-const std::string PixelpartShaderProvider::trailSpatialShader = std::string(
-	#include "../shaders/PixelpartTrailSpatialShader.glsl"
-);
-const std::string PixelpartShaderProvider::meshSpatialShader = std::string(
-	#include "../shaders/PixelpartMeshSpatialShader.glsl"
-);
-
 const std::string PixelpartShaderProvider::canvasItemShaderTemplate = std::string(
-	#include "../shaders/PixelpartCanvasItemShaderTemplate.glsl"
+	#include "PixelpartCanvasItemShaderTemplate.glsl"
 );
-const std::string PixelpartShaderProvider::spriteSpatialShaderTemplate = std::string(
-	#include "../shaders/PixelpartSpriteSpatialShaderTemplate.glsl"
-);
-const std::string PixelpartShaderProvider::trailSpatialShaderTemplate = std::string(
-	#include "../shaders/PixelpartTrailSpatialShaderTemplate.glsl"
-);
-const std::string PixelpartShaderProvider::meshSpatialShaderTemplate = std::string(
-	#include "../shaders/PixelpartMeshSpatialShaderTemplate.glsl"
+const std::string PixelpartShaderProvider::spatialShaderTemplate = std::string(
+	#include "PixelpartSpatialShaderTemplate.glsl"
 );
 }

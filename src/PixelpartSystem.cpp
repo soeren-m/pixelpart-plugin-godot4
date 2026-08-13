@@ -1,5 +1,5 @@
 #include "PixelpartSystem.h"
-#include "shaders/PixelpartShaderGraphSpecification.h"
+#include "rendering/PixelpartShaderGraphSpecification.h"
 #include <pixelpart-runtime/effect/ComputeGraph.h>
 #include <pixelpart-runtime/effect/ShaderGraph.h>
 #include <pixelpart-runtime/json/json.hpp>
