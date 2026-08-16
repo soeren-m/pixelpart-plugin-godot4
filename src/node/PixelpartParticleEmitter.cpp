@@ -37,43 +37,29 @@ void PixelpartParticleEmitter::add_shape_point(Vector3 point) {
 		return;
 	}
 
-	std::vector<pixelpart::float3_t> points = get_shape_points();
-	points.push_back(gd_to_pxpt(point));
+	particleEmitter->path().addPoint(gd_to_pxpt(point));
 
-	set_shape_points(points);
 }
 void PixelpartParticleEmitter::remove_shape_point(int index) {
-	if(!particleEmitter) {
+	if(!particleEmitter || index < 0 || index >= get_shape_point_count()) {
 		return;
 	}
 
-	std::vector<pixelpart::float3_t> points = get_shape_points();
-	if(index < 0 || index >= static_cast<int>(points.size())) {
-		return;
-	}
-
-	points.erase(points.begin() + index);
-	set_shape_points(points);
+	particleEmitter->path().removePoint(static_cast<std::size_t>(index));
 }
 void PixelpartParticleEmitter::set_shape_point(int index, Vector3 point) {
-	if(!particleEmitter) {
+	if(!particleEmitter || index < 0 || index >= get_shape_point_count()) {
 		return;
 	}
 
-	std::vector<pixelpart::float3_t> points = get_shape_points();
-	if(index < 0 || index > static_cast<int>(points.size())) {
-		return;
-	}
-
-	points[index] = gd_to_pxpt(point);
-	set_shape_points(points);
+	particleEmitter->path().setPoint(static_cast<std::size_t>(index), gd_to_pxpt(point));
 }
 Vector3 PixelpartParticleEmitter::get_shape_point(int index) const {
 	if(!particleEmitter || index < 0 || index >= get_shape_point_count()) {
 		return Vector3(0.0f, 0.0f, 0.0f);
 	}
 
-	return pxpt_to_gd(particleEmitter->path().point(static_cast<std::size_t>(index)).value);
+	return pxpt_to_gd(particleEmitter->path().point(static_cast<std::size_t>(index)));
 }
 int PixelpartParticleEmitter::get_shape_point_count() const {
 	return particleEmitter ? static_cast<int>(particleEmitter->path().pointCount()) : 0;
@@ -176,31 +162,6 @@ Ref<PixelpartAnimatedPropertyFloat> PixelpartParticleEmitter::get_spread() const
 	property->init(&particleEmitter->spread());
 
 	return property;
-}
-
-void PixelpartParticleEmitter::set_shape_points(const std::vector<pixelpart::float3_t>& points) {
-	std::vector<pixelpart::float_t> distances(points.size(), 0.0);
-	pixelpart::float_t length = 0.0;
-
-	for(std::size_t i = 1; i < points.size(); i++) {
-		length += std::max(pixelpart::math::distance(points[i], points[i - 1]), 0.000001);
-		distances[i] = length;
-	}
-
-	pixelpart::Curve<pixelpart::float3_t> modifiedPath;
-	for(std::size_t i = 0; i < points.size(); i++) {
-		modifiedPath.addPoint(distances[i] / length, points[i]);
-	}
-
-	particleEmitter->path() = modifiedPath;
-}
-std::vector<pixelpart::float3_t> PixelpartParticleEmitter::get_shape_points() const {
-	std::vector<pixelpart::float3_t> points(particleEmitter->path().pointCount(), pixelpart::float3_t(0.0));
-	for(std::size_t i = 0; i < particleEmitter->path().pointCount(); i++) {
-		points[i] = particleEmitter->path().point(i).value;
-	}
-
-	return points;
 }
 
 void PixelpartParticleEmitter::_bind_methods() {

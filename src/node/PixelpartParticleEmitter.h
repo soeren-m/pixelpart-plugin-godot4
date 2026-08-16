@@ -424,9 +424,6 @@ protected:
 	static void _bind_methods();
 
 private:
-	void set_shape_points(const std::vector<pixelpart::float3_t>& points);
-	std::vector<pixelpart::float3_t> get_shape_points() const;
-
 	pixelpart::ParticleEmitter* particleEmitter = nullptr;
 };
 }
