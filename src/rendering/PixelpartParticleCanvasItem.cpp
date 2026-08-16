@@ -52,6 +52,7 @@ void PixelpartParticleCanvasItem::draw(const pixelpart::ParticleCollection& part
 	rs->material_set_param(materialRid, "u_EffectTime", static_cast<float>(runtimeContext.time()));
 	rs->material_set_param(materialRid, "u_ObjectTime", static_cast<float>(particleEmitter.timeSinceStart(runtimeContext)));
 
+	rs->canvas_item_set_parent(canvasItemRid, parentNode->get_canvas_item());
 	rs->canvas_item_set_transform(canvasItemRid, parentNode->get_global_transform().affine_inverse());
 	rs->canvas_item_set_visibility_layer(canvasItemRid, parentNode->get_visibility_layer());
 	rs->canvas_item_set_self_modulate(canvasItemRid, parentNode->get_self_modulate());
@@ -198,7 +199,6 @@ void PixelpartParticleCanvasItem::create_canvas_item() {
 	const pixelpart::ParticleType& particleType = effect.particleTypes().at(particleTypeId);
 
 	canvasItemRid = rs->canvas_item_create();
-	rs->canvas_item_set_parent(canvasItemRid, parentNode->get_canvas_item());
 
 	meshRid = rs->mesh_create();
 	rs->canvas_item_add_mesh(canvasItemRid, meshRid);
