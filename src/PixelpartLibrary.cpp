@@ -11,6 +11,7 @@
 #include "node/PixelpartVectorField.h"
 #include "node/PixelpartNoiseField.h"
 #include "node/PixelpartDragField.h"
+#include "node/PixelpartVortexField.h"
 #include "node/PixelpartLineCollider.h"
 #include "node/PixelpartPlaneCollider.h"
 #include "node/PixelpartDirectionalLightSource.h"
@@ -57,6 +58,7 @@ void pixelpart_register(godot::ModuleInitializationLevel level) {
 	godot::ClassDB::register_class<godot::PixelpartVectorField>();
 	godot::ClassDB::register_class<godot::PixelpartNoiseField>();
 	godot::ClassDB::register_class<godot::PixelpartDragField>();
+	godot::ClassDB::register_class<godot::PixelpartVortexField>();
 	godot::ClassDB::register_class<godot::PixelpartCollider>();
 	godot::ClassDB::register_class<godot::PixelpartLineCollider>();
 	godot::ClassDB::register_class<godot::PixelpartPlaneCollider>();

@@ -6,6 +6,7 @@
 #include "PixelpartVectorField.h"
 #include "PixelpartNoiseField.h"
 #include "PixelpartDragField.h"
+#include "PixelpartVortexField.h"
 #include "PixelpartLineCollider.h"
 #include "PixelpartPlaneCollider.h"
 #include "PixelpartDirectionalLightSource.h"
@@ -17,6 +18,7 @@
 #include <pixelpart-runtime/effect/VectorField.h>
 #include <pixelpart-runtime/effect/NoiseField.h>
 #include <pixelpart-runtime/effect/DragField.h>
+#include <pixelpart-runtime/effect/VortexField.h>
 #include <pixelpart-runtime/effect/LineCollider.h>
 #include <pixelpart-runtime/effect/PlaneCollider.h>
 #include <pixelpart-runtime/effect/AttractionField.h>
@@ -70,6 +72,13 @@ Ref<PixelpartNode> create_pixelpart_node(pixelpart::Node* internalNode, pixelpar
 	}
 	else if(dynamic_cast<pixelpart::DragField*>(internalNode)) {
 		Ref<PixelpartDragField> node;
+		node.instantiate();
+		node->init(internalNode, effectEngine);
+
+		return node;
+	}
+	else if(dynamic_cast<pixelpart::VortexField*>(internalNode)) {
+		Ref<PixelpartVortexField> node;
 		node.instantiate();
 		node->init(internalNode, effectEngine);
 

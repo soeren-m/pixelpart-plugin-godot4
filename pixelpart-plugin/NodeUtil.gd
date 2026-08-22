@@ -13,6 +13,7 @@ static func print_info(node: PixelpartNode):
 	var vector_field := node as PixelpartVectorField
 	var noise_field := node as PixelpartNoiseField
 	var drag_field := node as PixelpartDragField
+	var vortex_field := node as PixelpartVortexField
 	var line_collider := node as PixelpartLineCollider
 	var plane_collider := node as PixelpartPlaneCollider
 	var dir_light := node as PixelpartDirectionalLightSource
@@ -27,6 +28,7 @@ static func print_info(node: PixelpartNode):
 	elif vector_field: typestr = "VectorField"
 	elif noise_field: typestr = "NoiseField"
 	elif drag_field: typestr = "DragField"
+	elif vortex_field: typestr = "VortexField"
 	elif line_collider: typestr = "LineCollider"
 	elif plane_collider: typestr = "PlaneCollider"
 	elif dir_light: typestr = "DirectionalLightSource"
