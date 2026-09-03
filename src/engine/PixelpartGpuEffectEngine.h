@@ -4,6 +4,7 @@
 #include <pixelpart-runtime/engine/EffectEngine.h>
 #include <godot_cpp/classes/rendering_device.hpp>
 #include <godot_cpp/classes/shader.hpp>
+#include <unordered_map>
 
 namespace godot {
 class PixelpartGpuEffectEngine : public pixelpart::EffectEngine {
@@ -28,11 +29,19 @@ public:
 
 private:
 	struct ParticleGpuTexture {
+		RID commonTextureRid;
 		RID positionTextureRid;
+		RID globalPositionTextureRid;
 		RID velocityTextureRid;
 		RID forceTextureRid;
-		RID colorTextureRid;
+		RID rotationTextureRid;
 		RID sizeTextureRid;
+		RID colorTextureRid;
+		
+		/*RID aliveListBufferRids[2];
+		RID deadListBufferRid;
+		RID atomicCounterBufferRid;
+		std::uint32_t activeAliveListBufferIndex = 0;*/
 	};
 
 	ParticleGpuTexture createParticleDataTextures(std::uint32_t width, std::uint32_t height);
@@ -40,9 +49,13 @@ private:
 	const pixelpart::Effect& effect;
 
 	Ref<RenderingDevice> renderingDevice;
-	Ref<Shader> simulationComputeShader;
 	Ref<Shader> generationComputeShader;
+	Ref<Shader> simulationComputeShader;
+	RID generationComputePipelineRid;
+	RID simulationComputePipelineRid;
+
 	std::unordered_map<pixelpart::ParticleEmissionPair, ParticleGpuTexture> particleGpuTextures;
+	std::unordered_map<pixelpart::ParticleEmissionPair, pixelpart::float_t> particleEmissionCounts;
 
 	pixelpart::EffectRuntimeContext runtimeContext;
 };

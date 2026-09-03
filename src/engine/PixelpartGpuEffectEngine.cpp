@@ -9,9 +9,24 @@ PixelpartGpuEffectEngine::PixelpartGpuEffectEngine(const pixelpart::Effect& eff)
 	renderingDevice = rs->get_rendering_device();
 
 	// TODO: load shaders
+
+	generationComputePipelineRid = renderingDevice.compute_pipeline_create(generationComputeShader);
+	simulationComputePipelineRid = renderingDevice.compute_pipeline_create(simulationComputeShader);
 }
 PixelpartGpuEffectEngine::~PixelpartGpuEffectEngine() {
-	
+	for(const auto& [emissionPair, textures] : particleGpuTextures) {
+		renderingDevice.free_rid(textures.commonTextureRid);
+		renderingDevice.free_rid(textures.positionTextureRid);
+		renderingDevice.free_rid(textures.globalPositionTextureRid);
+		renderingDevice.free_rid(textures.velocityTextureRid);
+		renderingDevice.free_rid(textures.forceTextureRid);
+		renderingDevice.free_rid(textures.rotationTextureRid);
+		renderingDevice.free_rid(textures.sizeTextureRid);
+		renderingDevice.free_rid(textures.colorTextureRid);
+	}
+
+	renderingDevice.free_rid(generationComputePipelineRid);
+	renderingDevice.free_rid(simulationComputePipelineRid);
 }
 
 void PixelpartGpuEffectEngine::advance(pixelpart::float_t dt) {
@@ -20,7 +35,86 @@ void PixelpartGpuEffectEngine::advance(pixelpart::float_t dt) {
 	dt = std::max(dt, 0.0);
 	runtimeContext.deltaTime() = dt;
 
+	// TODO: remove buffers??
+	for(pixelpart::ParticleEmissionPair emissionPair : effect.particleEmissionPairs()) {
+		if(particleGpuTextures.count(emissionPair) == 0) {
+			// TODO: calculate size based on particle count
+			particleGpuTextures[emissionPair] = createParticleDataTextures(512, 512);
+			particleEmissionCounts[emissionPair] = 0.0;
+		}
+	}
+
 	// TODO
+
+	for(const auto& [emissionPair, textures] : particleGpuTextures) {
+		const pixelpart::ParticleType& particleType = engineEffect.particleTypes().at(emissionPair.typeId);
+		const pixelpart::ParticleEmitter& particleEmitter = engineEffect.sceneGraph().at<pixelpart::ParticleEmitter>(emissionPair.emitterId);
+		if(!particleEmitter.primary() || !particleEmitter.active(runtimeContext)) {
+			continue;
+		}
+
+		pixelpart::float_t& emissionCount = engineParticleEmissionCounts.at(emissionPair);
+
+		float_t startTime = particleEmitter.startTrigger()
+			? particleEmitter.start() + runtimeContext.triggerActivationTime(particleEmitter.startTrigger())
+			: particleEmitter.start();
+
+		float_t emissionTime = particleEmitter.repeat()
+			? std::fmod(runtimeContext.time() - startTime, particleEmitter.duration())
+			: runtimeContext.time() - startTime;
+
+		switch(particleEmitter.emissionMode()) {
+			case pixelpart::ParticleEmitter::EmissionMode::continuous:
+				emissionCount += particleType.count().at(emissionTime / particleEmitter.duration()) * runtimeContext.deltaTime();
+				break;
+			case pixelpart::ParticleEmitter::EmissionMode::burst_start:
+				if(emissionTime < runtimeContext.deltaTime()) {
+					emissionCount += particleType.count().at(0);
+				}
+				break;
+			case pixelpart::ParticleEmitter::EmissionMode::burst_end:
+				if(emissionTime > particleEmitter.duration() - runtimeContext.deltaTime()) {
+					emissionCount += particleType.count().at(1);
+				}
+				break;
+			default:
+				break;
+		}
+
+		std::uint32_t emittedParticleCount = static_cast<std::uint32_t>(std::max(emissionCount, 0.0));
+		if(emittedParticleCount == 0) {
+			continue;
+		}
+
+		emissionCount -= static_cast<pixelpart::float_t>(emittedParticleCount);
+
+		// TODO: set params
+
+		std::uint32_t localWorkgroupSize = 64;
+		std::uint32_t workgroupCount = (emittedParticleCount + (localWorkgroupSize - 1)) / localWorkgroupSize;
+
+		auto computeList = renderingDevice.compute_list_begin();
+		renderingDevice.compute_list_bind_compute_pipeline(computeList, generationComputePipeline);
+		renderingDevice.compute_list_dispatch(computeList, workgroupCount, 1, 1);
+		renderingDevice.compute_list_end();
+	}
+
+	// TODO: barrier
+
+	for(auto& [emissionPair, textures] : particleGpuTextures) {
+		const pixelpart::ParticleType& particleType = engineEffect.particleTypes().at(emissionPair.typeId);
+		const pixelpart::ParticleEmitter& particleEmitter = engineEffect.sceneGraph().at<pixelpart::ParticleEmitter>(emissionPair.emitterId);
+
+		// TODO: set params
+
+		std::uint32_t localWorkgroupSize = 64;
+		std::uint32_t workgroupCount = (512*512) / localWorkgroupSize;
+
+		auto computeList = renderingDevice.compute_list_begin();
+		renderingDevice.compute_list_bind_compute_pipeline(computeList, simulationComputePipeline);
+		renderingDevice.compute_list_dispatch(computeList, workgroupCount, 1, 1);
+		renderingDevice.compute_list_end();
+	}
 
 	runtimeContext.invokedEvents().clear();
 	for(const auto& [eventId, event] : effect.events()) {
@@ -49,9 +143,12 @@ void PixelpartGpuEffectEngine::restart() {
 	runtimeContext.triggerActivationTimes().clear();
 }
 void PixelpartGpuEffectEngine::reset(const pixelpart::EffectRuntimeState& initialState, pixelpart::EffectRuntimeContext initialContext) {
-	// TODO
-
 	runtimeContext = initialContext;
+
+	particleGpuTextures.clear();
+	for(const auto& [emissionPair, particleCollection] : initialState.particleCollections()) {
+		particleGpuTextures[emissionPair] = createParticleDataTextures(particleCollection);
+	}
 }
 void PixelpartGpuEffectEngine::reseed(std::uint32_t seed) {
 	
@@ -102,17 +199,25 @@ ParticleGpuTexture PixelpartGpuEffectEngine::createParticleDataTextures(std::uin
 	textureFormat.mipmaps = 1;
 	textureFormat.samples = RenderingDevice::TEXTURE_SAMPLES_1;
 
+	textures.commonTextureRid = renderingDevice.texture_create(textureFormat, RDTextureView.new());
 	textures.positionTextureRid = renderingDevice.texture_create(textureFormat, RDTextureView.new());
+	textures.globalPositionTextureRid = renderingDevice.texture_create(textureFormat, RDTextureView.new());
 	textures.velocityTextureRid = renderingDevice.texture_create(textureFormat, RDTextureView.new());
 	textures.forceTextureRid = renderingDevice.texture_create(textureFormat, RDTextureView.new());
-	textures.colorTextureRid = renderingDevice.texture_create(textureFormat, RDTextureView.new());
+	textures.rotationTextureRid = renderingDevice.texture_create(textureFormat, RDTextureView.new());
 	textures.sizeTextureRid = renderingDevice.texture_create(textureFormat, RDTextureView.new());
+	textures.colorTextureRid = renderingDevice.texture_create(textureFormat, RDTextureView.new());
+	
+	//textures.aliveListBufferRids[0] = renderingDevice.storage_buffer_create()
 
+	renderingDevice.texture_clear(textures.commonTextureRid, Color.TRANSPARENT, 0, 1, 0, 1);
 	renderingDevice.texture_clear(textures.positionTextureRid, Color.TRANSPARENT, 0, 1, 0, 1);
+	renderingDevice.texture_clear(textures.globalPositionTextureRid, Color.TRANSPARENT, 0, 1, 0, 1);
 	renderingDevice.texture_clear(textures.velocityTextureRid, Color.TRANSPARENT, 0, 1, 0, 1);
 	renderingDevice.texture_clear(textures.forceTextureRid, Color.TRANSPARENT, 0, 1, 0, 1);
-	renderingDevice.texture_clear(textures.colorTextureRid, Color.TRANSPARENT, 0, 1, 0, 1);
+	renderingDevice.texture_clear(textures.rotationTextureRid, Color.TRANSPARENT, 0, 1, 0, 1);
 	renderingDevice.texture_clear(textures.sizeTextureRid, Color.TRANSPARENT, 0, 1, 0, 1);
+	renderingDevice.texture_clear(textures.colorTextureRid, Color.TRANSPARENT, 0, 1, 0, 1);
 
 	return textures;
 }
