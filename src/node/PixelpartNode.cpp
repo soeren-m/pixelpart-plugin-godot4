@@ -30,14 +30,14 @@ void PixelpartNode::set_lifetime_start(float time) {
 		return;
 	}
 
-	node->start(time);
+	node->lifetimeStart(time);
 }
 void PixelpartNode::set_lifetime_duration(float time) {
 	if(!node) {
 		return;
 	}
 
-	node->duration(time);
+	node->lifetimeDuration(time);
 }
 void PixelpartNode::set_repeat(bool value) {
 	if(!node) {
@@ -51,14 +51,14 @@ float PixelpartNode::get_lifetime_start() const {
 		return 0.0f;
 	}
 
-	return static_cast<float>(node->start());
+	return static_cast<float>(node->lifetimeStart());
 }
 float PixelpartNode::get_lifetime_duration() const {
 	if(!node) {
 		return 0.0f;
 	}
 
-	return static_cast<float>(node->duration());
+	return static_cast<float>(node->lifetimeDuration());
 }
 bool PixelpartNode::get_repeat() const {
 	if(!node) {
