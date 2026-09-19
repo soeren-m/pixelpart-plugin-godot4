@@ -25,15 +25,24 @@ String PixelpartParticleType::get_name() const {
 	return particleType ? String(particleType->name().c_str()) : String();
 }
 
-void PixelpartParticleType::set_position_relative(bool mode) {
+void PixelpartParticleType::set_simulation_space(SimulationSpace space) {
 	if(!particleType) {
 		return;
 	}
 
-	particleType->positionRelative(mode);
+	particleType->simulationSpace(static_cast<pixelpart::ParticleSimulationSpace>(space));
+}
+PixelpartParticleType::SimulationSpace PixelpartParticleType::get_simulation_space() const {
+	return particleType
+		? static_cast<SimulationSpace>(particleType->simulationSpace())
+		: SIMULATION_SPACE_GLOBAL;
+}
+
+void PixelpartParticleType::set_position_relative(bool mode) {
+	set_simulation_space(mode ? SIMULATION_SPACE_LOCAL : SIMULATION_SPACE_GLOBAL);
 }
 bool PixelpartParticleType::is_position_relative() const {
-	return particleType ? particleType->positionRelative() : false;
+	return get_simulation_space() == SIMULATION_SPACE_LOCAL;
 }
 
 void PixelpartParticleType::set_rotation_mode(RotationMode mode) {
@@ -412,8 +421,8 @@ void PixelpartParticleType::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_id"), &PixelpartParticleType::get_id);
 	ClassDB::bind_method(D_METHOD("get_parent_id"), &PixelpartParticleType::get_parent_id);
 	ClassDB::bind_method(D_METHOD("get_name"), &PixelpartParticleType::get_name);
-	ClassDB::bind_method(D_METHOD("set_position_relative", "mode"), &PixelpartParticleType::set_position_relative);
-	ClassDB::bind_method(D_METHOD("is_position_relative"), &PixelpartParticleType::is_position_relative);
+	ClassDB::bind_method(D_METHOD("set_simulation_space", "space"), &PixelpartParticleType::set_simulation_space);
+	ClassDB::bind_method(D_METHOD("get_simulation_space"), &PixelpartParticleType::get_simulation_space);
 	ClassDB::bind_method(D_METHOD("set_rotation_mode", "mode"), &PixelpartParticleType::set_rotation_mode);
 	ClassDB::bind_method(D_METHOD("get_rotation_mode"), &PixelpartParticleType::get_rotation_mode);
 	ClassDB::bind_method(D_METHOD("set_alignment_mode", "mode"), &PixelpartParticleType::set_alignment_mode);
@@ -452,11 +461,14 @@ void PixelpartParticleType::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_color_variance"), &PixelpartParticleType::get_color_variance);
 	ClassDB::bind_method(D_METHOD("get_opacity_variance"), &PixelpartParticleType::get_opacity_variance);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_relative"), "set_position_relative", "is_position_relative");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "simulation_space"), "set_simulation_space", "get_simulation_space");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_mode"), "set_rotation_mode", "get_rotation_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment_mode"), "set_alignment_mode", "get_alignment_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer"), "set_layer", "get_layer");
+
+	BIND_ENUM_CONSTANT(SIMULATION_SPACE_GLOBAL);
+	BIND_ENUM_CONSTANT(SIMULATION_SPACE_LOCAL);
 
 	BIND_ENUM_CONSTANT(ROTATION_ANGLE);
 	BIND_ENUM_CONSTANT(ROTATION_VELOCITY);
@@ -466,5 +478,10 @@ void PixelpartParticleType::_bind_methods() {
 	BIND_ENUM_CONSTANT(ALIGNMENT_MOTION);
 	BIND_ENUM_CONSTANT(ALIGNMENT_EMISSION);
 	BIND_ENUM_CONSTANT(ALIGNMENT_EMITTER);
+
+	// Deprecated
+	ClassDB::bind_method(D_METHOD("set_position_relative", "mode"), &PixelpartParticleType::set_position_relative);
+	ClassDB::bind_method(D_METHOD("is_position_relative"), &PixelpartParticleType::is_position_relative);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_relative"), "set_position_relative", "is_position_relative");
 }
 }

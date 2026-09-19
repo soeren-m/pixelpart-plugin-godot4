@@ -35,6 +35,21 @@ class PixelpartParticleType : public RefCounted {
 
 public:
 	/**
+	 * @brief Whether particles are simulated in global or local coordinates.
+	 */
+	enum SimulationSpace {
+		/**
+		 * Particles are simulated in global coordinates.
+		 */
+		SIMULATION_SPACE_GLOBAL = 0,
+
+		/**
+		 * Particles are simulated in local coordinates and move relative to their parent emitter.
+		 */
+		SIMULATION_SPACE_LOCAL = 1
+	};
+
+	/**
 	 * @brief Whether the rotation property represents the exact rotation of particles or their angular velocity.
 	 */
 	enum RotationMode {
@@ -84,9 +99,9 @@ public:
 
 #ifdef DOXYGEN
 	/**
-	 * @brief Whether the position of particles is tied to the position of the emitter.
+	 * @brief Whether particles are simulated in global or local coordinates.
 	 */
-	bool position_relative;
+	SimulationSpace simulation_space;
 
 	/**
 	 * @brief Whether the rotation property represents the exact rotation of particles
@@ -147,7 +162,23 @@ public:
 	String get_name() const;
 
 	/**
+	 * @brief Set whether particles are simulated in global or local coordinates.
+	 *
+	 * @param space Simulation space
+	 */
+	void set_simulation_space(SimulationSpace space);
+
+	/**
+	 * @brief Whether particles are simulated in global or local coordinates.
+	 *
+	 * @return Simulation space
+	 */
+	SimulationSpace get_simulation_space() const;
+
+	/**
 	 * @brief Set whether the position of particles is tied to the position of the emitter.
+	 *
+	 * @deprecated Use `set_simulation_space` instead.
 	 *
 	 * @param mode Relative particle position
 	 */
@@ -155,6 +186,8 @@ public:
 
 	/**
 	 * @brief Whether the position of particles is tied to the position of the emitter.
+	 *
+	 * @deprecated Use `get_simulation_space` instead.
 	 *
 	 * @return Relative particle position
 	 */
@@ -438,6 +471,7 @@ private:
 };
 }
 
+VARIANT_ENUM_CAST(PixelpartParticleType::SimulationSpace);
 VARIANT_ENUM_CAST(PixelpartParticleType::RotationMode);
 VARIANT_ENUM_CAST(PixelpartParticleType::AlignmentMode);
 
