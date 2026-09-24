@@ -143,9 +143,9 @@ public:
 	/**
 	 * @brief Restart the effect.
 	 *
-	 * @param clearParticles Whether to remove existing particles.
+	 * @param clear Whether to remove existing particles.
 	 */
-	void restart(bool clearParticles = true);
+	void restart(bool clear = true);
 
 	/**
 	 * @brief Restart the effect, but do not remove existing particles.
