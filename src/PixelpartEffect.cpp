@@ -161,8 +161,8 @@ void PixelpartEffect::play(bool state) {
 void PixelpartEffect::pause() {
 	effectRuntime.play(false);
 }
-void PixelpartEffect::restart() {
-	effectRuntime.restart(true);
+void PixelpartEffect::restart(bool clearParticles) {
+	effectRuntime.restart(clearParticles);
 }
 void PixelpartEffect::reset() {
 	effectRuntime.restart(false);
@@ -361,8 +361,7 @@ void PixelpartEffect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_effect"), &PixelpartEffect::get_effect);
 	ClassDB::bind_method(D_METHOD("play", "state"), &PixelpartEffect::play);
 	ClassDB::bind_method(D_METHOD("pause"), &PixelpartEffect::pause);
-	ClassDB::bind_method(D_METHOD("restart"), &PixelpartEffect::restart);
-	ClassDB::bind_method(D_METHOD("reset"), &PixelpartEffect::reset);
+	ClassDB::bind_method(D_METHOD("restart", "clearParticles"), &PixelpartEffect::restart);
 	ClassDB::bind_method(D_METHOD("is_playing"), &PixelpartEffect::is_playing);
 	ClassDB::bind_method(D_METHOD("get_time"), &PixelpartEffect::get_time);
 	ClassDB::bind_method(D_METHOD("set_loop", "mode"), &PixelpartEffect::set_loop);
@@ -431,6 +430,7 @@ void PixelpartEffect::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "effect_scale", PROPERTY_HINT_RANGE, "0.0,1000.0,0.1,or_greater,exp"), "set_effect_scale", "get_effect_scale");
 
 	// Deprecated
+	ClassDB::bind_method(D_METHOD("reset"), &PixelpartEffect::reset);
 	ClassDB::bind_method(D_METHOD("find_node", "name"), &PixelpartEffect::find_effect_node);
 	ClassDB::bind_method(D_METHOD("get_node_at_index", "index"), &PixelpartEffect::get_effect_node_at_index);
 }

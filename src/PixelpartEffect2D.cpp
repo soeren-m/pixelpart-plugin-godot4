@@ -159,8 +159,8 @@ void PixelpartEffect2D::play(bool state) {
 void PixelpartEffect2D::pause() {
 	effectRuntime.play(false);
 }
-void PixelpartEffect2D::restart() {
-	effectRuntime.restart(true);
+void PixelpartEffect2D::restart(bool clearParticles) {
+	effectRuntime.restart(clearParticles);
 }
 void PixelpartEffect2D::reset() {
 	effectRuntime.restart(false);
@@ -376,8 +376,7 @@ void PixelpartEffect2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_effect"), &PixelpartEffect2D::get_effect);
 	ClassDB::bind_method(D_METHOD("play", "state"), &PixelpartEffect2D::play);
 	ClassDB::bind_method(D_METHOD("pause"), &PixelpartEffect2D::pause);
-	ClassDB::bind_method(D_METHOD("restart"), &PixelpartEffect2D::restart);
-	ClassDB::bind_method(D_METHOD("reset"), &PixelpartEffect2D::reset);
+	ClassDB::bind_method(D_METHOD("restart", "clearParticles"), &PixelpartEffect2D::restart);
 	ClassDB::bind_method(D_METHOD("is_playing"), &PixelpartEffect2D::is_playing);
 	ClassDB::bind_method(D_METHOD("get_time"), &PixelpartEffect2D::get_time);
 	ClassDB::bind_method(D_METHOD("set_loop", "mode"), &PixelpartEffect2D::set_loop);
@@ -452,6 +451,7 @@ void PixelpartEffect2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "get_flip_v");
 
 	// Deprecated
+	ClassDB::bind_method(D_METHOD("reset"), &PixelpartEffect2D::reset);
 	ClassDB::bind_method(D_METHOD("find_node", "name"), &PixelpartEffect2D::find_effect_node);
 	ClassDB::bind_method(D_METHOD("get_node_at_index", "index"), &PixelpartEffect2D::get_effect_node_at_index);
 }
