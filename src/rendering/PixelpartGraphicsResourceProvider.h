@@ -25,7 +25,7 @@ public:
 	const MeshResourceMap& get_meshes() const;
 
 private:
-	void load_texture(const std::string& name, const pixelpart::ImageResource& imageResource, bool convertToLinear);
+	void load_texture(const std::string& name, const pixelpart::ImageResource& imageResource);
 	void load_mesh(const std::string& name, const pixelpart::MeshResource& meshResource);
 
 	TextureResourceMap providerTextures;

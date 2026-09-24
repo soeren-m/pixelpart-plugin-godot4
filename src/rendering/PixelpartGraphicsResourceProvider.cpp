@@ -10,7 +10,7 @@ PixelpartGraphicsResourceProvider::PixelpartGraphicsResourceProvider() {
 
 void PixelpartGraphicsResourceProvider::load(const pixelpart::Effect& effect) {
 	for(const auto& resourceEntry : effect.resources().images()) {
-		load_texture(resourceEntry.first, resourceEntry.second, effect.is3d());
+		load_texture(resourceEntry.first, resourceEntry.second);
 	}
 
 	for(const auto& resourceEntry : effect.resources().meshes()) {
@@ -30,7 +30,7 @@ const PixelpartGraphicsResourceProvider::MeshResourceMap& PixelpartGraphicsResou
 	return providerMeshes;
 }
 
-void PixelpartGraphicsResourceProvider::load_texture(const std::string& name, const pixelpart::ImageResource& imageResource, bool convertToLinear) {
+void PixelpartGraphicsResourceProvider::load_texture(const std::string& name, const pixelpart::ImageResource& imageResource) {
 	Image::Format imageFormat = Image::FORMAT_RGBA8;
 	switch(imageResource.channels()) {
 		case 1:
@@ -56,7 +56,7 @@ void PixelpartGraphicsResourceProvider::load_texture(const std::string& name, co
 		static_cast<std::int32_t>(imageResource.height()),
 		false, imageFormat, imageData);
 
-	if(convertToLinear && imageResource.colorSpace() == pixelpart::ColorSpace::srgb) {
+	if(imageResource.colorSpace() == pixelpart::ColorSpace::srgb) {
 		image->srgb_to_linear();
 	}
 
