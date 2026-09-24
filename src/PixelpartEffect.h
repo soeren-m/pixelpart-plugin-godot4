@@ -145,7 +145,7 @@ public:
 	 *
 	 * @param clearParticles Whether to remove existing particles.
 	 */
-	void restart(bool clearParticles);
+	void restart(bool clearParticles = true);
 
 	/**
 	 * @brief Restart the effect, but do not remove existing particles.

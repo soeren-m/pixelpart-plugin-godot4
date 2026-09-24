@@ -361,7 +361,7 @@ void PixelpartEffect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_effect"), &PixelpartEffect::get_effect);
 	ClassDB::bind_method(D_METHOD("play", "state"), &PixelpartEffect::play);
 	ClassDB::bind_method(D_METHOD("pause"), &PixelpartEffect::pause);
-	ClassDB::bind_method(D_METHOD("restart", "clearParticles"), &PixelpartEffect::restart);
+	ClassDB::bind_method(D_METHOD("restart", "clearParticles"), &PixelpartEffect::restart, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_playing"), &PixelpartEffect::is_playing);
 	ClassDB::bind_method(D_METHOD("get_time"), &PixelpartEffect::get_time);
 	ClassDB::bind_method(D_METHOD("set_loop", "mode"), &PixelpartEffect::set_loop);
