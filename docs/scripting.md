@@ -1,6 +1,28 @@
 # Scripting
 
-A Pixelpart effect that is rendered using a godot::PixelpartEffect or godot::PixelpartEffect2D node in your scene can be modified at runtime with scripts. This can be used to dynamically change the effect and let it react to other objects in the scene.
+A Pixelpart effect that is rendered using a godot::PixelpartEffect or godot::PixelpartEffect2D node in your scene can be controlled and modified at runtime with scripts. This can be used to dynamically change the effect and let it react to other objects in the scene.
+
+## General
+
+The effect nodes provide methods to control the effect simulation:
+
+- godot::PixelpartEffect::play - Resume the paused effect.
+- godot::PixelpartEffect::pause - Pause the effect.
+- godot::PixelpartEffect::restart - Restart the effect from the beginning.
+
+The inspector properties can also be changed from scripts:
+
+- godot::PixelpartEffect::playing - Whether the effect is playing or paused.
+- godot::PixelpartEffect::loop - If enabled, the effect is repeated after the time specified in `loop_time`.
+- godot::PixelpartEffect::loop_time - Time in seconds after which the effect is repeated. Only has an effect if `loop` is enabled.
+- godot::PixelpartEffect::warmup_time - Time in seconds the effect is pre-simulated before being rendered. This value impacts performance and should be kept as low as possible.
+- godot::PixelpartEffect::speed - Multiplier for the playback speed of the effect. For example, setting `speed` to *0.5* shows the effect in slow motion.
+- godot::PixelpartEffect::frame_rate - How many iterations are simulated per second. Can be used to improve performance for complex effects.
+- godot::PixelpartEffect::seed - Seed used to initialize the effect simulation. This seed is used if `random_seed` is not enabled.
+- godot::PixelpartEffect::random_seed - Whether to use a random seed to initialize the effect simulation.
+- godot::PixelpartEffect::effect_scale - Multiplier for the size of the effect. Adjust this value if the effect appears too small or too large in the scene.
+- godot::PixelpartEffect2D::flip_h - Whether the effect is flipped horizontally. Only available for godot::PixelpartEffect2D.
+- godot::PixelpartEffect2D::flip_h - Whether the effect is flipped vertically. Only available for godot::PixelpartEffect2D.
 
 ## Inputs
 
