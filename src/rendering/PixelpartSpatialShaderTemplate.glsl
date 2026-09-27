@@ -40,6 +40,7 @@ varying vec3 VELOCITY;
 varying float LIFE;
 varying float OBJECT_ID;
 
+#include "res://addons/pixelpart/shaders/PixelpartColorSpace.gdshaderinc"
 #include "res://addons/pixelpart/shaders/PixelpartBlend.gdshaderinc"
 #include "res://addons/pixelpart/shaders/PixelpartFade.gdshaderinc"
 #include "res://addons/pixelpart/shaders/PixelpartNoise.gdshaderinc"
@@ -53,6 +54,8 @@ float pixelpart_unpack_id(float value) {
 }
 
 void vertex() {
+	COLOR = pixelpart_srgb_to_linear(COLOR);
+
 #ifdef PIXELPART_RENDERER_MESH
 	VELOCITY = INSTANCE_CUSTOM.xyz;
 	LIFE = pixelpart_unpack_life(INSTANCE_CUSTOM.w);
@@ -67,11 +70,8 @@ void vertex() {
 void fragment() {
 	{main}
 
-	if(!OUTPUT_IS_SRGB) {
-		final_Color.rgb = mix(
-			pow((final_Color.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)),
-			final_Color.rgb * (1.0 / 12.92),
-			lessThan(final_Color.rgb, vec3(0.04045)));
+	if(OUTPUT_IS_SRGB) {
+		final_Color = pixelpart_linear_to_srgb(final_Color);
 	}
 
 	ALBEDO = final_Color.rgb;

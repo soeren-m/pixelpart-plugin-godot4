@@ -7,16 +7,21 @@ uniform sampler2D u_MainTexture : hint_default_white, filter_linear, repeat_enab
 uniform vec3 u_Emission = vec3(0.0, 0.0, 0.0);
 uniform int u_ColorBlendMode = 0;
 
+#include "res://addons/pixelpart/shaders/PixelpartColorSpace.gdshaderinc"
 #include "res://addons/pixelpart/shaders/PixelpartBlend.gdshaderinc"
 
 void vertex() {
-
+	COLOR = pixelpart_srgb_to_linear(COLOR);
 }
 
 void fragment() {
 	vec4 color = texture(u_MainTexture, UV);
 	color = pixelpart_blend(color, COLOR, u_ColorBlendMode);
 	color.rgb += u_Emission;
+
+	if(OUTPUT_IS_SRGB) {
+		color = pixelpart_linear_to_srgb(color);
+	}
 
 	ALBEDO = color.rgb;
 }

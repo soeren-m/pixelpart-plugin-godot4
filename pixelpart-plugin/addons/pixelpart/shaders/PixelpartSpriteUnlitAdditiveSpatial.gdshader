@@ -22,11 +22,13 @@ uniform float u_DistanceFadeTransition = 0.0;
 
 varying float LIFE;
 
+#include "res://addons/pixelpart/shaders/PixelpartColorSpace.gdshaderinc"
 #include "res://addons/pixelpart/shaders/PixelpartBlend.gdshaderinc"
 #include "res://addons/pixelpart/shaders/PixelpartFade.gdshaderinc"
 #include "res://addons/pixelpart/shaders/PixelpartSpriteSheetAnimation.gdshaderinc"
 
 void vertex() {
+	COLOR = pixelpart_srgb_to_linear(COLOR);
 	LIFE = UV2.x;
 }
 
@@ -49,6 +51,10 @@ void fragment() {
 		? pixelpart_distance_fade(VERTEX.z, u_DistanceFadeTransition)
 		: 1.0;
 	color.a *= distanceBlendFactor;
+
+	if(OUTPUT_IS_SRGB) {
+		color = pixelpart_linear_to_srgb(color);
+	}
 
 	ALBEDO = color.rgb;
 	ALPHA = color.a;

@@ -15,10 +15,12 @@ uniform bool u_SpriteAnimationLoop = false;
 
 varying float LIFE;
 
+#include "res://addons/pixelpart/shaders/PixelpartColorSpace.gdshaderinc"
 #include "res://addons/pixelpart/shaders/PixelpartBlend.gdshaderinc"
 #include "res://addons/pixelpart/shaders/PixelpartSpriteSheetAnimation.gdshaderinc"
 
 void vertex() {
+	COLOR = pixelpart_srgb_to_linear(COLOR);
 	LIFE = CUSTOM0.z;
 }
 
@@ -31,6 +33,8 @@ void fragment() {
 	vec4 color = texture(u_MainTexture, textureCoord);
 	color = pixelpart_blend(color, COLOR, u_ColorBlendMode);
 	color.rgb += u_Emission;
+
+	color = pixelpart_linear_to_srgb(color);
 
 	COLOR = color;
 }

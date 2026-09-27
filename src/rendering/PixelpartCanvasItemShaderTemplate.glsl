@@ -33,12 +33,14 @@ varying vec3 VELOCITY;
 varying float LIFE;
 varying float OBJECT_ID;
 
+#include "res://addons/pixelpart/shaders/PixelpartColorSpace.gdshaderinc"
 #include "res://addons/pixelpart/shaders/PixelpartBlend.gdshaderinc"
 #include "res://addons/pixelpart/shaders/PixelpartFade.gdshaderinc"
 #include "res://addons/pixelpart/shaders/PixelpartNoise.gdshaderinc"
 #include "res://addons/pixelpart/shaders/PixelpartSpriteSheetAnimation.gdshaderinc"
 
 void vertex() {
+	COLOR = pixelpart_srgb_to_linear(COLOR);
 	VELOCITY = vec3(CUSTOM0.x, CUSTOM0.y, 0.0);
 	LIFE = CUSTOM0.z;
 	OBJECT_ID = CUSTOM0.w;
@@ -48,6 +50,8 @@ void fragment() {
 	{main}
 
 	final_Color.rgb += final_Emission;
+	final_Color = pixelpart_linear_to_srgb(final_Color);
+
 	COLOR = final_Color;
 }
 )!"

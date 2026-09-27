@@ -306,7 +306,7 @@
         {
             "name": "shader_node_color",
             "category": "shader_category_constants",
-            "code": "{outdef0} = {param0};",
+            "code": "{outdef0} = pixelpart_srgb_to_linear({param0});",
             "inputs": [],
             "outputs": [
                 "shader_slot_color"
@@ -2862,7 +2862,7 @@
         {
             "name": "shader_node_colorramp",
             "category": "shader_category_colors",
-            "code": "{outdef0} = vec4(1.0);\n{\nconst vec3 values[100] = vec3[]({param0});\n{out0} = vec4(values[clamp(int({in0} * float(100 - 1)), 0, 100 - 1)], 1.0);\n}",
+            "code": "{outdef0} = vec4(1.0);\n{\nconst vec3 values[100] = vec3[]({param0});\n{out0} = pixelpart_srgb_to_linear(vec4(values[clamp(int({in0} * float(100 - 1)), 0, 100 - 1)], 1.0));\n}",
             "inputs": [
                 "shader_slot_value"
             ],

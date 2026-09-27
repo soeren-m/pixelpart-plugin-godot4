@@ -9,15 +9,20 @@ uniform float u_Roughness = 0.5;
 uniform float u_Metallic = 0.0;
 uniform int u_ColorBlendMode = 0;
 
+#include "res://addons/pixelpart/shaders/PixelpartColorSpace.gdshaderinc"
 #include "res://addons/pixelpart/shaders/PixelpartBlend.gdshaderinc"
 
 void vertex() {
-
+	COLOR = pixelpart_srgb_to_linear(COLOR);
 }
 
 void fragment() {
 	vec4 color = texture(u_MainTexture, UV);
 	color = pixelpart_blend(color, COLOR, u_ColorBlendMode);
+
+	if(OUTPUT_IS_SRGB) {
+		color = pixelpart_linear_to_srgb(color);
+	}
 
 	ALBEDO = color.rgb;
 	EMISSION = u_Emission;
