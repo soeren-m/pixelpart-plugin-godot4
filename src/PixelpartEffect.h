@@ -141,14 +141,16 @@ public:
 	void pause();
 
 	/**
-	 * @brief Restart the effect and remove all existing particles.
+	 * @brief Restart the effect.
 	 *
+	 * @param clear Whether to remove existing particles.
 	 */
-	void restart();
+	void restart(bool clear = true);
 
 	/**
 	 * @brief Restart the effect, but do not remove existing particles.
 	 *
+	 * @deprecated Use `restart` instead.
 	 */
 	void reset();
 
