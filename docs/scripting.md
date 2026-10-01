@@ -2,15 +2,13 @@
 
 A Pixelpart effect that is rendered using a godot::PixelpartEffect or godot::PixelpartEffect2D node in your scene can be controlled and modified at runtime with scripts. This can be used to dynamically change the effect and let it react to other objects in the scene.
 
-## General
-
 The effect nodes provide methods to control the effect simulation:
 
-- godot::PixelpartEffect::play - Resume the paused effect.
-- godot::PixelpartEffect::pause - Pause the effect.
-- godot::PixelpartEffect::restart - Restart the effect from the beginning.
+- godot::PixelpartEffect::play - Start playing or pause simulation of the effect.
+- godot::PixelpartEffect::pause - Pause simulation of the effect.
+- godot::PixelpartEffect::restart - Restart the effect.
 
-The inspector properties can also be changed from scripts:
+The inspector properties can also be changed from a script:
 
 - godot::PixelpartEffect::playing - Whether the effect is playing or paused.
 - godot::PixelpartEffect::loop - If enabled, the effect is repeated after the time specified in `loop_time`.
@@ -21,8 +19,15 @@ The inspector properties can also be changed from scripts:
 - godot::PixelpartEffect::seed - Seed used to initialize the effect simulation. This seed is used if `random_seed` is not enabled.
 - godot::PixelpartEffect::random_seed - Whether to use a random seed to initialize the effect simulation.
 - godot::PixelpartEffect::effect_scale - Multiplier for the size of the effect. Adjust this value if the effect appears too small or too large in the scene.
-- godot::PixelpartEffect2D::flip_h - Whether the effect is flipped horizontally. Only available for godot::PixelpartEffect2D.
-- godot::PixelpartEffect2D::flip_h - Whether the effect is flipped vertically. Only available for godot::PixelpartEffect2D.
+- godot::PixelpartEffect2D::flip_h - Whether the effect is flipped horizontally.
+- godot::PixelpartEffect2D::flip_h - Whether the effect is flipped vertically.
+
+The following example in *GDScript* illustrates how you can restart an effect and play it a slower speed:
+
+```
+$SampleEffect.restart()
+$SampleEffect.speed = 0.5
+```
 
 ## Inputs
 
