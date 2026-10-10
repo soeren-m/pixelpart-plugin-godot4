@@ -140,7 +140,7 @@ public:
 	 *
 	 * @param state Whether to play or pause the effect.
 	 */
-	void play(bool state);
+	void play(bool state = true);
 
 	/**
 	 * @brief Pause simulation of the effect.

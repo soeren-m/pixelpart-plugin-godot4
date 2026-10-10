@@ -374,7 +374,7 @@ void PixelpartEffect2D::apply_lod() {
 void PixelpartEffect2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_effect", "resource"), &PixelpartEffect2D::set_effect);
 	ClassDB::bind_method(D_METHOD("get_effect"), &PixelpartEffect2D::get_effect);
-	ClassDB::bind_method(D_METHOD("play", "state"), &PixelpartEffect2D::play);
+	ClassDB::bind_method(D_METHOD("play", "state"), &PixelpartEffect2D::play, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("pause"), &PixelpartEffect2D::pause);
 	ClassDB::bind_method(D_METHOD("restart", "clear"), &PixelpartEffect2D::restart, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_playing"), &PixelpartEffect2D::is_playing);
