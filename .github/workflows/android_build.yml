@@ -23,16 +23,16 @@ jobs:
           link-to-sdk: true
 
       - name: Compile (arm32)
-        run: scons platform=android arch=arm32 target=template_release generate_bindings=true disable_exceptions=false -j 4
+        run: scons platform=android arch=arm32 target=template_release generate_bindings=true disable_exceptions=false
 
       - name: Compile (arm64)
-        run: scons platform=android arch=arm64 target=template_release generate_bindings=true disable_exceptions=false -j 4
+        run: scons platform=android arch=arm64 target=template_release generate_bindings=true disable_exceptions=false
 
       - name: Compile (x86_32)
-        run: scons platform=android arch=x86_32 target=template_release generate_bindings=true disable_exceptions=false -j 4
+        run: scons platform=android arch=x86_32 target=template_release generate_bindings=true disable_exceptions=false
 
       - name: Compile (x86_64)
-        run: scons platform=android arch=x86_64 target=template_release generate_bindings=true disable_exceptions=false -j 4
+        run: scons platform=android arch=x86_64 target=template_release generate_bindings=true disable_exceptions=false
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7

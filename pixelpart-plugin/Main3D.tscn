@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://ck7m2fuu4mk3q"]
 
-[ext_resource type="Script" path="res://EffectScript3D.gd" id="1_dsdr7"]
+[ext_resource type="Script" uid="uid://ba66ncrsg4ijk" path="res://EffectScript3D.gd" id="1_dsdr7"]
 [ext_resource type="PixelpartEffectResource" uid="uid://dpokerdn7vbyl" path="res://effects/Sprite3d.ppfx" id="2_6mxbi"]
 
 [sub_resource type="Sky" id="Sky_asj0q"]

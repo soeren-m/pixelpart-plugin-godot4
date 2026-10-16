@@ -4,7 +4,7 @@ This is the documentation of the Pixelpart plugin for the Godot game engine. Sta
 
 ## Requirements
 
-Godot 4.3 or higher is required to use the Pixelpart plugin.
+Godot 4.4 or higher is required to use the Pixelpart plugin.
 
 ## Platform Support
 

@@ -17,10 +17,10 @@ jobs:
         uses: ./.github/actions/deps
 
       - name: Compile (arm64)
-        run: scons platform=ios arch=arm64 target=template_release ios_simulator=no generate_bindings=true disable_exceptions=false -j 4
+        run: scons platform=ios arch=arm64 target=template_release ios_simulator=no generate_bindings=true disable_exceptions=false
 
       - name: Compile (simulator)
-        run: scons platform=ios arch=universal target=template_release ios_simulator=yes generate_bindings=true disable_exceptions=false -j 4
+        run: scons platform=ios arch=universal target=template_release ios_simulator=yes generate_bindings=true disable_exceptions=false
 
       - name: Create xcframework
         run: |

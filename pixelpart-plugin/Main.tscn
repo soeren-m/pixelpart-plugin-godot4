@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://bt7ogxf0ux7r6"]
 
-[ext_resource type="Script" path="res://EffectScript2D.gd" id="1_udfml"]
+[ext_resource type="Script" uid="uid://ckkuv0ixwjiw0" path="res://EffectScript2D.gd" id="1_udfml"]
 [ext_resource type="PixelpartEffectResource" uid="uid://de1e7uaah4pxr" path="res://effects/Sprite2d.ppfx" id="2_r70cw"]
 
 [sub_resource type="Gradient" id="Gradient_572vs"]

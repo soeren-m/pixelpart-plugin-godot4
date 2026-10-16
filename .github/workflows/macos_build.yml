@@ -17,7 +17,7 @@ jobs:
         uses: ./.github/actions/deps
 
       - name: Compile
-        run: scons platform=macos arch=universal target=template_release generate_bindings=true disable_exceptions=false -j 4
+        run: scons platform=macos arch=universal target=template_release generate_bindings=true disable_exceptions=false
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
