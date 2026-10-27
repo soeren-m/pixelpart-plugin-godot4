@@ -49,10 +49,13 @@ private:
 	const pixelpart::Effect& effect;
 
 	Ref<RenderingDevice> renderingDevice;
-	Ref<Shader> generationComputeShader;
-	Ref<Shader> simulationComputeShader;
+	RID generationComputeShaderRid;
+	RID simulationComputeShaderRid;
 	RID generationComputePipelineRid;
 	RID simulationComputePipelineRid;
+
+	RID simulationParamsUniformBufferRid;
+	RID simulationParamsUniformSetRid;
 
 	std::unordered_map<pixelpart::ParticleEmissionPair, ParticleGpuTexture> particleGpuTextures;
 	std::unordered_map<pixelpart::ParticleEmissionPair, pixelpart::float_t> particleEmissionCounts;

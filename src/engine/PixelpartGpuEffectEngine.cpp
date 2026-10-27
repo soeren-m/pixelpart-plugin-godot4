@@ -8,10 +8,29 @@ PixelpartGpuEffectEngine::PixelpartGpuEffectEngine(const pixelpart::Effect& eff)
 	RenderingServer* rs = RenderingServer::get_singleton();
 	renderingDevice = rs->get_rendering_device();
 
-	// TODO: load shaders
+	// TODO: load only once!
 
-	generationComputePipelineRid = renderingDevice.compute_pipeline_create(generationComputeShader);
-	simulationComputePipelineRid = renderingDevice.compute_pipeline_create(simulationComputeShader);
+	var generationComputeShaderFile = load("res://addons/pixelpart/PixelpartParticleGenerationCompute.glsl");
+	var simulationComputeShaderFile = load("res://addons/pixelpart/PixelpartParticleSimulationCompute.glsl");
+
+	RID generationComputeShaderSpirv = generationComputeShaderFile.get_spirv();
+	RID simulationComputeShaderSpirv = simulationComputeShaderFile.get_spirv();
+
+	generationComputeShaderRid = renderingDevice.shader_create_from_spirv(shaderSpirv);
+	simulationComputeShaderRid = renderingDevice.shader_create_from_spirv(shaderSpirv);
+
+	generationComputePipelineRid = renderingDevice.compute_pipeline_create(generationComputeShaderRid);
+	simulationComputePipelineRid = renderingDevice.compute_pipeline_create(simulationComputeShaderRid);
+
+	simulationParamsUniformBufferRid = renderingDevice.uniform_buffer_create(80, input_bytes);
+
+	Ref<RDUniform> uniform;
+	uniform.instantiate();
+	uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_UNIFORM_BUFFER;
+	uniform.binding = 0;
+	uniform.add_id(simulationParamsUniformBufferRid);
+
+	simulationParamsUniformSetRid = renderingDevice.uniform_set_create(Array<RDUniform>{ uniform }, simulationComputeShaderRid, 0);
 }
 PixelpartGpuEffectEngine::~PixelpartGpuEffectEngine() {
 	for(const auto& [emissionPair, textures] : particleGpuTextures) {
@@ -27,6 +46,9 @@ PixelpartGpuEffectEngine::~PixelpartGpuEffectEngine() {
 
 	renderingDevice.free_rid(generationComputePipelineRid);
 	renderingDevice.free_rid(simulationComputePipelineRid);
+
+	renderingDevice.free_rid(generationComputeShaderRid);
+	renderingDevice.free_rid(simulationComputeShaderRid);
 }
 
 void PixelpartGpuEffectEngine::advance(pixelpart::float_t dt) {
@@ -94,24 +116,34 @@ void PixelpartGpuEffectEngine::advance(pixelpart::float_t dt) {
 		std::uint32_t workgroupCount = (emittedParticleCount + (localWorkgroupSize - 1)) / localWorkgroupSize;
 
 		auto computeList = renderingDevice.compute_list_begin();
-		renderingDevice.compute_list_bind_compute_pipeline(computeList, generationComputePipeline);
+		renderingDevice.compute_list_bind_compute_pipeline(computeList, generationComputePipelineRid);
 		renderingDevice.compute_list_dispatch(computeList, workgroupCount, 1, 1);
 		renderingDevice.compute_list_end();
 	}
 
 	// TODO: barrier
 
+	std::uint32_t particleCount = 100; // TODO
+
+	PackedByteArray simulationParamsByteArray;
+	simulationParamsByteArray.resize(4 * 4);
+	simulationParamsByteArray.encode_float(0, static_cast<float>(dt));
+	simulationParamsByteArray.encode_u32(4, particleCount);
+	simulationParamsByteArray.encode_u32(8, 512);
+	simulationParamsByteArray.encode_u32(12, 512);
+
+	renderingDevice.buffer_update(simulationParamsUniformBufferRid, 0, simulationParamsByteArray.size(), simulationParamsByteArray);
+
 	for(auto& [emissionPair, textures] : particleGpuTextures) {
 		const pixelpart::ParticleType& particleType = engineEffect.particleTypes().at(emissionPair.typeId);
 		const pixelpart::ParticleEmitter& particleEmitter = engineEffect.sceneGraph().at<pixelpart::ParticleEmitter>(emissionPair.emitterId);
-
-		// TODO: set params
 
 		std::uint32_t localWorkgroupSize = 64;
 		std::uint32_t workgroupCount = (512*512) / localWorkgroupSize;
 
 		auto computeList = renderingDevice.compute_list_begin();
-		renderingDevice.compute_list_bind_compute_pipeline(computeList, simulationComputePipeline);
+		renderingDevice.compute_list_bind_compute_pipeline(computeList, simulationComputePipelineRid);
+		renderingDevice.compute_list_bind_uniform_set(computeList, simulationParamsUniformSetRid, 0);
 		renderingDevice.compute_list_dispatch(computeList, workgroupCount, 1, 1);
 		renderingDevice.compute_list_end();
 	}

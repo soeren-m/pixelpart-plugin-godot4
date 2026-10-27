@@ -16,7 +16,7 @@ layout (std430, set = 0, binding = 2) restrict buffer CounterBuffer {
 	uint COUNTER;
 };
 
-layout (push_constant, std430) uniform Params {
+layout (binding = 0, std430) uniform SimulationParams {
 	float u_DeltaTime;
 	uint u_ParticleCount;
 	uint u_OutTextureWidth;
