@@ -97,8 +97,13 @@ jobs:
           cp -r artifacts/*.xcframework ./pixelpart-plugin/addons/pixelpart/bin/
           cp -r artifacts/*.wasm ./pixelpart-plugin/addons/pixelpart/bin/
 
+      - name: Prepare artifact
+        run: |
+          mkdir -p ./deploy
+          cp -r pixelpart-plugin/addons ./deploy/
+
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
           name: pixelpart-plugin-godot4
-          path: ./pixelpart-plugin/addons
+          path: ./deploy
