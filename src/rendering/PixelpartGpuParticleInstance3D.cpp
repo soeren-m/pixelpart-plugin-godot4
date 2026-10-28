@@ -1,4 +1,4 @@
-#include "PixelpartParticleInstance3D.h"
+#include "PixelpartGpuParticleInstance3D.h"
 #include "../util/PixelpartUtil.h"
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/world3d.hpp>
@@ -22,25 +22,25 @@
 #include <algorithm>
 
 namespace godot {
-PixelpartParticleInstance3D::PixelpartParticleInstance3D(VisualInstance3D* parent,
-	const pixelpart::Effect& eff, pixelpart::id_t emitterId, pixelpart::id_t typeId,
-	PixelpartGraphicsResourceProvider& resourceProvider, PixelpartShaderProvider& shaderProvider,
-	std::shared_ptr<pixelpart::ThreadPool> threadPool) :
-	parentNode(parent),
-	effect(eff), particleEmitterId(emitterId), particleTypeId(typeId) {
+PixelpartGpuParticleInstance3D::PixelpartGpuParticleInstance3D(VisualInstance3D* parent,
+	const PixelpartGpuEffectEngine* engine, pixelpart::id_t emitterId, pixelpart::id_t typeId,
+	PixelpartGraphicsResourceProvider& resourceProvider, PixelpartShaderProvider& shaderProvider) :
+	parentNode(parent), effectEngine(engine), particleEmitterId(emitterId), particleTypeId(typeId) {
 	create_material(resourceProvider, shaderProvider);
 	create_instance(resourceProvider);
-	create_vertex_generator(threadPool);
+
+	dummyVertexArray.resize(1);
 }
-PixelpartParticleInstance3D::~PixelpartParticleInstance3D() {
+PixelpartGpuParticleInstance3D::~PixelpartGpuParticleInstance3D() {
 	RenderingServer* rs = RenderingServer::get_singleton();
 
 	rs->free_rid(instanceRid);
 }
 
-void PixelpartParticleInstance3D::draw(const pixelpart::ParticleCollection& particles,
-	const pixelpart::EffectRuntimeContext& runtimeContext, pixelpart::float_t scale) {
+void PixelpartGpuParticleInstance3D::draw(pixelpart::float_t scale) {
 	RenderingServer* rs = RenderingServer::get_singleton();
+
+	const pixelpart::Effect& effect = effectEngine->effect();
 	const pixelpart::ParticleEmitter& particleEmitter = effect.sceneGraph().at<pixelpart::ParticleEmitter>(particleEmitterId);
 	const pixelpart::ParticleType& particleType = effect.particleTypes().at(particleTypeId);
 
@@ -65,12 +65,19 @@ void PixelpartParticleInstance3D::draw(const pixelpart::ParticleCollection& part
 	if(!camera) {
 		return;
 	}
-	else if(!parentNode->is_visible() || !particleType.visibleAtLod(runtimeContext.lod())) {
+	else if(!parentNode->is_visible() || !particleType.visibleAtLod(effectEngine->context().lod())) {
 		return;
 	}
 
-	shaderMaterial->set_shader_parameter("u_EffectTime", static_cast<float>(runtimeContext.time()));
-	shaderMaterial->set_shader_parameter("u_ObjectTime", static_cast<float>(particleEmitter.timeSinceStart(runtimeContext)));
+	PixelpartGpuEffectEngine::ParticleGpuTextureSet gpuTextures = effectEngine->gpuTextures(particleEmitterId, particleTypeId);
+
+	shaderMaterial->set_shader_parameter("u_ParticleCommonTexture", gpuTextures.commonTextureRid);
+	shaderMaterial->set_shader_parameter("u_ParticleGlobalPositionTexture", gpuTextures.globalPositionTextureRid);
+	shaderMaterial->set_shader_parameter("u_ParticleColorTexture", gpuTextures.colorTextureRid);
+	shaderMaterial->set_shader_parameter("u_ParticleSizeTexture", gpuTextures.sizeTextureRid);
+
+	shaderMaterial->set_shader_parameter("u_EffectTime", static_cast<float>(effectEngine->context().time()));
+	shaderMaterial->set_shader_parameter("u_ObjectTime", static_cast<float>(particleEmitter.timeSinceStart(effectEngine->context())));
 
 	pixelpart::SceneContext sceneContext;
 	sceneContext.effectScale = pixelpart::float3_t(scale);
@@ -79,81 +86,37 @@ void PixelpartParticleInstance3D::draw(const pixelpart::ParticleCollection& part
 	sceneContext.cameraRight = gd_to_pxpt(camera->get_global_transform().basis.get_column(0));
 	sceneContext.cameraUp = gd_to_pxpt(camera->get_global_transform().basis.get_column(1));
 
-	pixelpart::VertexDataBufferDimensions bufferDimensions = vertexGenerator->buildGeometry(
-		particles.readPtr(), particles.count(),
-		runtimeContext, sceneContext);
-	if(std::any_of(bufferDimensions.begin(), bufferDimensions.end(), [](std::uint32_t c) { return c == 0; })) {
-		return;
-	}
+	std::uint32_t particleCount = 100; // TODO
 
 	switch(particleType.renderer()) {
 		case pixelpart::ParticleRendererType::sprite:
 		case pixelpart::ParticleRendererType::trail: {
-			indexArray.resize(static_cast<std::int64_t>(bufferDimensions[0]));
-			vertexArray.resize(static_cast<std::int64_t>(bufferDimensions[1]));
-			normalArray.resize(static_cast<std::int64_t>(bufferDimensions[2]));
-			uvArray.resize(static_cast<std::int64_t>(bufferDimensions[3]));
-			uv2Array.resize(static_cast<std::int64_t>(bufferDimensions[4]));
-			colorArray.resize(static_cast<std::int64_t>(bufferDimensions[5]));
-			custom0Array.resize(static_cast<std::int64_t>(bufferDimensions[6] * 4));
+			indexArray.resize(static_cast<std::int64_t>(particleCount));
 
-			vertexGenerator->generateVertexData(pixelpart::VertexDataBufferCollection({
-					reinterpret_cast<std::uint8_t*>(indexArray.ptrw()),
-					reinterpret_cast<std::uint8_t*>(vertexArray.ptrw()),
-					reinterpret_cast<std::uint8_t*>(normalArray.ptrw()),
-					reinterpret_cast<std::uint8_t*>(uvArray.ptrw()),
-					reinterpret_cast<std::uint8_t*>(uv2Array.ptrw()),
-					reinterpret_cast<std::uint8_t*>(colorArray.ptrw()),
-					reinterpret_cast<std::uint8_t*>(custom0Array.ptrw())
-				}),
-				particles.readPtr(), particles.count(),
-				runtimeContext, sceneContext);
+			// TODO: dont do every frame
+			std::int32_t* indexBufferPtr = indexArray.ptrw();
+			for(std::int32_t i = 0; i < static_cast<std::int32_t>(particleCount) * 3; i++) {
+				indexBufferPtr[i * 3 + 0] = i * 3 + 0;
+				indexBufferPtr[i * 3 + 1] = i * 3 + 1;
+				indexBufferPtr[i * 3 + 2] = i * 3 + 2;
+			}
 
 			Array meshArray;
 			meshArray.resize(Mesh::ARRAY_MAX);
-			meshArray[Mesh::ARRAY_VERTEX] = vertexArray;
-			meshArray[Mesh::ARRAY_NORMAL] = normalArray;
-			meshArray[Mesh::ARRAY_COLOR] = colorArray;
-			meshArray[Mesh::ARRAY_TEX_UV] = uvArray;
-			meshArray[Mesh::ARRAY_TEX_UV2] = uv2Array;
-			meshArray[Mesh::ARRAY_CUSTOM0] = custom0Array;
+			meshArray[Mesh::ARRAY_VERTEX] = dummyVertexArray;
 			meshArray[Mesh::ARRAY_INDEX] = indexArray;
 
 			arrayMesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, meshArray, Array(), Dictionary(),
-				Mesh::ARRAY_FORMAT_VERTEX | Mesh::ARRAY_FORMAT_NORMAL | Mesh::ARRAY_FORMAT_COLOR |
-				Mesh::ARRAY_FORMAT_TEX_UV | Mesh::ARRAY_FORMAT_TEX_UV2 |
-				Mesh::ARRAY_FORMAT_CUSTOM0 | Mesh::ARRAY_FORMAT_INDEX |
-				(Mesh::ARRAY_CUSTOM_RGBA_FLOAT << Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT));
-
-			if(arrayMesh->get_surface_count() > 0) {
-				arrayMesh->surface_set_material(0, shaderMaterial);
-			}
+				Mesh::ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY);
+			arrayMesh->surface_set_material(0, shaderMaterial);
 
 			break;
 		}
 
 		case pixelpart::ParticleRendererType::mesh: {
-			instanceDataArray.resize(static_cast<std::int64_t>(bufferDimensions[0] * 20));
-			custom0Array.resize(static_cast<std::int64_t>(bufferDimensions[1] * 2));
-
-			float* instanceDataPtr = instanceDataArray.ptrw();
-			float* custom0Ptr = custom0Array.ptrw();
-
-			vertexGenerator->generateVertexData(pixelpart::VertexDataBufferCollection({
-					reinterpret_cast<std::uint8_t*>(instanceDataPtr),
-					reinterpret_cast<std::uint8_t*>(custom0Ptr)
-				}),
-				particles.readPtr(), particles.count(),
-				runtimeContext, sceneContext);
-
-			const float packFactor = 0.5f;
-			for(std::uint32_t p = 0; p < bufferDimensions[1]; p++) {
-				instanceDataPtr[p * 20 + 19] = pack_int_float(custom0Ptr[p * 2 + 1], custom0Ptr[p * 2], packFactor);
-			}
-
+			// TODO
 			multiMesh->set_visible_instance_count(-1);
-			multiMesh->set_instance_count(static_cast<std::int32_t>(bufferDimensions[0]));
-			multiMesh->set_buffer(instanceDataArray);
+			multiMesh->set_instance_count(0);
 
 			break;
 		}
@@ -164,7 +127,8 @@ void PixelpartParticleInstance3D::draw(const pixelpart::ParticleCollection& part
 	}
 }
 
-void PixelpartParticleInstance3D::create_material(PixelpartGraphicsResourceProvider& resourceProvider, PixelpartShaderProvider& shaderProvider) {
+void PixelpartGpuParticleInstance3D::create_material(PixelpartGraphicsResourceProvider& resourceProvider, PixelpartShaderProvider& shaderProvider) {
+	const pixelpart::Effect& effect = effectEngine->effect();
 	const pixelpart::ParticleType& particleType = effect.particleTypes().at(particleTypeId);
 	const pixelpart::MaterialInstance& materialInstance = particleType.materialInstance();
 
@@ -259,8 +223,10 @@ void PixelpartParticleInstance3D::create_material(PixelpartGraphicsResourceProvi
 		}
 	}
 }
-void PixelpartParticleInstance3D::create_instance(PixelpartGraphicsResourceProvider& resourceProvider) {
+void PixelpartGpuParticleInstance3D::create_instance(PixelpartGraphicsResourceProvider& resourceProvider) {
 	RenderingServer* rs = RenderingServer::get_singleton();
+
+	const pixelpart::Effect& effect = effectEngine->effect();
 	const pixelpart::ParticleType& particleType = effect.particleTypes().at(particleTypeId);
 
 	instanceRid = rs->instance_create();
@@ -275,10 +241,8 @@ void PixelpartParticleInstance3D::create_instance(PixelpartGraphicsResourceProvi
 		}
 
 		case pixelpart::ParticleRendererType::mesh: {
+			// TODO
 			multiMesh.instantiate();
-			multiMesh->set_transform_format(MultiMesh::TRANSFORM_3D);
-			multiMesh->set_use_colors(true);
-			multiMesh->set_use_custom_data(true);
 			if(resourceProvider.get_meshes().count(particleType.meshRendererSettings().meshResourceId) != 0) {
 				Ref<ArrayMesh> baseMesh = resourceProvider.get_meshes().at(particleType.meshRendererSettings().meshResourceId);
 				baseMesh->surface_set_material(0, shaderMaterial);
@@ -300,45 +264,5 @@ void PixelpartParticleInstance3D::create_instance(PixelpartGraphicsResourceProvi
 	}
 
 	rs->instance_geometry_set_flag(instanceRid, RenderingServer::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
-}
-void PixelpartParticleInstance3D::create_vertex_generator(std::shared_ptr<pixelpart::ThreadPool> threadPool) {
-	const pixelpart::ParticleType& particleType = effect.particleTypes().at(particleTypeId);
-	pixelpart::VertexFormat vertexFormat;
-
-	switch(particleType.renderer()) {
-		case pixelpart::ParticleRendererType::sprite:
-		case pixelpart::ParticleRendererType::trail:
-			vertexFormat = pixelpart::VertexFormat({
-					pixelpart::VertexAttribute(pixelpart::VertexAttributeUsage::index, pixelpart::VertexDataGenerationMode::vertex, pixelpart::VertexDataType::type_int32, 0, 0, sizeof(std::int32_t)),
-					pixelpart::VertexAttribute(pixelpart::VertexAttributeUsage::position3d, pixelpart::VertexDataGenerationMode::element, pixelpart::VertexDataType::type_float, 1, 0, sizeof(float) * 3),
-					pixelpart::VertexAttribute(pixelpart::VertexAttributeUsage::normal, pixelpart::VertexDataGenerationMode::element, pixelpart::VertexDataType::type_float, 2, 0, sizeof(float) * 3),
-					pixelpart::VertexAttribute(pixelpart::VertexAttributeUsage::texture_coord, pixelpart::VertexDataGenerationMode::element, pixelpart::VertexDataType::type_float, 3, 0, sizeof(float) * 2),
-					pixelpart::VertexAttribute(pixelpart::VertexAttributeUsage::life, pixelpart::VertexDataGenerationMode::element, pixelpart::VertexDataType::type_float, 4, 0, sizeof(float) * 2),
-					pixelpart::VertexAttribute(pixelpart::VertexAttributeUsage::id, pixelpart::VertexDataGenerationMode::element, pixelpart::VertexDataType::type_float, 4, sizeof(float), sizeof(float) * 2),
-					pixelpart::VertexAttribute(pixelpart::VertexAttributeUsage::color, pixelpart::VertexDataGenerationMode::element, pixelpart::VertexDataType::type_float, 5, 0, sizeof(float) * 4),
-					pixelpart::VertexAttribute(pixelpart::VertexAttributeUsage::velocity3d, pixelpart::VertexDataGenerationMode::element, pixelpart::VertexDataType::type_float, 6, 0, sizeof(float) * 4)
-				},
-				pixelpart::VertexWindingOrder::cw);
-			break;
-		case pixelpart::ParticleRendererType::mesh:
-			vertexFormat = pixelpart::VertexFormat({
-					pixelpart::VertexAttribute(pixelpart::VertexAttributeUsage::matrix4x3_row_major, pixelpart::VertexDataGenerationMode::instance, pixelpart::VertexDataType::type_float, 0, 0, sizeof(float) * 20),
-					pixelpart::VertexAttribute(pixelpart::VertexAttributeUsage::color, pixelpart::VertexDataGenerationMode::instance, pixelpart::VertexDataType::type_float, 0, sizeof(float) * 12, sizeof(float) * 20),
-					pixelpart::VertexAttribute(pixelpart::VertexAttributeUsage::velocity3d, pixelpart::VertexDataGenerationMode::instance, pixelpart::VertexDataType::type_float, 0, sizeof(float) * 16, sizeof(float) * 20),
-					pixelpart::VertexAttribute(pixelpart::VertexAttributeUsage::life, pixelpart::VertexDataGenerationMode::instance, pixelpart::VertexDataType::type_float, 1, 0, sizeof(float) * 2),
-					pixelpart::VertexAttribute(pixelpart::VertexAttributeUsage::id, pixelpart::VertexDataGenerationMode::instance, pixelpart::VertexDataType::type_float, 1, sizeof(float), sizeof(float) * 2)
-				},
-				pixelpart::VertexWindingOrder::cw);
-			break;
-		default:
-			break;
-	}
-
-	vertexGenerator = std::make_unique<pixelpart::ParticleVertexGenerator>(
-		effect, particleEmitterId, particleTypeId, vertexFormat, threadPool);
-}
-
-float PixelpartParticleInstance3D::pack_int_float(float a, float b, float s) {
-	return a + b * s;
 }
 }

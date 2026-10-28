@@ -81,16 +81,12 @@ void PixelpartEffect2D::_draw() {
 		flipV ? -1.0 : +1.0) * static_cast<pixelpart::float_t>(effectScale);
 
 	for(const pixelpart::ParticleEmissionPair& emissionPair : effect.particleEmissionPairs()) {
-		const pixelpart::ParticleCollection* particleCollection = effectEngine->state().particleCollection(
-			emissionPair.emitterId, emissionPair.typeId);
 		auto particleCanvasItemIt = particleCanvasItems.find(emissionPair);
-		if(!particleCollection || particleCanvasItemIt == particleCanvasItems.end()) {
+		if(particleCanvasItemIt == particleCanvasItems.end()) {
 			continue;
 		}
 
-		particleCanvasItemIt->second->draw(*particleCollection,
-			effectEngine->context(),
-			particleScale);
+		// TODO particleCanvasItemIt->second->draw(particleScale);
 	}
 }
 

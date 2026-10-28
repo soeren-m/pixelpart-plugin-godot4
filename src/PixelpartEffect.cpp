@@ -1,5 +1,8 @@
 #include "PixelpartEffect.h"
 #include "PixelpartSystem.h"
+#include "rendering/PixelpartCpuParticleInstance3D.h"
+#include "rendering/PixelpartGpuParticleInstance3D.h"
+#include "engine/PixelpartGpuEffectEngine.h"
 #include "util/PixelpartUtil.h"
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/engine.hpp>
@@ -16,7 +19,8 @@
 #include <pixelpart-runtime/effect/Effect.h>
 #include <pixelpart-runtime/effect/ParticleType.h>
 #include <pixelpart-runtime/engine/EffectEngine.h>
-#include <pixelpart-runtime/engine/ParticleCollection.h>
+#include <pixelpart-runtime/engine/CpuEffectEngine.h>
+#include <stdexcept>
 #include <vector>
 #include <algorithm>
 
@@ -89,20 +93,8 @@ void PixelpartEffect::draw() {
 		return;
 	}
 
-	const pixelpart::Effect& effect = effectRuntime.get_effect();
-	const pixelpart::EffectEngine* effectEngine = effectRuntime.get_effect_engine();
-
-	for(const pixelpart::ParticleEmissionPair& emissionPair : effect.particleEmissionPairs()) {
-		const pixelpart::ParticleCollection* particleCollection = effectEngine->state().particleCollection(
-			emissionPair.emitterId, emissionPair.typeId);
-		auto particleInstanceIt = particleInstances.find(emissionPair);
-		if(!particleCollection || particleInstanceIt == particleInstances.end()) {
-			continue;
-		}
-
-		particleInstanceIt->second->draw(*particleCollection,
-			effectEngine->context(),
-			static_cast<pixelpart::float_t>(effectScale));
+	for(const auto& [emissionPair, particleInstance] : particleInstances) {
+		particleInstance->draw(static_cast<pixelpart::float_t>(effectScale));
 	}
 }
 
@@ -127,14 +119,31 @@ void PixelpartEffect::set_effect(Ref<PixelpartEffectResource> resource) {
 		try {
 			graphicsResourceProvider.load(effectRuntime.get_effect());
 
+			const pixelpart::EffectEngine* effectEngine = effectRuntime.get_effect_engine();
+			const pixelpart::CpuEffectEngine* cpuEffectEngine = dynamic_cast<const pixelpart::CpuEffectEngine*>(effectEngine);
+			const PixelpartGpuEffectEngine* gpuEffectEngine = dynamic_cast<const PixelpartGpuEffectEngine*>(effectEngine);
+
 			for(const pixelpart::ParticleEmissionPair& emissionPair : effectRuntime.get_effect().particleEmissionPairs()) {
-				particleInstances[emissionPair] = std::make_unique<PixelpartParticleInstance3D>(this,
-					effectRuntime.get_effect(),
-					emissionPair.emitterId,
-					emissionPair.typeId,
-					graphicsResourceProvider,
-					PixelpartSystem::get_instance()->get_shader_provider(),
-					PixelpartSystem::get_instance()->get_thread_pool());
+				if(cpuEffectEngine) {
+					particleInstances[emissionPair] = std::make_unique<PixelpartCpuParticleInstance3D>(this,
+						cpuEffectEngine,
+						emissionPair.emitterId,
+						emissionPair.typeId,
+						graphicsResourceProvider,
+						PixelpartSystem::get_instance()->get_shader_provider(),
+						PixelpartSystem::get_instance()->get_thread_pool());
+				}
+				else if(gpuEffectEngine) {
+					particleInstances[emissionPair] = std::make_unique<PixelpartGpuParticleInstance3D>(this,
+						gpuEffectEngine,
+						emissionPair.emitterId,
+						emissionPair.typeId,
+						graphicsResourceProvider,
+						PixelpartSystem::get_instance()->get_shader_provider());
+				}
+				else {
+					throw std::runtime_error("Invalid effect engine");
+				}
 			}
 		}
 		catch(const std::exception& e) {

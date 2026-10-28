@@ -16,6 +16,7 @@ env.Append(CPPPATH=["src/", "."])
 # Sources to compile
 sources = []
 add_sources(sources, "src", ".cpp")
+add_sources(sources, "src/engine", ".cpp")
 add_sources(sources, "src/node", ".cpp")
 add_sources(sources, "src/particletype", ".cpp")
 add_sources(sources, "src/property", ".cpp")

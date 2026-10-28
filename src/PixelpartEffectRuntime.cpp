@@ -156,7 +156,9 @@ bool PixelpartEffectRuntime::is_finished() const {
 		return false;
 	}
 
-	return pixelpart::isEffectSimulationFinished(effect, effectEngine->state(), effectEngine->context());
+	// TODO
+	// return pixelpart::isEffectSimulationFinished(effect, effectEngine->state(), effectEngine->context());
+	return false;
 }
 float PixelpartEffectRuntime::get_time() const {
 	return effectEngine ? static_cast<float>(effectEngine->context().time()) : 0.0f;

@@ -9,7 +9,24 @@
 namespace godot {
 class PixelpartGpuEffectEngine : public pixelpart::EffectEngine {
 public:
-	PixelpartGpuEffectEngine(const pixelpart::Effect& eff);
+	struct ParticleGpuTextureSet {
+		RID commonTextureRid;
+		RID positionTextureRid;
+		RID globalPositionTextureRid;
+		RID velocityTextureRid;
+		RID forceTextureRid;
+		RID rotationTextureRid;
+		RID sizeTextureRid;
+		RID colorTextureRid;
+
+		/*RID aliveListBufferRids[2];
+		RID deadListBufferRid;
+		RID atomicCounterBufferRid;
+		std::uint32_t activeAliveListBufferIndex = 0;*/
+	};
+
+
+	PixelpartGpuEffectEngine(const pixelpart::Effect& effect);
 	virtual ~PixelpartGpuEffectEngine();
 
 	virtual void advance(pixelpart::float_t dt) override;
@@ -27,28 +44,14 @@ public:
 	virtual const pixelpart::Effect& effect() const override;
 	virtual const pixelpart::EffectRuntimeContext& context() const override;
 
+	ParticleGpuTextureSet gpuTextures(pixelpart::id_t particleEmitterId, pixelpart::id_t particleTypeId) const;
+
 private:
-	struct ParticleGpuTexture {
-		RID commonTextureRid;
-		RID positionTextureRid;
-		RID globalPositionTextureRid;
-		RID velocityTextureRid;
-		RID forceTextureRid;
-		RID rotationTextureRid;
-		RID sizeTextureRid;
-		RID colorTextureRid;
-		
-		/*RID aliveListBufferRids[2];
-		RID deadListBufferRid;
-		RID atomicCounterBufferRid;
-		std::uint32_t activeAliveListBufferIndex = 0;*/
-	};
+	ParticleGpuTextureSet createParticleDataTextures(std::uint32_t width, std::uint32_t height);
 
-	ParticleGpuTexture createParticleDataTextures(std::uint32_t width, std::uint32_t height);
+	const pixelpart::Effect& engineEffect;
 
-	const pixelpart::Effect& effect;
-
-	Ref<RenderingDevice> renderingDevice;
+	RenderingDevice* renderingDevice;
 	RID generationComputeShaderRid;
 	RID simulationComputeShaderRid;
 	RID generationComputePipelineRid;
@@ -57,7 +60,7 @@ private:
 	RID simulationParamsUniformBufferRid;
 	RID simulationParamsUniformSetRid;
 
-	std::unordered_map<pixelpart::ParticleEmissionPair, ParticleGpuTexture> particleGpuTextures;
+	std::unordered_map<pixelpart::ParticleEmissionPair, ParticleGpuTextureSet> particleGpuTextures;
 	std::unordered_map<pixelpart::ParticleEmissionPair, pixelpart::float_t> particleEmissionCounts;
 
 	pixelpart::EffectRuntimeContext runtimeContext;
