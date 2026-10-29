@@ -35,8 +35,6 @@ private:
 	void create_material(PixelpartGraphicsResourceProvider& resourceProvider, PixelpartShaderProvider& shaderProvider);
 	void create_instance(PixelpartGraphicsResourceProvider& resourceProvider);
 
-	static float pack_int_float(float a, float b, float s);
-
 	VisualInstance3D* parentNode = nullptr;
 
 	const PixelpartGpuEffectEngine* effectEngine = nullptr;

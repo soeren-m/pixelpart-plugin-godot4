@@ -1,4 +1,5 @@
 #include "PixelpartGpuEffectEngine.h"
+#include <stdexcept>
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/rd_shader_file.hpp>
@@ -17,10 +18,24 @@ PixelpartGpuEffectEngine::PixelpartGpuEffectEngine(const pixelpart::Effect& effe
 
 	// TODO: load only once!
 
-	Ref<RDShaderFile> generationComputeShaderFile = resourceLoader->load("res://addons/pixelpart/PixelpartParticleGenerationCompute.glsl");
-	Ref<RDShaderFile> simulationComputeShaderFile = resourceLoader->load("res://addons/pixelpart/PixelpartParticleSimulationCompute.glsl");
+	Ref<RDShaderFile> generationComputeShaderFile = resourceLoader->load("res://addons/pixelpart/shaders/PixelpartParticleGenerationCompute.glsl", "RDShaderFile");
+	Ref<RDShaderFile> simulationComputeShaderFile = resourceLoader->load("res://addons/pixelpart/shaders/PixelpartParticleSimulationCompute.glsl", "RDShaderFile");
+	if(!generationComputeShaderFile.is_valid() || !simulationComputeShaderFile.is_valid()) {
+		throw std::runtime_error("Invalid particle compute shader file");
+	}
+
 	Ref<RDShaderSPIRV> generationComputeShaderSpirv = generationComputeShaderFile->get_spirv();
 	Ref<RDShaderSPIRV> simulationComputeShaderSpirv = simulationComputeShaderFile->get_spirv();
+
+	String generationComputeShaderError = generationComputeShaderSpirv->get_stage_compile_error(RenderingDevice::SHADER_STAGE_COMPUTE);
+	if(!generationComputeShaderError.is_empty()) {
+		throw std::runtime_error("Compile error in particle generation compute shader: " + std::string(generationComputeShaderError.utf8().get_data()));
+	}
+
+	String simulationComputeShaderError = simulationComputeShaderSpirv->get_stage_compile_error(RenderingDevice::SHADER_STAGE_COMPUTE);
+	if(!simulationComputeShaderError.is_empty()) {
+		throw std::runtime_error("Compile error in particle simulation compute shader: " + std::string(simulationComputeShaderError.utf8().get_data()));
+	}
 
 	generationComputeShaderRid = renderingDevice->shader_create_from_spirv(generationComputeShaderSpirv);
 	simulationComputeShaderRid = renderingDevice->shader_create_from_spirv(simulationComputeShaderSpirv);
@@ -28,15 +43,25 @@ PixelpartGpuEffectEngine::PixelpartGpuEffectEngine(const pixelpart::Effect& effe
 	generationComputePipelineRid = renderingDevice->compute_pipeline_create(generationComputeShaderRid);
 	simulationComputePipelineRid = renderingDevice->compute_pipeline_create(simulationComputeShaderRid);
 
+	generationParamsUniformBufferRid = renderingDevice->uniform_buffer_create(4 * 4);
+
+	Ref<RDUniform> generationParamsUniform;
+	generationParamsUniform.instantiate();
+	generationParamsUniform->set_uniform_type(RenderingDevice::UNIFORM_TYPE_UNIFORM_BUFFER);
+	generationParamsUniform->set_binding(0);
+	generationParamsUniform->add_id(generationParamsUniformBufferRid);
+
+	generationParamsUniformSetRid = renderingDevice->uniform_set_create(TypedArray<RDUniform>{ generationParamsUniform }, generationComputeShaderRid, 0);
+
 	simulationParamsUniformBufferRid = renderingDevice->uniform_buffer_create(4 * 4);
 
-	Ref<RDUniform> uniform;
-	uniform.instantiate();
-	uniform->set_uniform_type(RenderingDevice::UNIFORM_TYPE_UNIFORM_BUFFER);
-	uniform->set_binding(0);
-	uniform->add_id(simulationParamsUniformBufferRid);
+	Ref<RDUniform> simulationParamsUniform;
+	simulationParamsUniform.instantiate();
+	simulationParamsUniform->set_uniform_type(RenderingDevice::UNIFORM_TYPE_UNIFORM_BUFFER);
+	simulationParamsUniform->set_binding(0);
+	simulationParamsUniform->add_id(simulationParamsUniformBufferRid);
 
-	simulationParamsUniformSetRid = renderingDevice->uniform_set_create(TypedArray<RDUniform>{ uniform }, simulationComputeShaderRid, 0);
+	simulationParamsUniformSetRid = renderingDevice->uniform_set_create(TypedArray<RDUniform>{ simulationParamsUniform }, simulationComputeShaderRid, 0);
 }
 PixelpartGpuEffectEngine::~PixelpartGpuEffectEngine() {
 	for(const auto& [emissionPair, textures] : particleGpuTextures) {
@@ -64,13 +89,13 @@ void PixelpartGpuEffectEngine::advance(pixelpart::float_t dt) {
 	runtimeContext.deltaTime() = dt;
 
 	// TODO: remove buffers??
-	for(pixelpart::ParticleEmissionPair emissionPair : engineEffect.particleEmissionPairs()) {
+	/*for(pixelpart::ParticleEmissionPair emissionPair : engineEffect.particleEmissionPairs()) {
 		if(particleGpuTextures.count(emissionPair) == 0) {
 			// TODO: calculate size based on particle count
 			particleGpuTextures[emissionPair] = createParticleDataTextures(512, 512);
 			particleEmissionCounts[emissionPair] = 0.0;
 		}
-	}
+	}*/
 
 	// TODO
 
@@ -117,6 +142,15 @@ void PixelpartGpuEffectEngine::advance(pixelpart::float_t dt) {
 
 		emissionCount -= static_cast<pixelpart::float_t>(emittedParticleCount);
 
+		PackedByteArray generationParamsByteArray;
+		generationParamsByteArray.resize(4 * 4);
+		generationParamsByteArray.encode_float(0, static_cast<float>(dt));
+		generationParamsByteArray.encode_u32(4, emittedParticleCount);
+		generationParamsByteArray.encode_u32(8, 512);
+		generationParamsByteArray.encode_u32(12, 512);
+
+		renderingDevice->buffer_update(generationParamsUniformBufferRid, 0, generationParamsByteArray.size(), generationParamsByteArray);
+
 		// TODO: set params
 
 		std::uint32_t localWorkgroupSize = 64;
@@ -130,7 +164,7 @@ void PixelpartGpuEffectEngine::advance(pixelpart::float_t dt) {
 
 	// TODO: barrier
 
-	std::uint32_t particleCount = 100; // TODO
+	/*std::uint32_t particleCount = 100; // TODO
 
 	PackedByteArray simulationParamsByteArray;
 	simulationParamsByteArray.resize(4 * 4);
@@ -172,7 +206,7 @@ void PixelpartGpuEffectEngine::advance(pixelpart::float_t dt) {
 				runtimeContext.invokedEvents().push_back(eventId);
 			}
 		}
-	}
+	}*/
 
 	runtimeContext.time() += dt;
 }
@@ -185,9 +219,9 @@ void PixelpartGpuEffectEngine::reset(const pixelpart::EffectRuntimeState& initia
 	runtimeContext = initialContext;
 
 	particleGpuTextures.clear();
-	for(const auto& [emissionPair, particleCollection] : initialState.particleCollections()) {
+	/*for(const auto& [emissionPair, particleCollection] : initialState.particleCollections()) {
 		particleGpuTextures[emissionPair] = createParticleDataTextures(512, 512);
-	}
+	}*/
 }
 void PixelpartGpuEffectEngine::reseed(std::uint32_t seed) {
 	
@@ -221,7 +255,12 @@ const pixelpart::EffectRuntimeContext& PixelpartGpuEffectEngine::context() const
 }
 
 PixelpartGpuEffectEngine::ParticleGpuTextureSet PixelpartGpuEffectEngine::gpuTextures(pixelpart::id_t particleEmitterId, pixelpart::id_t particleTypeId) const {
-	return particleGpuTextures.at(pixelpart::ParticleEmissionPair(particleEmitterId, particleTypeId));
+	auto gpuTextureIt = particleGpuTextures.find(pixelpart::ParticleEmissionPair(particleEmitterId, particleTypeId));
+	if(gpuTextureIt == particleGpuTextures.end()) {
+		return ParticleGpuTextureSet();
+	}
+
+	return gpuTextureIt->second;
 }
 
 PixelpartGpuEffectEngine::ParticleGpuTextureSet PixelpartGpuEffectEngine::createParticleDataTextures(std::uint32_t width, std::uint32_t height) {

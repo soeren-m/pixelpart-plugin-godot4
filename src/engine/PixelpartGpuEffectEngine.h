@@ -57,6 +57,8 @@ private:
 	RID generationComputePipelineRid;
 	RID simulationComputePipelineRid;
 
+	RID generationParamsUniformBufferRid;
+	RID generationParamsUniformSetRid;
 	RID simulationParamsUniformBufferRid;
 	RID simulationParamsUniformSetRid;
 

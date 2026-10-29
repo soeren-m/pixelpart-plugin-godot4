@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://cv7ot64pklbfl"
+path="res://.godot/imported/PixelpartParticleGenerationCompute.glsl-54919895240d501a74d9a203f3e35bb3.res"
+
+[deps]
+
+source_file="res://addons/pixelpart/shaders/PixelpartParticleGenerationCompute.glsl"
+dest_files=["res://.godot/imported/PixelpartParticleGenerationCompute.glsl-54919895240d501a74d9a203f3e35bb3.res"]
+
+[params]
+

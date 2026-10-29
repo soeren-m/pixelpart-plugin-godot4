@@ -1,5 +1,6 @@
 #include "PixelpartEffectRuntime.h"
 #include "PixelpartSystem.h"
+#include "engine/PixelpartGpuEffectEngine.h"
 #include "node/PixelpartNodeFactory.h"
 #include "node/PixelpartParticleEmitter.h"
 #include "util/PixelpartUtil.h"
@@ -24,16 +25,25 @@ void PixelpartEffectRuntime::set_effect(const pixelpart::Effect& eff) {
 	effect = eff;
 	effect.applyInputs();
 
-#ifdef PIXELPART_RUNTIME_MULTITHREADING
-	effectEngine = std::make_unique<pixelpart::MultiThreadedEffectEngine>(effect,
-		std::make_shared<pixelpart::DefaultParticleGenerator>(),
-		std::make_shared<pixelpart::DefaultParticleModifier>(),
-		PixelpartSystem::get_instance()->get_thread_pool());
-#else
-	effectEngine = std::make_unique<pixelpart::SingleThreadedEffectEngine>(effect,
-		std::make_shared<pixelpart::DefaultParticleGenerator>(),
-		std::make_shared<pixelpart::DefaultParticleModifier>());
-#endif
+	try {
+		/*
+	#ifdef PIXELPART_RUNTIME_MULTITHREADING
+		effectEngine = std::make_unique<pixelpart::MultiThreadedEffectEngine>(effect,
+			std::make_shared<pixelpart::DefaultParticleGenerator>(),
+			std::make_shared<pixelpart::DefaultParticleModifier>(),
+			PixelpartSystem::get_instance()->get_thread_pool());
+	#else
+		effectEngine = std::make_unique<pixelpart::SingleThreadedEffectEngine>(effect,
+			std::make_shared<pixelpart::DefaultParticleGenerator>(),
+			std::make_shared<pixelpart::DefaultParticleModifier>());
+	#endif
+		*/
+		effectEngine = std::make_unique<PixelpartGpuEffectEngine>(effect);
+	}
+	catch(const std::exception& e) {
+		UtilityFunctions::push_error(String("Failed to initialize effect engine: ") + String(e.what()));
+		return;
+	}
 
 	for(const auto& node : effect.sceneGraph()) {
 		nodeNameIdMap[node->name()] = node->id();

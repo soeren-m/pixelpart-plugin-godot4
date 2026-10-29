@@ -70,6 +70,9 @@ void PixelpartGpuParticleInstance3D::draw(pixelpart::float_t scale) {
 	}
 
 	PixelpartGpuEffectEngine::ParticleGpuTextureSet gpuTextures = effectEngine->gpuTextures(particleEmitterId, particleTypeId);
+	if(!gpuTextures.commonTextureRid.is_valid()) {
+		return;
+	}
 
 	shaderMaterial->set_shader_parameter("u_ParticleCommonTexture", gpuTextures.commonTextureRid);
 	shaderMaterial->set_shader_parameter("u_ParticleGlobalPositionTexture", gpuTextures.globalPositionTextureRid);
