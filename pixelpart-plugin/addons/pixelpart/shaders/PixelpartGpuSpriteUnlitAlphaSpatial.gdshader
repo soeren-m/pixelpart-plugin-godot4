@@ -20,10 +20,10 @@ uniform float u_SoftParticleTransition = 0.0;
 uniform bool u_DistanceFade = false;
 uniform float u_DistanceFadeTransition = 0.0;
 
-uniform sampler2D u_ParticleCommonTexture : source_color;
-uniform sampler2D u_ParticleGlobalPositionTexture : source_color;
-uniform sampler2D u_ParticleColorTexture : source_color;
-uniform sampler2D u_ParticleSizeTexture : source_color;
+uniform sampler2D u_ParticleCommonTexture;
+uniform sampler2D u_ParticleGlobalPositionTexture;
+uniform sampler2D u_ParticleColorTexture;
+uniform sampler2D u_ParticleSizeTexture;
 
 varying float LIFE;
 
@@ -32,15 +32,20 @@ varying float LIFE;
 #include "res://addons/pixelpart/shaders/PixelpartSpriteSheetAnimation.gdshaderinc"
 
 void vertex() {
-	ivec2 size = textureSize(u_ParticleCommonTexture, 0);
-	ivec2 textureIndex = ivec2(VERTEX_ID % size.x, VERTEX_ID / size.x);
+	ivec2 dataTextureSize = textureSize(u_ParticleCommonTexture, 0);
+	ivec2 dataTextureIndex = ivec2(INSTANCE_ID % dataTextureSize.x, INSTANCE_ID / dataTextureSize.x);
 
-	vec4 particleCommon = texelFetch(u_ParticleCommonTexture, textureIndex, 0);
-	vec4 particlePosition = texelFetch(u_ParticlePositionTexture, textureIndex, 0);
-	vec4 particleColor = texelFetch(u_ParticleColorTexture, textureIndex, 0);
-	vec4 particleSize = texelFetch(u_ParticleSizeTexture, textureIndex, 0);
+	vec4 particleCommon = texelFetch(u_ParticleCommonTexture, dataTextureIndex, 0);
+	vec4 particlePosition = texelFetch(u_ParticlePositionTexture, dataTextureIndex, 0);
+	vec4 particleColor = texelFetch(u_ParticleColorTexture, dataTextureIndex, 0);
+	vec4 particleSize = texelFetch(u_ParticleSizeTexture, dataTextureIndex, 0);
 
-	VERTEX = particlePosition.xyz + (VERTEX * particleSize.xyz);
+	VERTEX *= particleSize.xyz;
+	// TODO: VERTEX = rotate(VERTEX, rotation);
+	VERTEX += particlePosition.xyz;
+
+	// TODO: NORMAL = rotate(NORMAL, rotation);
+
 	COLOR = particleColor;
 	LIFE = particleCommon.x;
 }

@@ -3,15 +3,16 @@
 
 layout (local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
-layout (rgba32f, binding = 0) uniform restrict image2D u_ParticleCommon;
-layout (rgba32f, binding = 1) uniform restrict image2D u_ParticlePosition;
-layout (rgba32f, binding = 2) uniform restrict image2D u_ParticleGlobalPosition;
-layout (rgba32f, binding = 3) uniform restrict image2D u_ParticleVelocity;
-layout (rgba32f, binding = 4) uniform restrict image2D u_ParticleForce;
-layout (rgba32f, binding = 5) uniform restrict image2D u_ParticleRotation;
-layout (rgba32f, binding = 6) uniform restrict image2D u_ParticleSize;
-layout (rgba32f, binding = 7) uniform restrict image2D u_ParticleColor;
+layout (rgba32f, binding = 0) uniform restrict image2D u_ParticleCommonTexture;
+layout (rgba32f, binding = 1) uniform restrict image2D u_ParticlePositionTexture;
+layout (rgba32f, binding = 2) uniform restrict image2D u_ParticleGlobalPositionTexture;
+layout (rgba32f, binding = 3) uniform restrict image2D u_ParticleVelocityTexture;
+layout (rgba32f, binding = 4) uniform restrict image2D u_ParticleForceTexture;
+layout (rgba32f, binding = 5) uniform restrict image2D u_ParticleRotationTexture;
+layout (rgba32f, binding = 6) uniform restrict image2D u_ParticleSizeTexture;
+layout (rgba32f, binding = 7) uniform restrict image2D u_ParticleColorTexture;
 
+// TODO: push constants?
 layout (binding = 0, std140) uniform GenerationParams {
 	float deltaTime;
 	uint particleCount;
@@ -38,10 +39,10 @@ void main() {
 	vec4 size = vec4(0.1, 0.1, 0.1, 1.0);
 	// TODO
 
-	imageStore(u_ParticleCommon, textureIndex, commonData);
-	imageStore(u_ParticlePosition, textureIndex, position);
-	imageStore(u_ParticleVelocity, textureIndex, velocity);
-	imageStore(u_ParticleForce, textureIndex, force);
-	imageStore(u_ParticleColor, textureIndex, color);
-	imageStore(u_ParticleSize, textureIndex, size);
+	imageStore(u_ParticleCommonTexture, textureIndex, commonData);
+	imageStore(u_ParticlePositionTexture, textureIndex, position);
+	imageStore(u_ParticleVelocityTexture, textureIndex, velocity);
+	imageStore(u_ParticleForceTexture, textureIndex, force);
+	imageStore(u_ParticleColorTexture, textureIndex, color);
+	imageStore(u_ParticleSizeTexture, textureIndex, size);
 }

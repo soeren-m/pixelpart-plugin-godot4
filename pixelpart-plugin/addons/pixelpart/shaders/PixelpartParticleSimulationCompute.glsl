@@ -3,14 +3,14 @@
 
 layout (local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
-layout (rgba32f, binding = 0) uniform restrict image2D u_ParticleCommon;
-layout (rgba32f, binding = 1) uniform restrict image2D u_ParticlePosition;
-layout (rgba32f, binding = 2) uniform restrict image2D u_ParticleGlobalPosition;
-layout (rgba32f, binding = 3) uniform restrict image2D u_ParticleVelocity;
-layout (rgba32f, binding = 4) uniform restrict image2D u_ParticleForce;
-layout (rgba32f, binding = 5) uniform restrict image2D u_ParticleRotation;
-layout (rgba32f, binding = 6) uniform restrict image2D u_ParticleSize;
-layout (rgba32f, binding = 7) uniform restrict image2D u_ParticleColor;
+layout (rgba32f, binding = 0) uniform restrict image2D u_ParticleCommonTexture;
+layout (rgba32f, binding = 1) uniform restrict image2D u_ParticlePositionTexture;
+layout (rgba32f, binding = 2) uniform restrict image2D u_ParticleGlobalPositionTexture;
+layout (rgba32f, binding = 3) uniform restrict image2D u_ParticleVelocityTexture;
+layout (rgba32f, binding = 4) uniform restrict image2D u_ParticleForceTexture;
+layout (rgba32f, binding = 5) uniform restrict image2D u_ParticleRotationTexture;
+layout (rgba32f, binding = 6) uniform restrict image2D u_ParticleSizeTexture;
+layout (rgba32f, binding = 7) uniform restrict image2D u_ParticleColorTexture;
 
 /*layout (std430, set = 0, binding = 2) restrict buffer CounterBuffer {
 	uint COUNTER;
@@ -37,12 +37,12 @@ void main() {
 
 	ivec2 textureIndex = toTextureIndex(p);
 
-	vec4 common = imageLoad(u_ParticleCommon, textureIndex);
-	vec4 position = imageLoad(u_ParticlePosition, textureIndex);
-	vec4 velocity = imageLoad(u_ParticleVelocity, textureIndex);
-	vec4 force = imageLoad(u_ParticleForce, textureIndex);
-	vec4 color = imageLoad(u_ParticleColor, textureIndex);
-	vec4 size = imageLoad(u_ParticleSize, textureIndex);
+	vec4 common = imageLoad(u_ParticleCommonTexture, textureIndex);
+	vec4 position = imageLoad(u_ParticlePositionTexture, textureIndex);
+	vec4 velocity = imageLoad(u_ParticleVelocityTexture, textureIndex);
+	vec4 force = imageLoad(u_ParticleForceTexture, textureIndex);
+	vec4 color = imageLoad(u_ParticleColorTexture, textureIndex);
+	vec4 size = imageLoad(u_ParticleSizeTexture, textureIndex);
 
 	// TODO
 	color = vec4(1.0, 1.0, 1.0, 1.0);
@@ -54,11 +54,11 @@ void main() {
 
 	common.x -= u_SimulationParams.deltaTime;
 
-	imageStore(u_ParticleCommon, textureIndex, common);
-	imageStore(u_ParticlePosition, textureIndex, position);
-	imageStore(u_ParticleGlobalPosition, textureIndex, globalPosition);
-	imageStore(u_ParticleVelocity, textureIndex, velocity);
-	imageStore(u_ParticleForce, textureIndex, force);
-	imageStore(u_ParticleColor, textureIndex, color);
-	imageStore(u_ParticleSize, textureIndex, size);
+	imageStore(u_ParticleCommonTexture, textureIndex, common);
+	imageStore(u_ParticlePositionTexture, textureIndex, position);
+	imageStore(u_ParticleGlobalPositionTexture, textureIndex, globalPosition);
+	imageStore(u_ParticleVelocityTexture, textureIndex, velocity);
+	imageStore(u_ParticleForceTexture, textureIndex, force);
+	imageStore(u_ParticleColorTexture, textureIndex, color);
+	imageStore(u_ParticleSizeTexture, textureIndex, size);
 }

@@ -28,8 +28,6 @@ PixelpartGpuParticleInstance3D::PixelpartGpuParticleInstance3D(VisualInstance3D*
 	parentNode(parent), effectEngine(engine), particleEmitterId(emitterId), particleTypeId(typeId) {
 	create_material(resourceProvider, shaderProvider);
 	create_instance(resourceProvider);
-
-	dummyVertexArray.resize(1);
 }
 PixelpartGpuParticleInstance3D::~PixelpartGpuParticleInstance3D() {
 	RenderingServer* rs = RenderingServer::get_singleton();
@@ -46,9 +44,6 @@ void PixelpartGpuParticleInstance3D::draw(pixelpart::float_t scale) {
 
 	switch(particleType.renderer()) {
 		case pixelpart::ParticleRendererType::sprite:
-		case pixelpart::ParticleRendererType::trail:
-			arrayMesh->clear_surfaces();
-			break;
 		case pixelpart::ParticleRendererType::mesh:
 			multiMesh->set_visible_instance_count(0);
 			break;
@@ -82,44 +77,18 @@ void PixelpartGpuParticleInstance3D::draw(pixelpart::float_t scale) {
 	shaderMaterial->set_shader_parameter("u_EffectTime", static_cast<float>(effectEngine->context().time()));
 	shaderMaterial->set_shader_parameter("u_ObjectTime", static_cast<float>(particleEmitter.timeSinceStart(effectEngine->context())));
 
-	pixelpart::SceneContext sceneContext;
-	sceneContext.effectScale = pixelpart::float3_t(scale);
-	sceneContext.cameraPosition = gd_to_pxpt(camera->get_global_transform().origin);
-	sceneContext.cameraForward = gd_to_pxpt(camera->get_global_transform().basis.get_column(2));
-	sceneContext.cameraRight = gd_to_pxpt(camera->get_global_transform().basis.get_column(0));
-	sceneContext.cameraUp = gd_to_pxpt(camera->get_global_transform().basis.get_column(1));
-
 	std::uint32_t particleCount = 100; // TODO
 
 	switch(particleType.renderer()) {
 		case pixelpart::ParticleRendererType::sprite:
-		case pixelpart::ParticleRendererType::trail: {
-			indexArray.resize(static_cast<std::int64_t>(particleCount));
-
-			// TODO: dont do every frame
-			std::int32_t* indexBufferPtr = indexArray.ptrw();
-			for(std::int32_t i = 0; i < static_cast<std::int32_t>(particleCount) * 3; i++) {
-				indexBufferPtr[i * 3 + 0] = i * 3 + 0;
-				indexBufferPtr[i * 3 + 1] = i * 3 + 1;
-				indexBufferPtr[i * 3 + 2] = i * 3 + 2;
-			}
-
-			Array meshArray;
-			meshArray.resize(Mesh::ARRAY_MAX);
-			meshArray[Mesh::ARRAY_VERTEX] = dummyVertexArray;
-			meshArray[Mesh::ARRAY_INDEX] = indexArray;
-
-			arrayMesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, meshArray, Array(), Dictionary(),
-				Mesh::ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY);
-			arrayMesh->surface_set_material(0, shaderMaterial);
-
-			break;
-		}
-
 		case pixelpart::ParticleRendererType::mesh: {
-			// TODO
-			multiMesh->set_visible_instance_count(-1);
-			multiMesh->set_instance_count(0);
+			multiMesh->set_visible_instance_count(static_cast<std::int32_t>(particleCount));
+			multiMesh->set_instance_count(static_cast<std::int32_t>(particleCount));
+
+			// TODO: better aabb
+			multiMesh->set_custom_aabb(AABB(
+				Vector3(-10, -10, -10),
+				Vector3(10, 10, 10)));
 
 			break;
 		}
@@ -234,18 +203,57 @@ void PixelpartGpuParticleInstance3D::create_instance(PixelpartGraphicsResourcePr
 
 	instanceRid = rs->instance_create();
 
+	multiMesh.instantiate();
+	multiMesh->set_transform_format(MultiMesh::TRANSFORM_3D);
+	multiMesh->set_use_custom_data(false);
+
 	switch(particleType.renderer()) {
-		case pixelpart::ParticleRendererType::sprite:
-		case pixelpart::ParticleRendererType::trail: {
-			arrayMesh.instantiate();
-			rs->instance_set_base(instanceRid, arrayMesh->get_rid());
+		case pixelpart::ParticleRendererType::sprite: {
+			Ref<ArrayMesh> baseMesh;
+			baseMesh.instantiate();
+
+			PackedVector3Array vertices;
+			vertices.push_back(Vector3(-0.5f, -0.5f, 0.0f));
+			vertices.push_back(Vector3(0.5f, -0.5f, 0.0f));
+			vertices.push_back(Vector3(0.5f, 0.5f, 0.0f));
+			vertices.push_back(Vector3(-0.5f, 0.5f, 0.0f));
+
+			PackedVector2Array uvs;
+			uvs.push_back(Vector2(0.0f, 1.0f));
+			uvs.push_back(Vector2(1.0f, 1.0f));
+			uvs.push_back(Vector2(1.0f, 0.0f));
+			uvs.push_back(Vector2(0.0f, 0.0f));
+
+			PackedVector3Array normals;
+			normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
+			normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
+			normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
+			normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
+
+			PackedInt32Array indices;
+			indices.push_back(0);
+			indices.push_back(1);
+			indices.push_back(2);
+			indices.push_back(0);
+			indices.push_back(2);
+			indices.push_back(3);
+
+			Array meshArrays;
+			meshArrays.resize(Mesh::ARRAY_MAX);
+			meshArrays[Mesh::ARRAY_VERTEX] = vertices;
+			meshArrays[Mesh::ARRAY_TEX_UV] = uvs;
+			meshArrays[Mesh::ARRAY_NORMAL] = normals;
+			meshArrays[Mesh::ARRAY_INDEX] = indices;
+
+			baseMesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, meshArrays);
+			baseMesh->surface_set_material(0, shaderMaterial);
+
+			multiMesh->set_mesh(baseMesh);
 
 			break;
 		}
 
 		case pixelpart::ParticleRendererType::mesh: {
-			// TODO
-			multiMesh.instantiate();
 			if(resourceProvider.get_meshes().count(particleType.meshRendererSettings().meshResourceId) != 0) {
 				Ref<ArrayMesh> baseMesh = resourceProvider.get_meshes().at(particleType.meshRendererSettings().meshResourceId);
 				baseMesh->surface_set_material(0, shaderMaterial);
@@ -256,8 +264,6 @@ void PixelpartGpuParticleInstance3D::create_instance(PixelpartGraphicsResourcePr
 				UtilityFunctions::push_error("Mesh \"", String(particleType.meshRendererSettings().meshResourceId.c_str()), "\" not found");
 			}
 
-			rs->instance_set_base(instanceRid, multiMesh->get_rid());
-
 			break;
 		}
 
@@ -266,6 +272,7 @@ void PixelpartGpuParticleInstance3D::create_instance(PixelpartGraphicsResourcePr
 		}
 	}
 
+	rs->instance_set_base(instanceRid, multiMesh->get_rid());
 	rs->instance_geometry_set_flag(instanceRid, RenderingServer::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
 }
 }

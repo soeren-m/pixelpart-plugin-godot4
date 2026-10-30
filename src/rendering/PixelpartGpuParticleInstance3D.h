@@ -42,13 +42,9 @@ private:
 	pixelpart::id_t particleTypeId;
 
 	RID instanceRid;
-	Ref<ArrayMesh> arrayMesh;
 	Ref<MultiMesh> multiMesh;
 	Ref<Shader> shader;
 	Ref<ShaderMaterial> shaderMaterial;
-
-    PackedInt32Array indexArray;
-	PackedVector3Array dummyVertexArray;
 };
 }
 
