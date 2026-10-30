@@ -14,10 +14,13 @@ PixelpartShaderProvider::PixelpartShaderProvider() {
 	ResourceLoader* resourceLoader = ResourceLoader::get_singleton();
 
 	for(const auto& [materialName, materialMetadata] : builtInMaterialRepository.materials()) {
+		// TODO: gpu canvas item shaders
 		String canvasItemShaderFile =
 			String("Pixelpart") + pxpt_to_gd(materialName) + String("CanvasItem.gdshader");
 		String spatialShaderFile =
 			String("Pixelpart") + pxpt_to_gd(materialName) + String("Spatial.gdshader");
+		String gpuSpatialShaderFile =
+			String("PixelpartGpu") + pxpt_to_gd(materialName) + String("Spatial.gdshader");
 
 		if(materialMetadata.rendererType() != pixelpart::ParticleRendererType::mesh) {
 			Ref<Shader> canvasItemShader = resourceLoader->load(shaderBasePath + canvasItemShaderFile, "Shader");
@@ -38,6 +41,15 @@ PixelpartShaderProvider::PixelpartShaderProvider() {
 			UtilityFunctions::push_error(String("Failed to load built-in shader \"") + spatialShaderFile + String("\""));
 			continue;
 		}
+
+		Ref<Shader> gpuSpatialShader = resourceLoader->load(shaderBasePath + gpuSpatialShaderFile, "Shader");
+		if(gpuSpatialShader.is_valid()) {
+			builtInGpuSpatialShaders[materialName] = gpuSpatialShader;
+		}
+		else {
+			UtilityFunctions::push_error(String("Failed to load built-in shader \"") + gpuSpatialShaderFile + String("\""));
+			continue;
+		}
 	}
 }
 
@@ -48,12 +60,26 @@ Ref<Shader> PixelpartShaderProvider::get_builtin_canvas_item_shader(const std::s
 
 	return builtInCanvasItemShaders.at(shaderId);
 }
+Ref<Shader> PixelpartShaderProvider::get_builtin_gpu_canvas_item_shader(const std::string& shaderId) const {
+	if(builtInGpuCanvasItemShaders.count(shaderId) == 0) {
+		return Ref<Shader>();
+	}
+
+	return builtInGpuCanvasItemShaders.at(shaderId);
+}
 Ref<Shader> PixelpartShaderProvider::get_builtin_spatial_shader(const std::string& shaderId) const {
 	if(builtInSpatialShaders.count(shaderId) == 0) {
 		return Ref<Shader>();
 	}
 
 	return builtInSpatialShaders.at(shaderId);
+}
+Ref<Shader> PixelpartShaderProvider::get_builtin_gpu_spatial_shader(const std::string& shaderId) const {
+	if(builtInGpuSpatialShaders.count(shaderId) == 0) {
+		return Ref<Shader>();
+	}
+
+	return builtInGpuSpatialShaders.at(shaderId);
 }
 const pixelpart::BuiltInMaterialMetadata& PixelpartShaderProvider::get_builtin_canvas_item_shader_metadata(const std::string& shaderId) const {
 	return builtInMaterialRepository.materials().at(shaderId);

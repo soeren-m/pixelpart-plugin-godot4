@@ -36,7 +36,7 @@ void vertex() {
 	ivec2 dataTextureIndex = ivec2(INSTANCE_ID % dataTextureSize.x, INSTANCE_ID / dataTextureSize.x);
 
 	vec4 particleCommon = texelFetch(u_ParticleCommonTexture, dataTextureIndex, 0);
-	vec4 particlePosition = texelFetch(u_ParticlePositionTexture, dataTextureIndex, 0);
+	vec4 particlePosition = texelFetch(u_ParticleGlobalPositionTexture, dataTextureIndex, 0);
 	vec4 particleColor = texelFetch(u_ParticleColorTexture, dataTextureIndex, 0);
 	vec4 particleSize = texelFetch(u_ParticleSizeTexture, dataTextureIndex, 0);
 

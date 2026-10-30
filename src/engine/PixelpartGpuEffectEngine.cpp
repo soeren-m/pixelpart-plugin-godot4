@@ -4,7 +4,6 @@
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/rd_shader_file.hpp>
 #include <godot_cpp/classes/rd_shader_spirv.hpp>
-#include <godot_cpp/classes/rd_uniform.hpp>
 #include <godot_cpp/classes/rd_texture_format.hpp>
 #include <godot_cpp/classes/rd_texture_view.hpp>
 // TODO
@@ -45,35 +44,37 @@ PixelpartGpuEffectEngine::PixelpartGpuEffectEngine(const pixelpart::Effect& effe
 
 	generationParamsUniformBufferRid = renderingDevice->uniform_buffer_create(4 * 4);
 
-	Ref<RDUniform> generationParamsUniform;
-	generationParamsUniform.instantiate();
-	generationParamsUniform->set_uniform_type(RenderingDevice::UNIFORM_TYPE_UNIFORM_BUFFER);
-	generationParamsUniform->set_binding(0);
-	generationParamsUniform->add_id(generationParamsUniformBufferRid);
+	TypedArray<RDUniform> generationParamSetUniforms;
+	generationParamSetUniforms.push_back(createUniformBufferUniform(0, generationParamsUniformBufferRid));
 
-	generationParamsUniformSetRid = renderingDevice->uniform_set_create(TypedArray<RDUniform>{ generationParamsUniform }, generationComputeShaderRid, 0);
+	generationParamsUniformSetRid = renderingDevice->uniform_set_create(generationParamSetUniforms, generationComputeShaderRid, 1);
 
 	simulationParamsUniformBufferRid = renderingDevice->uniform_buffer_create(4 * 4);
 
-	Ref<RDUniform> simulationParamsUniform;
-	simulationParamsUniform.instantiate();
-	simulationParamsUniform->set_uniform_type(RenderingDevice::UNIFORM_TYPE_UNIFORM_BUFFER);
-	simulationParamsUniform->set_binding(0);
-	simulationParamsUniform->add_id(simulationParamsUniformBufferRid);
+	TypedArray<RDUniform> simulationParamSetUniforms;
+	simulationParamSetUniforms.push_back(createUniformBufferUniform(0, simulationParamsUniformBufferRid));
 
-	simulationParamsUniformSetRid = renderingDevice->uniform_set_create(TypedArray<RDUniform>{ simulationParamsUniform }, simulationComputeShaderRid, 0);
+	simulationParamsUniformSetRid = renderingDevice->uniform_set_create(simulationParamSetUniforms, simulationComputeShaderRid, 1);
 }
 PixelpartGpuEffectEngine::~PixelpartGpuEffectEngine() {
-	for(const auto& [emissionPair, textures] : particleGpuTextures) {
-		renderingDevice->free_rid(textures.commonTextureRid);
-		renderingDevice->free_rid(textures.positionTextureRid);
-		renderingDevice->free_rid(textures.globalPositionTextureRid);
-		renderingDevice->free_rid(textures.velocityTextureRid);
-		renderingDevice->free_rid(textures.forceTextureRid);
-		renderingDevice->free_rid(textures.rotationTextureRid);
-		renderingDevice->free_rid(textures.sizeTextureRid);
-		renderingDevice->free_rid(textures.colorTextureRid);
+	for(const auto& [emissionPair, resourceSet] : particleGpuResources) {
+		renderingDevice->free_rid(resourceSet.generationShaderImageUniformSetRid);
+		renderingDevice->free_rid(resourceSet.simulationShaderImageUniformSetRid);
+
+		renderingDevice->free_rid(resourceSet.commonTextureRid);
+		renderingDevice->free_rid(resourceSet.positionTextureRid);
+		renderingDevice->free_rid(resourceSet.globalPositionTextureRid);
+		renderingDevice->free_rid(resourceSet.velocityTextureRid);
+		renderingDevice->free_rid(resourceSet.forceTextureRid);
+		renderingDevice->free_rid(resourceSet.rotationTextureRid);
+		renderingDevice->free_rid(resourceSet.sizeTextureRid);
+		renderingDevice->free_rid(resourceSet.colorTextureRid);
 	}
+
+	renderingDevice->free_rid(generationParamsUniformSetRid);
+	renderingDevice->free_rid(generationParamsUniformBufferRid);
+	renderingDevice->free_rid(simulationParamsUniformSetRid);
+	renderingDevice->free_rid(simulationParamsUniformBufferRid);
 
 	renderingDevice->free_rid(generationComputePipelineRid);
 	renderingDevice->free_rid(simulationComputePipelineRid);
@@ -89,25 +90,26 @@ void PixelpartGpuEffectEngine::advance(pixelpart::float_t dt) {
 	runtimeContext.deltaTime() = dt;
 
 	// TODO: remove buffers??
-	/*for(pixelpart::ParticleEmissionPair emissionPair : engineEffect.particleEmissionPairs()) {
-		if(particleGpuTextures.count(emissionPair) == 0) {
+	for(pixelpart::ParticleEmissionPair emissionPair : engineEffect.particleEmissionPairs()) {
+		if(particleGpuResources.count(emissionPair) == 0) {
 			// TODO: calculate size based on particle count
-			particleGpuTextures[emissionPair] = createParticleDataTextures(512, 512);
+			particleGpuResources[emissionPair] = createParticleGpuResources(512, 512);
 			particleEmissionCounts[emissionPair] = 0.0;
 		}
-	}*/
+	}
 
 	// TODO
 
-	for(const auto& [emissionPair, textures] : particleGpuTextures) {
+	const std::uint32_t localWorkgroupSize = 64;
+
+	/*for(const auto& [emissionPair, textures] : particleGpuResources) {
 		const pixelpart::ParticleType& particleType = engineEffect.particleTypes().at(emissionPair.typeId);
 		const pixelpart::ParticleEmitter& particleEmitter = engineEffect.sceneGraph().at<pixelpart::ParticleEmitter>(emissionPair.emitterId);
 		if(!particleEmitter.primary() || !particleEmitter.active(runtimeContext)) {
 			continue;
 		}
 
-		//pixelpart::float_t& emissionCount = engineParticleEmissionCounts.at(emissionPair);
-		pixelpart::float_t emissionCount = 0.0;
+		pixelpart::float_t& emissionCount = particleEmissionCounts.at(emissionPair);
 
 		float_t startTime = particleEmitter.startTrigger()
 			? particleEmitter.lifetimeStart() + runtimeContext.triggerActivationTime(particleEmitter.startTrigger())
@@ -153,38 +155,39 @@ void PixelpartGpuEffectEngine::advance(pixelpart::float_t dt) {
 
 		// TODO: set params
 
-		std::uint32_t localWorkgroupSize = 64;
 		std::uint32_t workgroupCount = (emittedParticleCount + (localWorkgroupSize - 1)) / localWorkgroupSize;
 
 		auto computeList = renderingDevice->compute_list_begin();
 		renderingDevice->compute_list_bind_compute_pipeline(computeList, generationComputePipelineRid);
+		renderingDevice->compute_list_bind_uniform_set(computeList, textures.generationShaderImageUniformSetRid, 0);
+		renderingDevice->compute_list_bind_uniform_set(computeList, generationParamsUniformSetRid, 1);
 		renderingDevice->compute_list_dispatch(computeList, workgroupCount, 1, 1);
 		renderingDevice->compute_list_end();
-	}
+	}*/
 
 	// TODO: barrier
 
-	/*std::uint32_t particleCount = 100; // TODO
+	std::uint32_t particleCount = 100; // TODO
 
-	PackedByteArray simulationParamsByteArray;
-	simulationParamsByteArray.resize(4 * 4);
-	simulationParamsByteArray.encode_float(0, static_cast<float>(dt));
-	simulationParamsByteArray.encode_u32(4, particleCount);
-	simulationParamsByteArray.encode_u32(8, 512);
-	simulationParamsByteArray.encode_u32(12, 512);
-
-	renderingDevice->buffer_update(simulationParamsUniformBufferRid, 0, simulationParamsByteArray.size(), simulationParamsByteArray);
-
-	for(auto& [emissionPair, textures] : particleGpuTextures) {
+	for(auto& [emissionPair, textures] : particleGpuResources) {
 		const pixelpart::ParticleType& particleType = engineEffect.particleTypes().at(emissionPair.typeId);
 		const pixelpart::ParticleEmitter& particleEmitter = engineEffect.sceneGraph().at<pixelpart::ParticleEmitter>(emissionPair.emitterId);
 
-		std::uint32_t localWorkgroupSize = 64;
-		std::uint32_t workgroupCount = (512*512) / localWorkgroupSize;
+		PackedByteArray simulationParamsByteArray;
+		simulationParamsByteArray.resize(4 * 4);
+		simulationParamsByteArray.encode_float(0, static_cast<float>(dt));
+		simulationParamsByteArray.encode_u32(4, particleCount);
+		simulationParamsByteArray.encode_u32(8, 512);
+		simulationParamsByteArray.encode_u32(12, 512);
+
+		renderingDevice->buffer_update(simulationParamsUniformBufferRid, 0, simulationParamsByteArray.size(), simulationParamsByteArray);
+
+		std::uint32_t workgroupCount = (particleCount + (localWorkgroupSize - 1)) / localWorkgroupSize;
 
 		auto computeList = renderingDevice->compute_list_begin();
 		renderingDevice->compute_list_bind_compute_pipeline(computeList, simulationComputePipelineRid);
-		renderingDevice->compute_list_bind_uniform_set(computeList, simulationParamsUniformSetRid, 0);
+		renderingDevice->compute_list_bind_uniform_set(computeList, textures.simulationShaderImageUniformSetRid, 0);
+		renderingDevice->compute_list_bind_uniform_set(computeList, simulationParamsUniformSetRid, 1);
 		renderingDevice->compute_list_dispatch(computeList, workgroupCount, 1, 1);
 		renderingDevice->compute_list_end();
 	}
@@ -206,7 +209,7 @@ void PixelpartGpuEffectEngine::advance(pixelpart::float_t dt) {
 				runtimeContext.invokedEvents().push_back(eventId);
 			}
 		}
-	}*/
+	}
 
 	runtimeContext.time() += dt;
 }
@@ -218,10 +221,11 @@ void PixelpartGpuEffectEngine::restart() {
 void PixelpartGpuEffectEngine::reset(const pixelpart::EffectRuntimeState& initialState, pixelpart::EffectRuntimeContext initialContext) {
 	runtimeContext = initialContext;
 
-	particleGpuTextures.clear();
-	/*for(const auto& [emissionPair, particleCollection] : initialState.particleCollections()) {
-		particleGpuTextures[emissionPair] = createParticleDataTextures(512, 512);
-	}*/
+	particleGpuResources.clear();
+	for(const auto& [emissionPair, particleCollection] : initialState.particleCollections()) {
+		particleGpuResources[emissionPair] = createParticleGpuResources(512, 512);
+		particleEmissionCounts[emissionPair] = 0.0;
+	}
 }
 void PixelpartGpuEffectEngine::reseed(std::uint32_t seed) {
 	
@@ -255,56 +259,103 @@ const pixelpart::EffectRuntimeContext& PixelpartGpuEffectEngine::context() const
 }
 
 PixelpartGpuEffectEngine::ParticleGpuTextureSet PixelpartGpuEffectEngine::gpuTextures(pixelpart::id_t particleEmitterId, pixelpart::id_t particleTypeId) const {
-	auto gpuTextureIt = particleGpuTextures.find(pixelpart::ParticleEmissionPair(particleEmitterId, particleTypeId));
-	if(gpuTextureIt == particleGpuTextures.end()) {
+	auto gpuResourceIt = particleGpuResources.find(pixelpart::ParticleEmissionPair(particleEmitterId, particleTypeId));
+	if(gpuResourceIt == particleGpuResources.end()) {
 		return ParticleGpuTextureSet();
 	}
 
-	return gpuTextureIt->second;
+	return ParticleGpuTextureSet{
+		gpuResourceIt->second.commonTextureWrapper->get_rid(),
+		gpuResourceIt->second.globalPositionTextureWrapper->get_rid(),
+		gpuResourceIt->second.colorTextureWrapper->get_rid(),
+		gpuResourceIt->second.sizeTextureWrapper->get_rid()
+	};
 }
 
-PixelpartGpuEffectEngine::ParticleGpuTextureSet PixelpartGpuEffectEngine::createParticleDataTextures(std::uint32_t width, std::uint32_t height) {
-	ParticleGpuTextureSet textures;
+PixelpartGpuEffectEngine::ParticleGpuResourceSet PixelpartGpuEffectEngine::createParticleGpuResources(std::uint32_t width, std::uint32_t height) {
+	ParticleGpuResourceSet resources;
 
 	Ref<RDTextureFormat> textureFormat;
 	textureFormat.instantiate();
-	textureFormat->set_format(RenderingDevice::DATA_FORMAT_R32G32B32A32_SFLOAT);
 	textureFormat->set_width(width);
 	textureFormat->set_height(height);
 	textureFormat->set_depth(1);
+	textureFormat->set_format(RenderingDevice::DATA_FORMAT_R32G32B32A32_SFLOAT);
 	textureFormat->set_usage_bits(
-		RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT
-		| RenderingDevice::TEXTURE_USAGE_STORAGE_BIT
-		| RenderingDevice::TEXTURE_USAGE_CAN_UPDATE_BIT
-		| RenderingDevice::TEXTURE_USAGE_CAN_COPY_FROM_BIT
-		| RenderingDevice::TEXTURE_USAGE_CAN_COPY_TO_BIT);
+		RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT |
+		RenderingDevice::TEXTURE_USAGE_STORAGE_BIT |
+		RenderingDevice::TEXTURE_USAGE_CAN_COPY_TO_BIT);
 	textureFormat->set_mipmaps(1);
 	textureFormat->set_samples(RenderingDevice::TEXTURE_SAMPLES_1);
 
 	Ref<RDTextureView> textureView;
 	textureView.instantiate();
 
-	textures.commonTextureRid = renderingDevice->texture_create(textureFormat, textureView);
-	textures.positionTextureRid = renderingDevice->texture_create(textureFormat, textureView);
-	textures.globalPositionTextureRid = renderingDevice->texture_create(textureFormat, textureView);
-	textures.velocityTextureRid = renderingDevice->texture_create(textureFormat, textureView);
-	textures.forceTextureRid = renderingDevice->texture_create(textureFormat, textureView);
-	textures.rotationTextureRid = renderingDevice->texture_create(textureFormat, textureView);
-	textures.sizeTextureRid = renderingDevice->texture_create(textureFormat, textureView);
-	textures.colorTextureRid = renderingDevice->texture_create(textureFormat, textureView);
+	resources.commonTextureRid = renderingDevice->texture_create(textureFormat, textureView);
+	resources.positionTextureRid = renderingDevice->texture_create(textureFormat, textureView);
+	resources.globalPositionTextureRid = renderingDevice->texture_create(textureFormat, textureView);
+	resources.velocityTextureRid = renderingDevice->texture_create(textureFormat, textureView);
+	resources.forceTextureRid = renderingDevice->texture_create(textureFormat, textureView);
+	resources.rotationTextureRid = renderingDevice->texture_create(textureFormat, textureView);
+	resources.sizeTextureRid = renderingDevice->texture_create(textureFormat, textureView);
+	resources.colorTextureRid = renderingDevice->texture_create(textureFormat, textureView);
 
-	//textures.aliveListBufferRids[0] = renderingDevice->storage_buffer_create()
+	//resources.aliveListBufferRids[0] = renderingDevice->storage_buffer_create()
 
 	const Color transparentColor(0.0f, 0.0f, 0.0f, 1.0f);
-	renderingDevice->texture_clear(textures.commonTextureRid, transparentColor, 0, 1, 0, 1);
-	renderingDevice->texture_clear(textures.positionTextureRid, transparentColor, 0, 1, 0, 1);
-	renderingDevice->texture_clear(textures.globalPositionTextureRid, transparentColor, 0, 1, 0, 1);
-	renderingDevice->texture_clear(textures.velocityTextureRid, transparentColor, 0, 1, 0, 1);
-	renderingDevice->texture_clear(textures.forceTextureRid, transparentColor, 0, 1, 0, 1);
-	renderingDevice->texture_clear(textures.rotationTextureRid, transparentColor, 0, 1, 0, 1);
-	renderingDevice->texture_clear(textures.sizeTextureRid, transparentColor, 0, 1, 0, 1);
-	renderingDevice->texture_clear(textures.colorTextureRid, transparentColor, 0, 1, 0, 1);
+	renderingDevice->texture_clear(resources.commonTextureRid, transparentColor, 0, 1, 0, 1);
+	renderingDevice->texture_clear(resources.positionTextureRid, transparentColor, 0, 1, 0, 1);
+	renderingDevice->texture_clear(resources.globalPositionTextureRid, transparentColor, 0, 1, 0, 1);
+	renderingDevice->texture_clear(resources.velocityTextureRid, transparentColor, 0, 1, 0, 1);
+	renderingDevice->texture_clear(resources.forceTextureRid, transparentColor, 0, 1, 0, 1);
+	renderingDevice->texture_clear(resources.rotationTextureRid, transparentColor, 0, 1, 0, 1);
+	renderingDevice->texture_clear(resources.sizeTextureRid, transparentColor, 0, 1, 0, 1);
+	renderingDevice->texture_clear(resources.colorTextureRid, transparentColor, 0, 1, 0, 1);
 
-	return textures;
+	TypedArray<RDUniform> imageUniforms;
+	imageUniforms.push_back(createImageUniform(0, resources.commonTextureRid));
+	imageUniforms.push_back(createImageUniform(1, resources.positionTextureRid));
+	imageUniforms.push_back(createImageUniform(2, resources.globalPositionTextureRid));
+	imageUniforms.push_back(createImageUniform(3, resources.velocityTextureRid));
+	imageUniforms.push_back(createImageUniform(4, resources.forceTextureRid));
+	imageUniforms.push_back(createImageUniform(5, resources.rotationTextureRid));
+	imageUniforms.push_back(createImageUniform(6, resources.sizeTextureRid));
+	imageUniforms.push_back(createImageUniform(7, resources.colorTextureRid));
+
+	resources.generationShaderImageUniformSetRid = renderingDevice->uniform_set_create(imageUniforms, generationComputeShaderRid, 0);
+	resources.simulationShaderImageUniformSetRid = renderingDevice->uniform_set_create(imageUniforms, simulationComputeShaderRid, 0);
+
+	resources.commonTextureWrapper = createTexture2DWrapper(resources.commonTextureRid);
+	resources.globalPositionTextureWrapper = createTexture2DWrapper(resources.globalPositionTextureRid);
+	resources.colorTextureWrapper = createTexture2DWrapper(resources.colorTextureRid);
+	resources.sizeTextureWrapper = createTexture2DWrapper(resources.sizeTextureRid);
+
+	return resources;
+}
+
+Ref<Texture2DRD> PixelpartGpuEffectEngine::createTexture2DWrapper(RID textureRid) {
+	Ref<Texture2DRD> textureWrapper;
+	textureWrapper.instantiate();
+	textureWrapper->set_texture_rd_rid(textureRid);
+
+	return textureWrapper;
+}
+Ref<RDUniform> PixelpartGpuEffectEngine::createUniformBufferUniform(std::int32_t binding, RID id) {
+	Ref<RDUniform> uniform;
+	uniform.instantiate();
+	uniform->set_uniform_type(RenderingDevice::UNIFORM_TYPE_UNIFORM_BUFFER);
+	uniform->set_binding(binding);
+	uniform->add_id(id);
+
+	return uniform;
+}
+Ref<RDUniform> PixelpartGpuEffectEngine::createImageUniform(std::int32_t binding, RID id) {
+	Ref<RDUniform> uniform;
+	uniform.instantiate();
+	uniform->set_uniform_type(RenderingDevice::UNIFORM_TYPE_IMAGE);
+	uniform->set_binding(binding);
+	uniform->add_id(id);
+
+	return uniform;
 }
 }

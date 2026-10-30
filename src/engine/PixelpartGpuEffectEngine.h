@@ -4,6 +4,9 @@
 #include <pixelpart-runtime/engine/EffectEngine.h>
 #include <godot_cpp/classes/rendering_device.hpp>
 #include <godot_cpp/classes/shader.hpp>
+#include <godot_cpp/classes/texture2drd.hpp>
+#include <godot_cpp/classes/rd_uniform.hpp>
+#include <cstdint>
 #include <unordered_map>
 
 namespace godot {
@@ -11,20 +14,10 @@ class PixelpartGpuEffectEngine : public pixelpart::EffectEngine {
 public:
 	struct ParticleGpuTextureSet {
 		RID commonTextureRid;
-		RID positionTextureRid;
 		RID globalPositionTextureRid;
-		RID velocityTextureRid;
-		RID forceTextureRid;
-		RID rotationTextureRid;
-		RID sizeTextureRid;
 		RID colorTextureRid;
-
-		/*RID aliveListBufferRids[2];
-		RID deadListBufferRid;
-		RID atomicCounterBufferRid;
-		std::uint32_t activeAliveListBufferIndex = 0;*/
+		RID sizeTextureRid;
 	};
-
 
 	PixelpartGpuEffectEngine(const pixelpart::Effect& effect);
 	virtual ~PixelpartGpuEffectEngine();
@@ -47,7 +40,35 @@ public:
 	ParticleGpuTextureSet gpuTextures(pixelpart::id_t particleEmitterId, pixelpart::id_t particleTypeId) const;
 
 private:
-	ParticleGpuTextureSet createParticleDataTextures(std::uint32_t width, std::uint32_t height);
+	struct ParticleGpuResourceSet {
+		RID commonTextureRid;
+		RID positionTextureRid;
+		RID globalPositionTextureRid;
+		RID velocityTextureRid;
+		RID forceTextureRid;
+		RID rotationTextureRid;
+		RID sizeTextureRid;
+		RID colorTextureRid;
+
+		RID generationShaderImageUniformSetRid;
+		RID simulationShaderImageUniformSetRid;
+
+		Ref<Texture2DRD> commonTextureWrapper;
+		Ref<Texture2DRD> globalPositionTextureWrapper;
+		Ref<Texture2DRD> colorTextureWrapper;
+		Ref<Texture2DRD> sizeTextureWrapper;
+
+		/*RID aliveListBufferRids[2];
+		RID deadListBufferRid;
+		RID atomicCounterBufferRid;
+		std::uint32_t activeAliveListBufferIndex = 0;*/
+	};
+
+	ParticleGpuResourceSet createParticleGpuResources(std::uint32_t width, std::uint32_t height);
+
+	static Ref<Texture2DRD> createTexture2DWrapper(RID textureRid);
+	static Ref<RDUniform> createUniformBufferUniform(std::int32_t binding, RID id);
+	static Ref<RDUniform> createImageUniform(std::int32_t binding, RID id);
 
 	const pixelpart::Effect& engineEffect;
 
@@ -62,7 +83,7 @@ private:
 	RID simulationParamsUniformBufferRid;
 	RID simulationParamsUniformSetRid;
 
-	std::unordered_map<pixelpart::ParticleEmissionPair, ParticleGpuTextureSet> particleGpuTextures;
+	std::unordered_map<pixelpart::ParticleEmissionPair, ParticleGpuResourceSet> particleGpuResources;
 	std::unordered_map<pixelpart::ParticleEmissionPair, pixelpart::float_t> particleEmissionCounts;
 
 	pixelpart::EffectRuntimeContext runtimeContext;

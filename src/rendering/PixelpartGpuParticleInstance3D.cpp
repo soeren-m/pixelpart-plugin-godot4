@@ -83,12 +83,11 @@ void PixelpartGpuParticleInstance3D::draw(pixelpart::float_t scale) {
 		case pixelpart::ParticleRendererType::sprite:
 		case pixelpart::ParticleRendererType::mesh: {
 			multiMesh->set_visible_instance_count(static_cast<std::int32_t>(particleCount));
-			multiMesh->set_instance_count(static_cast<std::int32_t>(particleCount));
 
 			// TODO: better aabb
 			multiMesh->set_custom_aabb(AABB(
-				Vector3(-10, -10, -10),
-				Vector3(10, 10, 10)));
+				Vector3(0, 0, 0),
+				Vector3(100, 100, 100)));
 
 			break;
 		}
@@ -108,7 +107,7 @@ void PixelpartGpuParticleInstance3D::create_material(PixelpartGraphicsResourcePr
 	std::unordered_map<std::string, std::string> textureResourceIds;
 
 	if(materialInstance.builtInMaterial()) {
-		shader = shaderProvider.get_builtin_spatial_shader(materialInstance.materialId());
+		shader = shaderProvider.get_builtin_gpu_spatial_shader(materialInstance.materialId());
 
 		if(shader.is_valid()) {
 			const auto& metadata = shaderProvider.get_builtin_spatial_shader_metadata(materialInstance.materialId());
@@ -128,6 +127,7 @@ void PixelpartGpuParticleInstance3D::create_material(PixelpartGraphicsResourcePr
 			textureResourceIds[pixelpart::ShaderGraph::specification.textureSamplers[samplerIndex]] = shaderBuildResult.textureResourceIds[samplerIndex];
 		}
 
+		// TODO: select gpu variant
 		shader = shaderProvider.get_custom_spatial_shader(
 			shaderBuildResult.mainCode, shaderBuildResult.parameterCode,
 			particleType.renderer(),
@@ -205,24 +205,23 @@ void PixelpartGpuParticleInstance3D::create_instance(PixelpartGraphicsResourcePr
 
 	multiMesh.instantiate();
 	multiMesh->set_transform_format(MultiMesh::TRANSFORM_3D);
+	multiMesh->set_use_colors(false);
 	multiMesh->set_use_custom_data(false);
+
+	// TODO: is this necessary?
+	std::uint32_t maxParticleCount = 1000;
+	multiMesh->set_instance_count(static_cast<std::int32_t>(maxParticleCount));
+	for(std::uint32_t i = 0; i < maxParticleCount; i++) {
+		multiMesh->set_instance_transform(static_cast<std::int32_t>(i), Transform3D());
+	}
 
 	switch(particleType.renderer()) {
 		case pixelpart::ParticleRendererType::sprite: {
-			Ref<ArrayMesh> baseMesh;
-			baseMesh.instantiate();
-
 			PackedVector3Array vertices;
 			vertices.push_back(Vector3(-0.5f, -0.5f, 0.0f));
 			vertices.push_back(Vector3(0.5f, -0.5f, 0.0f));
 			vertices.push_back(Vector3(0.5f, 0.5f, 0.0f));
 			vertices.push_back(Vector3(-0.5f, 0.5f, 0.0f));
-
-			PackedVector2Array uvs;
-			uvs.push_back(Vector2(0.0f, 1.0f));
-			uvs.push_back(Vector2(1.0f, 1.0f));
-			uvs.push_back(Vector2(1.0f, 0.0f));
-			uvs.push_back(Vector2(0.0f, 0.0f));
 
 			PackedVector3Array normals;
 			normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
@@ -230,22 +229,32 @@ void PixelpartGpuParticleInstance3D::create_instance(PixelpartGraphicsResourcePr
 			normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
 			normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
 
+			PackedVector2Array uvs;
+			uvs.push_back(Vector2(0.0f, 0.0f));
+			uvs.push_back(Vector2(1.0f, 0.0f));
+			uvs.push_back(Vector2(1.0f, 1.0f));
+			uvs.push_back(Vector2(0.0f, 1.0f));
+
 			PackedInt32Array indices;
 			indices.push_back(0);
 			indices.push_back(1);
-			indices.push_back(2);
-			indices.push_back(0);
+			indices.push_back(3);
+			indices.push_back(1);
 			indices.push_back(2);
 			indices.push_back(3);
 
-			Array meshArrays;
-			meshArrays.resize(Mesh::ARRAY_MAX);
-			meshArrays[Mesh::ARRAY_VERTEX] = vertices;
-			meshArrays[Mesh::ARRAY_TEX_UV] = uvs;
-			meshArrays[Mesh::ARRAY_NORMAL] = normals;
-			meshArrays[Mesh::ARRAY_INDEX] = indices;
+			Array meshArray;
+			meshArray.resize(Mesh::ARRAY_MAX);
+			meshArray[Mesh::ARRAY_VERTEX] = vertices;
+			meshArray[Mesh::ARRAY_NORMAL] = normals;
+			meshArray[Mesh::ARRAY_TEX_UV] = uvs;
+			meshArray[Mesh::ARRAY_INDEX] = indices;
 
-			baseMesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, meshArrays);
+			Ref<ArrayMesh> baseMesh;
+			baseMesh.instantiate();
+			baseMesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, meshArray, Array(), Dictionary(),
+				Mesh::ARRAY_FORMAT_VERTEX | Mesh::ARRAY_FORMAT_NORMAL |
+				Mesh::ARRAY_FORMAT_TEX_UV | Mesh::ARRAY_FORMAT_INDEX);
 			baseMesh->surface_set_material(0, shaderMaterial);
 
 			multiMesh->set_mesh(baseMesh);

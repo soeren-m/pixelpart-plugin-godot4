@@ -21,7 +21,9 @@ public:
 	PixelpartShaderProvider();
 
 	Ref<Shader> get_builtin_canvas_item_shader(const std::string& shaderId) const;
+	Ref<Shader> get_builtin_gpu_canvas_item_shader(const std::string& shaderId) const;
 	Ref<Shader> get_builtin_spatial_shader(const std::string& shaderId) const;
+	Ref<Shader> get_builtin_gpu_spatial_shader(const std::string& shaderId) const;
 	const pixelpart::BuiltInMaterialMetadata& get_builtin_canvas_item_shader_metadata(const std::string& shaderId) const;
 	const pixelpart::BuiltInMaterialMetadata& get_builtin_spatial_shader_metadata(const std::string& shaderId) const;
 
@@ -55,7 +57,9 @@ private:
 	static const std::string spatialShaderTemplate;
 
 	std::unordered_map<std::string, Ref<Shader>> builtInCanvasItemShaders;
+	std::unordered_map<std::string, Ref<Shader>> builtInGpuCanvasItemShaders;
 	std::unordered_map<std::string, Ref<Shader>> builtInSpatialShaders;
+	std::unordered_map<std::string, Ref<Shader>> builtInGpuSpatialShaders;
 
 	pixelpart::BuiltInMaterialRepository builtInMaterialRepository;
 };
