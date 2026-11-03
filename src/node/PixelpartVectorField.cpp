@@ -46,6 +46,7 @@ void PixelpartVectorField::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tightness"), &PixelpartVectorField::get_tightness);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vector_filter"), "set_vector_filter", "get_vector_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tightness", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_tightness");
 
 	BIND_ENUM_CONSTANT(FILTER_NONE);
 	BIND_ENUM_CONSTANT(FILTER_LINEAR);

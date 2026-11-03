@@ -132,8 +132,16 @@ void PixelpartNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rotation"), &PixelpartNode::get_rotation);
 	ClassDB::bind_method(D_METHOD("get_scale"), &PixelpartNode::get_scale);
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_id");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "parent_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_parent_id");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime_start"), "set_lifetime_start", "get_lifetime_start");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime_duration"), "set_lifetime_duration", "get_lifetime_duration");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "repeat"), "set_repeat", "get_repeat");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "is_active");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "local_time", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_local_time");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_scale");
 }
 }

@@ -54,5 +54,9 @@ void PixelpartCollider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_kill_on_contact"), &PixelpartCollider::get_kill_on_contact);
 	ClassDB::bind_method(D_METHOD("get_bounce"), &PixelpartCollider::get_bounce);
 	ClassDB::bind_method(D_METHOD("get_friction"), &PixelpartCollider::get_friction);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "kill_on_contact", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_kill_on_contact");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "bounce", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_bounce");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "friction", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_friction");
 }
 }

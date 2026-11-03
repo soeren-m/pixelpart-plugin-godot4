@@ -16,6 +16,18 @@ public:
 	PixelpartVortexField();
 	virtual ~PixelpartVortexField();
 
+#ifdef DOXYGEN
+	/**
+	 * @brief How strongly particles are accelerated outwards (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> tangential_strength;
+
+	/**
+	 * @brief How strongly the vortex field attracts particles (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> radial_strength;
+#endif
+
 	virtual void init(pixelpart::Node* internalNode, pixelpart::EffectEngine* effectEnginePtr) override;
 
 	/**

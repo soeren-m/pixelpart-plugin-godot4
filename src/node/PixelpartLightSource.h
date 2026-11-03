@@ -24,6 +24,23 @@ public:
 	PixelpartLightSource();
 	virtual ~PixelpartLightSource();
 
+#ifdef DOXYGEN
+	/**
+	 * @brief How quickly the light looses intensity on the way to its outer radius (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> attenuation;
+
+	/**
+	 * @brief Color of the light emitted by the light source (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat4> color;
+
+	/**
+	 * @brief How strongly the light shines (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> intensity;
+#endif
+
 	virtual void init(pixelpart::Node* internalNode, pixelpart::EffectEngine* effectEnginePtr) override;
 
 	/**

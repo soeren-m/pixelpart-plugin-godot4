@@ -99,6 +99,21 @@ public:
 
 #ifdef DOXYGEN
 	/**
+	 * @brief ID of the particle type (read-only).
+	 */
+	int id;
+
+	/**
+	 * @brief ID of the parent particle type (read-only).
+	 */
+	int parent_id;
+
+	/**
+	 * @brief Name of the particle type (read-only).
+	 */
+	String name;
+
+	/**
 	 * @brief Whether particles are simulated in global or local coordinates.
 	 */
 	SimulationSpace simulation_space;
@@ -126,6 +141,18 @@ public:
 	AlignmentMode alignment_mode;
 
 	/**
+	 * @brief Center of rotation relative to the particle’s center (read-only).
+	 */
+	Ref<PixelpartStaticPropertyFloat3> pivot;
+
+	/**
+	 * @brief How much particles are influenced by the motion path (read-only).
+	 *
+	 * Set to `0` to disable motion paths.
+	 */
+	Ref<PixelpartStaticPropertyFloat> motion_path_force;
+
+	/**
 	 * @brief Whether particles of this type are visible.
 	 */
 	bool visible;
@@ -136,6 +163,145 @@ public:
 	 * Particles on upper layers occlude those on lower layers.
 	 */
 	int layer;
+
+	/**
+	 * @brief How many particles of this type are spawned by emitters (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> count;
+
+	/**
+	 * @brief How long particles exist after being spawned by emitters (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> lifespan;
+
+	/**
+	 * @brief Size of each particle when created (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> initial_size;
+
+	/**
+	 * @brief Rotation of each particle when created, in degrees (read-only).
+	 *
+	 * For 3D effects, rotation is composed of roll, yaw and pitch.
+	 */
+	Ref<PixelpartAnimatedPropertyFloat3> initial_rotation;
+
+	/**
+	 * @brief How fast each particle is initially after being spawned by the emitter (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> initial_velocity;
+
+	/**
+	 * @brief How much speed particles inherit from the parent particle or emitter (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> inherited_velocity;
+
+	/**
+	 * @brief Opacity of each particle when created (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> initial_opacity;
+
+	/**
+	 * @brief Motion path for particles (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat3> position;
+
+	/**
+	 * @brief Size of each particle over its lifetime as a fraction of its initial size (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat3> size;
+
+	/**
+	 * @brief How much particles are stretched based on their speed (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat3> stretch;
+
+	/**
+	 * @brief Relative size of each particle for motion and collision calculations over its lifetime (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> physical_size;
+
+	/**
+	 * @brief How particles rotate over time from their initial rotation, in degrees (read-only).
+	 *
+	 * For 3D effects, rotation is composed of roll, yaw and pitch.
+	 */
+	Ref<PixelpartAnimatedPropertyFloat3> rotation;
+
+	/**
+	 * @brief How much particles rotate based on their velocity, in degrees (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat3> rotation_by_speed;
+
+	/**
+	 * @brief Linear acceleration applied to each particle over its lifetime (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> acceleration;
+
+	/**
+	 * @brief Acceleration of each particle towards the emitter over its lifetime (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> radial_acceleration;
+
+	/**
+	 * @brief How strongly each particle is affected by force fields over its lifetime (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> weight;
+
+	/**
+	 * @brief How much each particle bounces back from colliders over its lifetime (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> bounce;
+
+	/**
+	 * @brief How resistant each particle is to sliding down colliders over its lifetime (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> friction;
+
+	/**
+	 * @brief Color of each particle over its lifetime (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat4> color;
+
+	/**
+	 * @brief Opacity of each particle over its lifetime as a fraction of its initial opacity (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> opacity;
+
+	/**
+	 * @brief How much the lifespan varies between particles (read-only).
+	 */
+	Ref<PixelpartStaticPropertyFloat> lifespan_variance;
+
+	/**
+	 * @brief How much the size varies between particles (read-only).
+	 */
+	Ref<PixelpartStaticPropertyFloat> size_variance;
+
+	/**
+	 * @brief How much the rotation varies between particles, in degrees (read-only).
+	 */
+	Ref<PixelpartStaticPropertyFloat3> rotation_variance;
+
+	/**
+	 * @brief How much the angular velocity varies between particles, in degrees/second (read-only).
+	 */
+	Ref<PixelpartStaticPropertyFloat3> angular_velocity_variance;
+
+	/**
+	 * @brief How much the speed varies between particles (read-only).
+	 */
+	Ref<PixelpartStaticPropertyFloat> velocity_variance;
+
+	/**
+	 * @brief How much the color varies between particles (read-only).
+	 */
+	Ref<PixelpartStaticPropertyFloat4> color_variance;
+
+	/**
+	 * @brief How much the opacity varies between particles (read-only).
+	 */
+	Ref<PixelpartStaticPropertyFloat> opacity_variance;
 #endif
 
 	void init(pixelpart::ParticleType* particleTypePtr, pixelpart::EffectEngine* effectEnginePtr);

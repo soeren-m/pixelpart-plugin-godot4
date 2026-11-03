@@ -103,6 +103,12 @@ void PixelpartNoiseField::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_noise_animation_time_scale"), &PixelpartNoiseField::get_noise_animation_time_scale);
 	ClassDB::bind_method(D_METHOD("get_noise_animation_time_base"), &PixelpartNoiseField::get_noise_animation_time_base);
 
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise_octaves", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_noise_octaves");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise_frequency", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_noise_frequency");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise_persistence", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_noise_persistence");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise_lacunarity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_noise_lacunarity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "noise_animated"), "set_noise_animated", "is_noise_animated");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise_animation_time_scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_noise_animation_time_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise_animation_time_base", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_noise_animation_time_base");
 }
 }

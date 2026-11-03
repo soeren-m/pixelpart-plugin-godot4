@@ -192,6 +192,8 @@ void PixelpartParticleEmitter::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "grid_order"), "set_grid_order", "get_grid_order");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_mode"), "set_emission_mode", "get_emission_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction_mode"), "set_direction_mode", "get_direction_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "direction", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "spread", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_spread");
 
 	BIND_ENUM_CONSTANT(SHAPE_POINT);
 	BIND_ENUM_CONSTANT(SHAPE_LINE);

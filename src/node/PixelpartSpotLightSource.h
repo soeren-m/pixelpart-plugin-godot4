@@ -18,6 +18,18 @@ public:
 	PixelpartSpotLightSource();
 	virtual ~PixelpartSpotLightSource();
 
+#ifdef DOXYGEN
+	/**
+	 * @brief Width of the light cone in degrees (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> spot_angle;
+
+	/**
+	 * @brief How much the light looses intensity near the edge of the light cone (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> spot_angle_attenuation;
+#endif
+
 	virtual void init(pixelpart::Node* internalNode, pixelpart::EffectEngine* effectEnginePtr) override;
 
 	/**

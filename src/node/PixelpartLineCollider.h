@@ -21,6 +21,13 @@ public:
 	PixelpartLineCollider();
 	virtual ~PixelpartLineCollider();
 
+#ifdef DOXYGEN
+	/**
+	 * @brief Number of vertices in the line collider (read-only).
+	 */
+	int point_count;
+#endif
+
 	virtual void init(pixelpart::Node* internalNode, pixelpart::EffectEngine* effectEnginePtr) override;
 
 	/**

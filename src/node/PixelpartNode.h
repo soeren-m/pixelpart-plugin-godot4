@@ -22,6 +22,21 @@ public:
 
 #ifdef DOXYGEN
 	/**
+	 * @brief ID of the node (read-only).
+	 */
+	int id;
+
+	/**
+	 * @brief ID of the node's parent (read-only).
+	 */
+	int parent_id;
+
+	/**
+	 * @brief Name of the node (read-only).
+	 */
+	String name;
+
+	/**
 	 * @brief Time in seconds until the node becomes active.
 	 */
 	float lifetime_start;
@@ -35,6 +50,28 @@ public:
 	 * @brief Wether the node repeats its behavior after its lifetime is over.
 	 */
 	bool repeat;
+
+	/**
+	 * @brief Whether the node is active at the current point in time (read-only).
+	 */
+	bool active;
+
+	/**
+	 * @brief Position of the node (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat3> position;
+
+	/**
+	 * @brief Rotation of the node in degrees (read-only).
+	 *
+	 * For 3D effects, the rotation is composed of roll, yaw and pitch.
+	 */
+	Ref<PixelpartAnimatedPropertyFloat3> rotation;
+
+	/**
+	 * @brief Size of the node (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat3> scale;
 #endif
 
 	virtual void init(pixelpart::Node* internalNode, pixelpart::EffectEngine* effectEnginePtr);

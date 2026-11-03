@@ -79,5 +79,9 @@ void PixelpartAccelerationField::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_acceleration_grid_size_x"), &PixelpartAccelerationField::get_acceleration_grid_size_x);
 	ClassDB::bind_method(D_METHOD("get_acceleration_grid_size_y"), &PixelpartAccelerationField::get_acceleration_grid_size_y);
 	ClassDB::bind_method(D_METHOD("get_acceleration_grid_size_z"), &PixelpartAccelerationField::get_acceleration_grid_size_z);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "acceleration_direction", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_acceleration_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "acceleration_direction_variance", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_acceleration_direction_variance");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "acceleration_strength_variance", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_acceleration_strength_variance");
 }
 }

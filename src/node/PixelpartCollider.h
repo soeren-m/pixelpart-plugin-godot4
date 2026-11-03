@@ -19,6 +19,23 @@ public:
 	PixelpartCollider();
 	virtual ~PixelpartCollider();
 
+#ifdef DOXYGEN
+	/**
+	 * @brief Whether to kill particles on contact with the collider (read-only).
+	 */
+	Ref<PixelpartStaticPropertyBool> kill_on_contact;
+
+	/**
+	 * @brief How strongly particles bounce back from the collider (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> bounce;
+
+	/**
+	 * @brief How much particles are slowed down when sliding down the collider (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> friction;
+#endif
+
 	virtual void init(pixelpart::Node* internalNode, pixelpart::EffectEngine* effectEnginePtr) override;
 
 	/**

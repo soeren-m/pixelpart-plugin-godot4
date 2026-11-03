@@ -42,5 +42,8 @@ Ref<PixelpartAnimatedPropertyFloat> PixelpartVortexField::get_radial_strength() 
 void PixelpartVortexField::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tangential_strength"), &PixelpartVortexField::get_tangential_strength);
 	ClassDB::bind_method(D_METHOD("get_radial_strength"), &PixelpartVortexField::get_radial_strength);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tangential_strength", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_tangential_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "radial_strength", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_radial_strength");
 }
 }

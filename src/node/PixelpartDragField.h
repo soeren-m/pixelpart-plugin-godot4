@@ -18,6 +18,18 @@ public:
 	PixelpartDragField();
 	virtual ~PixelpartDragField();
 
+#ifdef DOXYGEN
+	/**
+	 * @brief How strongly the drag force is influenced by the particle velocity (read-only).
+	 */
+	Ref<PixelpartStaticPropertyFloat> velocity_influence;
+
+	/**
+	 * @brief How strongly the drag force is influenced by the particle size (read-only).
+	 */
+	Ref<PixelpartStaticPropertyFloat> size_influence;
+#endif
+
 	virtual void init(pixelpart::Node* internalNode, pixelpart::EffectEngine* effectEnginePtr) override;
 
 	/**

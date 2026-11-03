@@ -227,6 +227,21 @@ public:
 	 * it decides in which direction to emit the particle based on the specified direction and the given direction mode.
 	 */
 	DirectionMode direction_mode;
+
+	/**
+	 * @brief Direction in which particles move when spawned, in degrees (read-only).
+	 *
+	 * For 3D effects, the direction is composed of roll, yaw and pitch.
+	 */
+	Ref<PixelpartAnimatedPropertyFloat3> direction;
+
+	/**
+	 * @brief How much the direction varies (read-only).
+	 *
+	 * A spread of 0° means that particles only move in the specified direction,
+	 * while 360° leads to particles shooting off in all directions.
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> spread;
  #endif
 
 	virtual void init(pixelpart::Node* internalNode, pixelpart::EffectEngine* effectEnginePtr) override;

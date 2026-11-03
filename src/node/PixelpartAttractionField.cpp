@@ -29,5 +29,7 @@ Ref<PixelpartAnimatedPropertyFloat> PixelpartAttractionField::get_falloff_power(
 
 void PixelpartAttractionField::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_falloff_power"), &PixelpartAttractionField::get_falloff_power);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "falloff_power", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_falloff_power");
 }
 }

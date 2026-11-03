@@ -105,6 +105,7 @@ void PixelpartAnimatedPropertyFloat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_keyframe_interpolation", "method"), &PixelpartAnimatedPropertyFloat::set_keyframe_interpolation);
 	ClassDB::bind_method(D_METHOD("get_keyframe_interpolation"), &PixelpartAnimatedPropertyFloat::get_keyframe_interpolation);
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "keyframe_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_keyframe_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "keyframe_interpolation"), "set_keyframe_interpolation", "get_keyframe_interpolation");
 }
 }

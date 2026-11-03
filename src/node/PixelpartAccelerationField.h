@@ -22,6 +22,25 @@ public:
 	PixelpartAccelerationField();
 	virtual ~PixelpartAccelerationField();
 
+#ifdef DOXYGEN
+	/**
+	 * @brief Direction in which particles are accelerated, in degrees (read-only).
+	 * 
+	 * For 3D effects, the direction is composed of roll, yaw and pitch.
+	 */
+	Ref<PixelpartAnimatedPropertyFloat3> acceleration_direction;
+
+	/**
+	 * @brief How much the force direction varies between cells of the grid (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> acceleration_direction_variance;
+
+	/**
+	 * @brief How much the force strength varies between cells of the grid (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> acceleration_strength_variance;
+#endif
+
 	virtual void init(pixelpart::Node* internalNode, pixelpart::EffectEngine* effectEnginePtr) override;
 
 	/**

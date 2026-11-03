@@ -19,6 +19,13 @@ public:
 	PixelpartAttractionField();
 	virtual ~PixelpartAttractionField();
 
+#ifdef DOXYGEN
+	/**
+	 * @brief How the strength of the force field decreases based on the distance to the center (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> falloff_power;
+#endif
+
 	virtual void init(pixelpart::Node* internalNode, pixelpart::EffectEngine* effectEnginePtr) override;
 
 	/**

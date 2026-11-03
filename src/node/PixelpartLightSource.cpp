@@ -54,5 +54,9 @@ void PixelpartLightSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_attenuation"), &PixelpartLightSource::get_attenuation);
 	ClassDB::bind_method(D_METHOD("get_color"), &PixelpartLightSource::get_color);
 	ClassDB::bind_method(D_METHOD("get_intensity"), &PixelpartLightSource::get_intensity);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "attenuation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_attenuation");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_color");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "intensity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_intensity");
 }
 }

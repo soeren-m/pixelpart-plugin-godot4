@@ -45,5 +45,6 @@ void PixelpartForceField::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_strength"), &PixelpartForceField::get_strength);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "infinite"), "set_infinite", "is_infinite");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "strength", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_strength");
 }
 }

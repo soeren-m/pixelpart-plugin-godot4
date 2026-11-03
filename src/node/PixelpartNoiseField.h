@@ -22,9 +22,41 @@ public:
 
 #ifdef DOXYGEN
 	/**
+	 * @brief How many layers of noise are blended together to produce the final velocity vector (read-only).
+	 */
+	Ref<PixelpartStaticPropertyInt> noise_octaves;
+
+	/**
+	 * @brief Base frequency of the noise generation (read-only).
+	 *
+	 * Higher values produce more turbulent noise fields.
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> noise_frequency;
+
+	/**
+	 * @brief How much the amplitude changes after each noise octave (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> noise_persistence;
+
+	/**
+	 * @brief How much the frequency changes after each noise octave (read-only).
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> noise_lacunarity;
+
+	/**
 	 * @brief Whether the noise field is animated.
 	 */
 	bool noise_animated;
+
+	/**
+	 * @brief How fast the noise field changes (read-only).
+	 */
+	Ref<PixelpartStaticPropertyFloat> noise_animation_time_scale;
+
+	/**
+	 * @brief Time offset of the noise animation (read-only).
+	 */
+	Ref<PixelpartStaticPropertyFloat> noise_animation_time_base;
 #endif
 
 	virtual void init(pixelpart::Node* internalNode, pixelpart::EffectEngine* effectEnginePtr) override;

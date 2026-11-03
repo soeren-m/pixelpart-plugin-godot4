@@ -23,6 +23,11 @@ public:
 
 #ifdef DOXYGEN
 	/**
+	 * @brief Number of keyframes (read-only).
+	 */
+	int keyframe_count;
+
+	/**
 	 * @brief Interpolation applied to the animation curve.
 	 */
 	InterpolationType keyframe_interpolation;

@@ -40,5 +40,8 @@ Ref<PixelpartAnimatedPropertyFloat> PixelpartSpotLightSource::get_spot_angle_att
 void PixelpartSpotLightSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_spot_angle"), &PixelpartSpotLightSource::get_spot_angle);
 	ClassDB::bind_method(D_METHOD("get_spot_angle_attenuation"), &PixelpartSpotLightSource::get_spot_angle_attenuation);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "spot_angle", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_spot_angle");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "spot_angle_attenuation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "get_spot_angle_attenuation");
 }
 }

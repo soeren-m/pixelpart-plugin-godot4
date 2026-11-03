@@ -38,6 +38,14 @@ public:
 	 * @brief How velocity values are interpolated between the cells of the vector field.
 	 */
 	FilterType vector_filter;
+
+	/**
+	 * @brief How directly particles follow the vectors in the force field (read-only).
+	 *
+	 * If set to 0, the field applies forces to the particles over time.
+	 * If set to 1, particles follow the vectors in the force field directly.
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> tightness;
 #endif
 
 	virtual void init(pixelpart::Node* internalNode, pixelpart::EffectEngine* effectEnginePtr) override;
