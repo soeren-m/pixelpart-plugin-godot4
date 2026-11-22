@@ -367,9 +367,9 @@ public:
 	/**
 	 * @brief Linear acceleration applied to each particle over its lifetime.
 	 *
-	 * @return Acceleration property
+	 * @return Linear acceleration property
 	 */
-	Ref<PixelpartAnimatedPropertyFloat> get_acceleration() const;
+	Ref<PixelpartAnimatedPropertyFloat> get_linear_acceleration() const;
 
 	/**
 	 * @brief Acceleration of each particle towards the emitter over its lifetime.
@@ -461,6 +461,17 @@ public:
 	 * @return Opacity variance property
 	 */
 	Ref<PixelpartStaticPropertyFloat> get_opacity_variance() const;
+
+#ifdef DOXYGEN
+	/**
+	 * @brief Linear acceleration applied to each particle over its lifetime.
+	 *
+	 * @deprecated Use `get_linear_acceleration` instead.
+	 *
+	 * @return Linear acceleration property
+	 */
+	Ref<PixelpartAnimatedPropertyFloat> get_acceleration() const;
+#endif
 
 protected:
 	static void _bind_methods();

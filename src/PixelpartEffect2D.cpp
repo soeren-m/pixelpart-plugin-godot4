@@ -334,18 +334,18 @@ void PixelpartEffect2D::apply_transform() {
 	pixelpart::float_t globalRotation = gd_to_pxpt(-get_global_transform().get_rotation()) / Math_PI * 180.0;
 	pixelpart::float2_t globalScale = gd_to_pxpt(get_global_transform().get_scale());
 
-	for(const std::unique_ptr<pixelpart::Node>& node : effectRuntime.get_effect().sceneGraph().nodes()) {
-		if(node->parentId()) {
+	for(pixelpart::Node& node : effectRuntime.get_effect().sceneGraph()) {
+		if(node.parentId()) {
 			continue;
 		}
 
-		node->position().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
+		node.position().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
 			pixelpart::float3_t(globalPosition, 0.0)
 		} });
-		node->rotation().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
+		node.rotation().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
 			pixelpart::float3_t(globalRotation, 0.0, 0.0)
 		} });
-		node->scale().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
+		node.scale().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
 			pixelpart::float3_t(globalScale, 1.0)
 		} });
 	}

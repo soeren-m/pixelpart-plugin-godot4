@@ -261,14 +261,14 @@ Ref<PixelpartAnimatedPropertyFloat3> PixelpartParticleType::get_rotation_by_spee
 
 	return property;
 }
-Ref<PixelpartAnimatedPropertyFloat> PixelpartParticleType::get_acceleration() const {
+Ref<PixelpartAnimatedPropertyFloat> PixelpartParticleType::get_linear_acceleration() const {
 	if(!particleType) {
 		return Ref<PixelpartAnimatedPropertyFloat>();
 	}
 
 	Ref<PixelpartAnimatedPropertyFloat> property;
 	property.instantiate();
-	property->init(&particleType->acceleration());
+	property->init(&particleType->linearAcceleration());
 
 	return property;
 }
@@ -446,7 +446,7 @@ void PixelpartParticleType::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_physical_size"), &PixelpartParticleType::get_physical_size);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &PixelpartParticleType::get_rotation);
 	ClassDB::bind_method(D_METHOD("get_rotation_by_speed"), &PixelpartParticleType::get_rotation_by_speed);
-	ClassDB::bind_method(D_METHOD("get_acceleration"), &PixelpartParticleType::get_acceleration);
+	ClassDB::bind_method(D_METHOD("get_linear_acceleration"), &PixelpartParticleType::get_linear_acceleration);
 	ClassDB::bind_method(D_METHOD("get_radial_acceleration"), &PixelpartParticleType::get_radial_acceleration);
 	ClassDB::bind_method(D_METHOD("get_weight"), &PixelpartParticleType::get_weight);
 	ClassDB::bind_method(D_METHOD("get_bounce"), &PixelpartParticleType::get_bounce);
@@ -483,5 +483,6 @@ void PixelpartParticleType::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_position_relative", "mode"), &PixelpartParticleType::set_position_relative);
 	ClassDB::bind_method(D_METHOD("is_position_relative"), &PixelpartParticleType::is_position_relative);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_relative"), "set_position_relative", "is_position_relative");
+	ClassDB::bind_method(D_METHOD("get_acceleration"), &PixelpartParticleType::get_linear_acceleration);
 }
 }

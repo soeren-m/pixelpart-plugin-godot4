@@ -321,18 +321,18 @@ void PixelpartEffect::apply_transform() {
 		pixelpart::float4_t(gd_to_pxpt(basis[2]), 0.0),
 		pixelpart::float4_t(gd_to_pxpt(origin), 1.0)));
 
-	for(const std::unique_ptr<pixelpart::Node>& node : effectRuntime.get_effect().sceneGraph().nodes()) {
-		if(node->parentId()) {
+	for(pixelpart::Node& node : effectRuntime.get_effect().sceneGraph()) {
+		if(node.parentId()) {
 			continue;
 		}
 
-		node->position().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
+		node.position().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
 			transform.position() / static_cast<pixelpart::float_t>(effectScale)
 		} });
-		node->rotation().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
+		node.rotation().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
 			transform.rotation()
 		} });
-		node->scale().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
+		node.scale().keyframes({ pixelpart::Curve<pixelpart::float3_t>::Point{ 0.0,
 			transform.scale()
 		} });
 	}

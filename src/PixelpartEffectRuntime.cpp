@@ -12,6 +12,7 @@
 #include <pixelpart-runtime/engine/DefaultParticleGenerator.h>
 #include <pixelpart-runtime/engine/DefaultParticleModifier.h>
 #include <algorithm>
+#include <iterator>
 
 namespace godot {
 PixelpartEffectRuntime::PixelpartEffectRuntime() {
@@ -35,9 +36,9 @@ void PixelpartEffectRuntime::set_effect(const pixelpart::Effect& eff) {
 		std::make_shared<pixelpart::DefaultParticleModifier>());
 #endif
 
-	for(const auto& node : effect.sceneGraph()) {
-		nodeNameIdMap[node->name()] = node->id();
-		nodeRefs[node->id()] = create_pixelpart_node(node.get(), effectEngine.get());
+	for(auto& node : effect.sceneGraph()) {
+		nodeNameIdMap[node.name()] = node.id();
+		nodeRefs[node.id()] = create_pixelpart_node(&node, effectEngine.get());
 	}
 
 	for(auto& particleType : effect.particleTypes()) {
@@ -365,11 +366,14 @@ Ref<PixelpartNode> PixelpartEffectRuntime::get_effect_node(int id) const {
 	return nodeIt->second;
 }
 Ref<PixelpartNode> PixelpartEffectRuntime::get_effect_node_at_index(int index) const {
-	if(index < 0 || !effect.sceneGraph().containsIndex(static_cast<std::uint32_t>(index))) {
+	if(index < 0 || index >= static_cast<int>(effect.sceneGraph().count())) {
 		return Ref<PixelpartNode>();
 	}
 
-	pixelpart::id_t id = effect.sceneGraph().atIndex(static_cast<std::uint32_t>(index)).id();
+	auto it = effect.sceneGraph().begin();
+	std::advance(it, index);
+
+	pixelpart::id_t id = it->id();
 
 	auto nodeIt = nodeRefs.find(id);
 	if(nodeIt == nodeRefs.end()) {
@@ -401,11 +405,14 @@ Ref<PixelpartParticleType> PixelpartEffectRuntime::get_particle_type(int id) con
 	return particleTypeIt->second;
 }
 Ref<PixelpartParticleType> PixelpartEffectRuntime::get_particle_type_at_index(int index) const {
-	if(index < 0 || !effect.particleTypes().containsIndex(static_cast<std::uint32_t>(index))) {
+	if(index < 0 || index >= static_cast<int>(effect.sceneGraph().count())) {
 		return Ref<PixelpartParticleType>();
 	}
 
-	pixelpart::id_t id = effect.particleTypes().atIndex(static_cast<std::uint32_t>(index)).id();
+	auto it = effect.sceneGraph().begin();
+	std::advance(it, index);
+
+	pixelpart::id_t id = it->id();
 
 	auto particleTypeIt = particleTypeRefs.find(id);
 	if(particleTypeIt == particleTypeRefs.end()) {
